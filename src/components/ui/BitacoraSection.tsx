@@ -35,7 +35,7 @@ const SCENARIOS_DATA = [
     {
         title: "Reporte de Avance",
         steps: [
-            { role: "user", text: "Subiendo reporte del colado de zapatas en el Eje 3. Concreto f'c=250.", isPhoto: true, photoSrc: "/images/COLADO_EJE3.webp" },
+            { role: "user", text: "Subiendo reporte del colado de zapatas en el Eje 3. Concreto f'c=250.", isPhoto: true, photoSrc: "/plataforma/images/COLADO_EJE3.webp" },
             { role: "ai", thinking: "Procesando imagen...", text: "Avance de obra registrado en la bitácora electrónica. Volúmenes descontados del inventario y estimación actualizada. ¿Todo en orden?" },
             { role: "user", text: "Sí, todo sin problemas." },
             { role: "ai", thinking: "Actualizando bitácora...", text: "Perfecto. Bitácora actualizada." },
@@ -53,7 +53,7 @@ const SCENARIOS_DATA = [
     {
         title: "Seguridad y Clima",
         steps: [
-            { role: "user", text: "Se detiene la obra por lluvia intensa. Imposible continuar.", isPhoto: true, photoSrc: "/images/CLIMA_LLUVIOSO.webp" },
+            { role: "user", text: "Se detiene la obra por lluvia intensa. Imposible continuar.", isPhoto: true, photoSrc: "/plataforma/images/CLIMA_LLUVIOSO.webp" },
             { role: "ai", thinking: "Escaneando entorno y protocolos...", text: "Incidencia climática registrada. ⚠️ ALERTA DE SEGURIDAD: He detectado en la imagen a un trabajador sin casco. Sugiero notificar al supervisor de inmediato." },
             { role: "user", text: "Enterado, notificando al residente. El colado se pasa para mañana." },
             { role: "ai", thinking: "Recalculando rutas críticas...", text: "Cronograma actualizado con 1 día de desfase y alerta guardada en el reporte HSE." },
@@ -62,7 +62,7 @@ const SCENARIOS_DATA = [
     {
         title: "Control de Material",
         steps: [
-            { role: "user", text: "Llegó el camión con el pedido de cemento.", isPhoto: true, photoSrc: "/images/Camion_llegando.webp" },
+            { role: "user", text: "Llegó el camión con el pedido de cemento.", isPhoto: true, photoSrc: "/plataforma/images/Camion_llegando.webp" },
             { role: "ai", thinking: "Extrayendo datos de remisión...", text: "Descarga detectada. ¿Me confirmas si la remisión ampara las 5 toneladas programadas para hoy?" },
             { role: "user", text: "Es correcto, son 100 bultos." },
             { role: "ai", thinking: "Compilando sumatorias...", text: "Excelente. 5 toneladas agregadas al inventario y reporte financiero actualizado." },
