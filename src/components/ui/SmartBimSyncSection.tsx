@@ -538,7 +538,7 @@ export default function SmartBimSyncSection() {
                             style={{ textShadow: `0 0 60px rgba(168,85,247,0.10), 0 4px 40px rgba(0,0,0,0.95)` }}
                         >
                             La verdadera<br />
-                            <span style={{ color: PURPLE }}>'I'</span>
+                            <span style={{ color: PURPLE }}>&apos;I&apos;</span>
                             {" "}de BIM.
                         </h2>
 

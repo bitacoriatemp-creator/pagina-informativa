@@ -31,19 +31,19 @@ const LEGAL_CONTENT = {
                 </div>
                 <div>
                     <h5 className="font-bold text-white mb-1">¿Cómo funciona la lectura predictiva de la Inteligencia Artificial?</h5>
-                    <p>Nuestra IA, conocida como "Smart Concepts", lee diariamente las entradas de los residentes de obra. Su base de conocimiento está entrenada con miles de parámetros de construcción. Es capaz de correlacionar retrasos en suministros climáticos con la ruta crítica del cronograma, y enviar alertas automáticas a los directores de proyecto si detecta patrones de riesgo (ej. vaciados de concreto fuera de norma). El usuario controla qué nivel de intervención tiene la IA.</p>
+                    <p>Nuestra IA, conocida como &quot;Smart Concepts&quot;, lee diariamente las entradas de los residentes de obra. Su base de conocimiento está entrenada con miles de parámetros de construcción. Es capaz de correlacionar retrasos en suministros climáticos con la ruta crítica del cronograma, y enviar alertas automáticas a los directores de proyecto si detecta patrones de riesgo (ej. vaciados de concreto fuera de norma). El usuario controla qué nivel de intervención tiene la IA.</p>
                 </div>
                 <div>
                     <h5 className="font-bold text-white mb-1">¿Puedo invitar a subcontratistas y al cliente final a la misma bitácora?</h5>
-                    <p>Sí. Nuestra arquitectura "Team Work" permite establecer roles granulares. El residente (constructor) captura la información bruta, el supervisor la valida, y el cliente puede tener un rol de solo lectura (View-Only) para dar seguimiento visual sin poder alterar los reportes, manteniendo la transparencia total del proyecto.</p>
+                    <p>Sí. Nuestra arquitectura &quot;Team Work&quot; permite establecer roles granulares. El residente (constructor) captura la información bruta, el supervisor la valida, y el cliente puede tener un rol de solo lectura (View-Only) para dar seguimiento visual sin poder alterar los reportes, manteniendo la transparencia total del proyecto.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">¿De qué trata el protocolo "Smart BIM Sync"?</h5>
+                    <h5 className="font-bold text-white mb-1">¿De qué trata el protocolo &quot;Smart BIM Sync&quot;?</h5>
                     <p>Smart BIM Sync es nuestro protocolo insignia para empresas avanzadas. Permite enlazar las entradas de la bitácora física directamente con elementos de modelos 3D (Revit, Navisworks o IFC). Si se reporta una desviación estructural en campo, el modelo digital se actualiza visualmente en rojo para los coordinadores VDC en la oficina, acortando la brecha entre el modelo teórico y la realidad construida.</p>
                 </div>
                 <div>
                     <h5 className="font-bold text-white mb-1">¿Qué pasa con mis datos si decido cancelar la suscripción?</h5>
-                    <p>Tu información te pertenece. Contamos con un protocolo de "Offboarding Seguro". Tras la cancelación, tienes 30 días para descargar toda tu base de datos y un empaquetado final de todas las bitácoras en formato PDF con sus respectivos sellos criptográficos. Pasado este periodo de gracia, los datos son purgados permanentemente de nuestros servidores corporativos.</p>
+                    <p>Tu información te pertenece. Contamos con un protocolo de &quot;Offboarding Seguro&quot;. Tras la cancelación, tienes 30 días para descargar toda tu base de datos y un empaquetado final de todas las bitácoras en formato PDF con sus respectivos sellos criptográficos. Pasado este periodo de gracia, los datos son purgados permanentemente de nuestros servidores corporativos.</p>
                 </div>
             </div>
         ),
@@ -53,7 +53,7 @@ const LEGAL_CONTENT = {
         body: (
             <div className="space-y-6 text-[13px] leading-relaxed text-white/70">
                 <p><strong className="text-white">Última actualización:</strong> Octubre 2026</p>
-                <p>Bienvenido a BitacorIA ("La Plataforma"). Estos Términos y Condiciones ("Términos") constituyen un contrato legalmente vinculante entre el usuario (y su empresa constructora) y Moltbook S.A.P.I de C.V., desarrolladora de BitacorIA. Al crear una cuenta, usted declara tener la autoridad legal para comprometer a la entidad que representa. Si no acepta estos Términos, abandone el uso de la Plataforma inmediatamente.</p>
+                <p>Bienvenido a BitacorIA (&quot;La Plataforma&quot;). Estos Términos y Condiciones (&quot;Términos&quot;) constituyen un contrato legalmente vinculante entre el usuario (y su empresa constructora) y Moltbook S.A.P.I de C.V., desarrolladora de BitacorIA. Al crear una cuenta, usted declara tener la autoridad legal para comprometer a la entidad que representa. Si no acepta estos Términos, abandone el uso de la Plataforma inmediatamente.</p>
 
                 <div>
                     <h5 className="font-bold text-white mb-1">1. Objeto del Servicio y Licenciamiento</h5>
@@ -72,7 +72,7 @@ const LEGAL_CONTENT = {
 
                 <div>
                     <h5 className="font-bold text-white mb-1">4. Garantías de Disponibilidad (SLA)</h5>
-                    <p>Nos comprometemos, dentro del marco tecnológico posible, a un "uptime" del 99.5% estandarizado, en servidores dedicados. No obstante, al tratarse de herramientas operativas en la nube que dependen de las redes de los operadores de internet local y del clima de obra, la empresa desarrolladora queda indemne respecto a demoras en cargas cuando esto dependa de agentes o compañías de conectividad externas.</p>
+                    <p>Nos comprometemos, dentro del marco tecnológico posible, a un &quot;uptime&quot; del 99.5% estandarizado, en servidores dedicados. No obstante, al tratarse de herramientas operativas en la nube que dependen de las redes de los operadores de internet local y del clima de obra, la empresa desarrolladora queda indemne respecto a demoras en cargas cuando esto dependa de agentes o compañías de conectividad externas.</p>
                 </div>
 
                 <div>
@@ -87,7 +87,7 @@ const LEGAL_CONTENT = {
         body: (
             <div className="space-y-6 text-[13px] leading-relaxed text-white/70">
                 <p><strong className="text-white">Última actualización:</strong> Octubre 2026</p>
-                <p>En cumplimiento a lo dispuesto por la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (en adelante, "La Ley") y su Reglamento, BitacorIA ("Nosotros", Moltbook S.A.P.I. de C.V.) hace de su conocimiento la presente normativa sobre cómo es tratada, protegida y almacenada su información como contratista, residente o supervisor de obra al operar en nuestra infraestructura global.</p>
+                <p>En cumplimiento a lo dispuesto por la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (en adelante, &quot;La Ley&quot;) y su Reglamento, BitacorIA (&quot;Nosotros&quot;, Moltbook S.A.P.I. de C.V.) hace de su conocimiento la presente normativa sobre cómo es tratada, protegida y almacenada su información como contratista, residente o supervisor de obra al operar en nuestra infraestructura global.</p>
 
                 <div>
                     <h5 className="font-bold text-white mb-1">I. Datos que Recabamos</h5>
@@ -101,7 +101,7 @@ const LEGAL_CONTENT = {
 
                 <div>
                     <h5 className="font-bold text-white mb-1">III. Tratamiento Interno por Inteligencia Artificial</h5>
-                    <p>Los reportes de progreso ("smart concepts") creados por los usuarios pasan por canalizaciones encriptadas de procesamiento de lenguaje natural de nuestra Inteligencia Artificial, que asiste buscando discrepancias (como faltantes de volúmenes de concreto o acero contra nómina). Estos motores LLMs son instancias internas, en contenedores privados "Zero-Trust"; ninguna IA externa de terceros está entrenando sus redes públicas a expensas de la propiedad intelectual ni de los parámetros privados de su empresa.</p>
+                    <p>Los reportes de progreso (&quot;smart concepts&quot;) creados por los usuarios pasan por canalizaciones encriptadas de procesamiento de lenguaje natural de nuestra Inteligencia Artificial, que asiste buscando discrepancias (como faltantes de volúmenes de concreto o acero contra nómina). Estos motores LLMs son instancias internas, en contenedores privados &quot;Zero-Trust&quot;; ninguna IA externa de terceros está entrenando sus redes públicas a expensas de la propiedad intelectual ni de los parámetros privados de su empresa.</p>
                 </div>
 
                 <div>
