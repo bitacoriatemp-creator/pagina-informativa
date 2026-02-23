@@ -64,12 +64,13 @@ export const modules = [
 export type IslandState = "hidden" | "center" | "top";
 
 interface SmartIslandProps {
-    islandState: IslandState;
+    islandState?: IslandState;
     triggerPop?: string | null;
     isBimSectionActive?: boolean;
+    mode?: "fixed" | "default" | string;
 }
 
-export default function SmartIsland({ islandState, triggerPop, isBimSectionActive = false }: SmartIslandProps) {
+export default function SmartIsland({ islandState = "hidden", triggerPop, isBimSectionActive = false }: SmartIslandProps) {
     const [hoveredId, setHoveredId] = useState<string | null>(null);
     const [popKey, setPopKey] = useState<Record<string, number>>({});
 
