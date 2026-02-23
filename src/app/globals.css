@@ -1,0 +1,439 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ══════════════════════════════════════════════════
+   BitacorIA — "Luxury Concrete & Glass" Material System
+   Concrete · Chocolate Glass · Gold LED · Architecture
+   ══════════════════════════════════════════════════ */
+
+/* ── Base ─────────────────────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    overflow-x: hidden;
+    color: #ECEBE9;
+    background-color: #0a0503;
+  }
+
+  ::selection {
+    background-color: rgba(195, 151, 103, 0.35);
+    color: #fff;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-orbitron), "Orbitron", system-ui, sans-serif;
+  }
+}
+
+/* ── BACKGROUND: Dark Stage + Engineering Grid ── */
+
+.blueprint-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  background-color: #0a0503;
+  background-image:
+    /* Engineering grid — horizontal */
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    /* Engineering grid — vertical */
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    /* Sub-grid — finer */
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    /* Subtle warm center glow */
+    radial-gradient(ellipse 60% 50% at 50% 50%, rgba(89, 58, 37, 0.08) 0%, transparent 70%);
+  background-size:
+    80px 80px,
+    80px 80px,
+    16px 16px,
+    16px 16px,
+    100% 100%;
+}
+
+.blueprint-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* Vignette — dark edges */
+  background: radial-gradient(ellipse 65% 65% at 50% 50%, transparent 20%, rgba(15, 8, 5, 0.6) 100%);
+}
+
+/* ── MATERIAL 2: Chocolate Reflective Glass ──── */
+
+.chocolate-glass {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: rgba(35, 20, 12, 0.75);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  transition: box-shadow 0.5s ease, border-color 0.5s ease;
+}
+
+/* Diagonal light reflection across glass */
+.chocolate-glass::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background: linear-gradient(135deg,
+      rgba(195, 151, 103, 0.06) 0%,
+      rgba(255, 255, 255, 0.03) 25%,
+      transparent 55%,
+      rgba(195, 151, 103, 0.02) 100%);
+  z-index: 1;
+}
+
+/* Surface reflection shimmer */
+.chocolate-glass::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  border-radius: 1rem;
+  background: linear-gradient(105deg,
+      transparent 40%,
+      rgba(195, 151, 103, 0.04) 45%,
+      rgba(255, 255, 255, 0.02) 50%,
+      transparent 55%);
+  z-index: 1;
+  transition: left 0.8s ease;
+}
+
+.chocolate-glass:hover::after {
+  left: 120%;
+}
+
+/* ── MATERIAL 3: Gold LED Glow ─────────────── */
+
+.led-glow-gold {
+  border: 1px solid #c39767;
+  box-shadow:
+    0 0 8px rgba(195, 151, 103, 0.5),
+    0 0 20px rgba(195, 151, 103, 0.25),
+    inset 0 0 8px rgba(195, 151, 103, 0.15);
+}
+
+.led-glow-gold-subtle {
+  border: 1px solid rgba(195, 151, 103, 0.6);
+  box-shadow:
+    0 0 6px rgba(195, 151, 103, 0.35),
+    0 0 15px rgba(195, 151, 103, 0.15);
+}
+
+.led-glow-gold-intense {
+  border: 1px solid #c39767;
+  box-shadow:
+    0 0 10px rgba(195, 151, 103, 0.7),
+    0 0 30px rgba(195, 151, 103, 0.4),
+    0 0 60px rgba(195, 151, 103, 0.15),
+    inset 0 0 10px rgba(195, 151, 103, 0.2);
+}
+
+/* LED line separator */
+.led-line-h {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #c39767 20%, #c39767 80%, transparent);
+  box-shadow:
+    0 0 8px rgba(195, 151, 103, 0.6),
+    0 0 20px rgba(195, 151, 103, 0.3);
+}
+
+.led-line-v {
+  width: 1px;
+  background: linear-gradient(180deg, transparent, #c39767 20%, #c39767 80%, transparent);
+  box-shadow:
+    0 0 8px rgba(195, 151, 103, 0.6),
+    0 0 20px rgba(195, 151, 103, 0.3);
+}
+
+/* ── Components ───────────────────────────────── */
+@layer components {
+
+  /* Glass Card = Chocolate Glass + LED subtle */
+  .glass-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    background: rgba(35, 20, 12, 0.75);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    border: 1px solid rgba(195, 151, 103, 0.6);
+    box-shadow:
+      0 0 6px rgba(195, 151, 103, 0.35),
+      0 0 15px rgba(195, 151, 103, 0.15);
+    transition: box-shadow 0.5s ease, border-color 0.5s ease;
+  }
+
+  .glass-card::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    background: linear-gradient(135deg,
+        rgba(195, 151, 103, 0.06) 0%,
+        rgba(255, 255, 255, 0.03) 25%,
+        transparent 55%,
+        rgba(195, 151, 103, 0.02) 100%);
+    z-index: 1;
+  }
+
+  .glass-card:hover {
+    box-shadow:
+      0 0 10px rgba(195, 151, 103, 0.5),
+      0 0 25px rgba(195, 151, 103, 0.25);
+  }
+
+  /* Primary variant = brighter LED */
+  .glass-card-primary {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    background: rgba(35, 20, 12, 0.75);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    border: 1px solid #c39767;
+    box-shadow:
+      0 0 8px rgba(195, 151, 103, 0.5),
+      0 0 20px rgba(195, 151, 103, 0.25),
+      inset 0 0 8px rgba(195, 151, 103, 0.15);
+    transition: box-shadow 0.5s ease, border-color 0.5s ease;
+  }
+
+  .glass-card-primary::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    background: linear-gradient(135deg,
+        rgba(195, 151, 103, 0.06) 0%,
+        rgba(255, 255, 255, 0.03) 25%,
+        transparent 55%,
+        rgba(195, 151, 103, 0.02) 100%);
+    z-index: 1;
+  }
+
+  /* Terminal tooltip */
+  .core-tooltip {
+    font-family: var(--font-roboto-mono), "Roboto Mono", monospace;
+    font-size: 0.7rem;
+    line-height: 1.4;
+    color: #c39767;
+    background: rgba(26, 14, 8, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(195, 151, 103, 0.4);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(195, 151, 103, 0.2);
+  }
+
+  .core-tooltip::before {
+    content: "▸ ";
+    opacity: 0.6;
+  }
+
+  /* CTA Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3.5 font-semibold transition-all duration-300 active:scale-[0.97];
+    font-family: var(--font-teko), "Teko", "Oswald", sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background-color: #c39767;
+    color: #1a0e08;
+    box-shadow:
+      0 0 12px rgba(195, 151, 103, 0.5),
+      0 4px 16px rgba(195, 151, 103, 0.25);
+  }
+
+  .btn-primary:hover {
+    filter: brightness(1.1);
+    box-shadow:
+      0 0 20px rgba(195, 151, 103, 0.7),
+      0 6px 24px rgba(195, 151, 103, 0.4);
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3.5 font-semibold transition-all duration-300 active:scale-[0.97];
+    font-family: var(--font-teko), "Teko", "Oswald", sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid rgba(195, 151, 103, 0.5);
+    color: #c39767;
+    box-shadow: 0 0 8px rgba(195, 151, 103, 0.15);
+  }
+
+  .btn-outline:hover {
+    background-color: rgba(195, 151, 103, 0.1);
+    border-color: #c39767;
+    box-shadow: 0 0 15px rgba(195, 151, 103, 0.3);
+  }
+
+  /* Scrollytelling layout */
+  .scroll-section {
+    @apply relative min-h-screen;
+    display: flex;
+    align-items: center;
+  }
+
+  .scroll-section-sticky {
+    @apply relative;
+    min-height: 200vh;
+  }
+
+  .scroll-section-sticky>.sticky-content {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 0 clamp(2rem, 5vw, 6rem);
+  }
+}
+
+/* ── Utilities ────────────────────────────────── */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-gradient {
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(135deg, #c39767 0%, #e8c9a4 50%, #c39767 100%);
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .perspective-800 {
+    perspective: 800px;
+  }
+
+  .perspective-1200 {
+    perspective: 1200px;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+}
+
+/* ── Diagonal Clip Path for Hero ──────────────── */
+.hero-concrete-clip {
+  clip-path: polygon(0 0, 65% 0, 45% 100%, 0% 100%);
+}
+
+.hero-glass-clip {
+  clip-path: polygon(65% 0, 100% 0, 100% 100%, 45% 100%);
+}
+
+/* The diagonal LED separator */
+.hero-led-diagonal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.hero-led-diagonal::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to bottom right,
+      transparent calc(54.5% - 2px),
+      rgba(195, 151, 103, 0.15) calc(54.5% - 1px),
+      #c39767 54.5%,
+      rgba(195, 151, 103, 0.15) calc(54.5% + 1px),
+      transparent calc(54.5% + 2px));
+  filter: drop-shadow(0 0 8px rgba(195, 151, 103, 0.6)) drop-shadow(0 0 20px rgba(195, 151, 103, 0.3));
+}
+
+/* Surface reflection for 3D objects on glass */
+.glass-reflection {
+  position: relative;
+}
+
+.glass-reflection::after {
+  content: "";
+  position: absolute;
+  bottom: -40px;
+  left: 10%;
+  width: 80%;
+  height: 40px;
+  background: linear-gradient(to bottom,
+      rgba(195, 151, 103, 0.06),
+      transparent);
+  filter: blur(4px);
+  transform: scaleY(-0.3);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ── Typewriter cursor ────────────────────────── */
+@keyframes blink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+.typewriter-cursor::after {
+  content: "▌";
+  color: #c39767;
+  animation: blink 0.8s step-end infinite;
+}
+
+/* ── LED Pulse Animation ─────────────────────── */
+@keyframes ledPulse {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 8px rgba(195, 151, 103, 0.5),
+      0 0 20px rgba(195, 151, 103, 0.25),
+      inset 0 0 8px rgba(195, 151, 103, 0.15);
+  }
+
+  50% {
+    box-shadow:
+      0 0 12px rgba(195, 151, 103, 0.7),
+      0 0 30px rgba(195, 151, 103, 0.4),
+      inset 0 0 12px rgba(195, 151, 103, 0.25);
+  }
+}
+
+.led-pulse {
+  animation: ledPulse 3s ease-in-out infinite;
+}
