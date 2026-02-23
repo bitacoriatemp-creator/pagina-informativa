@@ -110,7 +110,7 @@ export default function Home() {
 
   return (
     <main
-      className="relative min-h-screen selection:bg-[#c39767] selection:text-black font-sans"
+      className="relative min-h-screen overflow-x-hidden selection:bg-[#c39767] selection:text-black font-sans"
       style={{ backgroundColor: "#0c0604" }}
     >
       {/* ── GLOBAL PERSISTENT DOCK ── */}

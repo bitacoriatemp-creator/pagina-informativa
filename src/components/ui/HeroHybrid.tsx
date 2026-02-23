@@ -98,7 +98,7 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                 {/* ── BUILDING AREA — mouse tracking lives here ── */}
                 <div
                     ref={buildingRef}
-                    className="absolute top-0 right-0 z-[2] h-full w-2/3"
+                    className="absolute top-0 right-0 z-[2] h-full w-full md:w-2/3"
                     onMouseMove={handleMouseMove}
                     onMouseEnter={() => setIsHovering(true)}
                     onMouseLeave={() => setIsHovering(false)}
@@ -182,13 +182,13 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                 FROSTED-GLASS NAVBAR
                 ══════════════════════════════════════════════ */}
             <motion.nav
-                className="absolute top-8 left-1/2 z-50 -translate-x-1/2"
+                className="absolute top-6 left-1/2 z-50 -translate-x-1/2 w-[calc(100%-32px)] md:w-auto"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.6, ease: [0.25, 0.4, 0.25, 1] as const }}
             >
                 <div
-                    className="flex items-center gap-8 rounded-full px-8 py-3"
+                    className="flex items-center justify-between md:justify-start gap-4 md:gap-8 rounded-full px-5 md:px-8 py-3"
                     style={{
                         background: "rgba(12, 6, 4, 0.5)",
                         backdropFilter: "blur(16px)",
@@ -209,65 +209,74 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                         }}
                     />
                     <div
-                        className="h-5 w-px shrink-0"
+                        className="hidden md:block h-5 w-px shrink-0"
                         style={{ background: "rgba(195, 151, 103, 0.2)" }}
                     />
-                    {NAV_LINKS.map((link) => {
-                        // "Quiénes Somos" opens the modal instead of scrolling
-                        if (link.href === "#quienes") {
+                    <div className="hidden md:flex items-center gap-8">
+                        {NAV_LINKS.map((link) => {
+                            // "Quiénes Somos" opens the modal instead of scrolling
+                            if (link.href === "#quienes") {
+                                return (
+                                    <button
+                                        key={link.href}
+                                        onClick={onOpenQuienesSomos}
+                                        className="whitespace-nowrap font-ui text-xs uppercase tracking-widest transition-colors duration-300 cursor-pointer bg-transparent border-none"
+                                        style={{ color: "rgba(255,255,255,0.5)" }}
+                                        onMouseEnter={(e) =>
+                                            (e.currentTarget.style.color = "#c39767")
+                                        }
+                                        onMouseLeave={(e) =>
+                                            (e.currentTarget.style.color = "rgba(255,255,255,0.5)")
+                                        }
+                                    >
+                                        {link.label}
+                                    </button>
+                                );
+                            }
+                            if (link.href === "#como-funciona") {
+                                return (
+                                    <button
+                                        key={link.href}
+                                        onClick={() => setIsHowItWorksOpen(true)}
+                                        className="whitespace-nowrap font-ui text-xs uppercase tracking-widest transition-colors duration-300 cursor-pointer bg-transparent border-none"
+                                        style={{ color: "rgba(255,255,255,0.5)" }}
+                                        onMouseEnter={(e) =>
+                                            (e.currentTarget.style.color = "#c39767")
+                                        }
+                                        onMouseLeave={(e) =>
+                                            (e.currentTarget.style.color = "rgba(255,255,255,0.5)")
+                                        }
+                                    >
+                                        {link.label}
+                                    </button>
+                                );
+                            }
                             return (
-                                <button
+                                <a
                                     key={link.href}
-                                    onClick={onOpenQuienesSomos}
-                                    className="whitespace-nowrap font-ui text-xs uppercase tracking-widest transition-colors duration-300 cursor-pointer bg-transparent border-none"
+                                    href={link.href}
+                                    className="whitespace-nowrap font-ui text-xs uppercase tracking-widest transition-colors duration-300"
                                     style={{ color: "rgba(255,255,255,0.5)" }}
                                     onMouseEnter={(e) =>
                                         (e.currentTarget.style.color = "#c39767")
                                     }
                                     onMouseLeave={(e) =>
-                                        (e.currentTarget.style.color = "rgba(255,255,255,0.5)")
+                                    (e.currentTarget.style.color =
+                                        "rgba(255,255,255,0.5)")
                                     }
                                 >
                                     {link.label}
-                                </button>
+                                </a>
                             );
-                        }
-                        if (link.href === "#como-funciona") {
-                            return (
-                                <button
-                                    key={link.href}
-                                    onClick={() => setIsHowItWorksOpen(true)}
-                                    className="whitespace-nowrap font-ui text-xs uppercase tracking-widest transition-colors duration-300 cursor-pointer bg-transparent border-none"
-                                    style={{ color: "rgba(255,255,255,0.5)" }}
-                                    onMouseEnter={(e) =>
-                                        (e.currentTarget.style.color = "#c39767")
-                                    }
-                                    onMouseLeave={(e) =>
-                                        (e.currentTarget.style.color = "rgba(255,255,255,0.5)")
-                                    }
-                                >
-                                    {link.label}
-                                </button>
-                            );
-                        }
-                        return (
-                            <a
-                                key={link.href}
-                                href={link.href}
-                                className="whitespace-nowrap font-ui text-xs uppercase tracking-widest transition-colors duration-300"
-                                style={{ color: "rgba(255,255,255,0.5)" }}
-                                onMouseEnter={(e) =>
-                                    (e.currentTarget.style.color = "#c39767")
-                                }
-                                onMouseLeave={(e) =>
-                                (e.currentTarget.style.color =
-                                    "rgba(255,255,255,0.5)")
-                                }
-                            >
-                                {link.label}
-                            </a>
-                        );
-                    })}
+                        })}
+                    </div>
+                    <a
+                        href="#contacto"
+                        className="md:hidden font-ui text-[10px] uppercase tracking-widest rounded-full px-4 py-1.5 border"
+                        style={{ color: "rgba(255,255,255,0.6)", borderColor: "rgba(195,151,103,0.3)" }}
+                    >
+                        Contacto
+                    </a>
                 </div>
             </motion.nav>
 
@@ -275,7 +284,7 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                 HERO CONTENT — Text + Liquid Glass Buttons
                 ══════════════════════════════════════════════ */}
             <div className="relative z-20 flex min-h-screen items-center pointer-events-none">
-                <div className="mx-auto w-full max-w-[1600px] px-8 md:px-16 lg:px-24">
+                <div className="mx-auto w-full max-w-[1600px] px-6 md:px-16 lg:px-24">
                     <motion.div
                         initial="hidden"
                         animate="visible"

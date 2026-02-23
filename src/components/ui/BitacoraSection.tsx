@@ -457,7 +457,7 @@ export default function BitacoraSection() {
                 </div>
 
                 {/* ── SANDWICH LAYOUT (untouched internals) ── */}
-                <div className="relative z-10 mx-auto flex w-full flex-col items-center gap-6 px-6 max-w-7xl xl:px-12 -translate-y-12">
+                <div className="relative z-10 mx-auto flex w-full flex-col items-center gap-6 px-4 md:px-6 max-w-7xl xl:px-12 -translate-y-12">
 
                     {/* ═══ BLOCK 1: TEXT (top) ═══ */}
                     <motion.div
@@ -475,7 +475,7 @@ export default function BitacoraSection() {
                         </div>
 
                         <h2
-                            className="font-display text-4xl font-extrabold uppercase leading-[1.05] tracking-tight text-white/92 sm:text-5xl"
+                            className="font-display text-3xl font-extrabold uppercase leading-[1.05] tracking-tight text-white/92 sm:text-4xl md:text-5xl"
                             style={{ textShadow: `0 0 60px rgba(196,164,132,0.09), 0 4px 40px rgba(0,0,0,0.95)` }}
                         >
                             La bitácora<br /> que <span style={{ color: ACCENT }}>se escribe sola.</span>
@@ -487,7 +487,7 @@ export default function BitacoraSection() {
                     </motion.div>
 
                     {/* ═══ BLOCK 2: 3-ZONE GRID (Features | Chat | Features) ═══ */}
-                    <div className="w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center px-4">
+                    <div className="w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-center px-0">
 
                         {/* ── LEFT: Feature 1 ── */}
                         <motion.div

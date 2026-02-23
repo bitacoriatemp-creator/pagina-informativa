@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { motion, useInView, AnimatePresence, type Variants } from "framer-motion";
@@ -539,7 +539,7 @@ export default function CronogramaSection() {
                 </div>
 
                 {/* ── SPLIT GRID ────────────────────────────────────────── */}
-                <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-6 lg:grid-cols-2 lg:gap-14 lg:px-12">
+                <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 md:px-6 lg:grid-cols-2 lg:gap-14 lg:px-12">
 
                     {/* ════════════════════════════════════════════════════════
             LEFT — Copy
@@ -556,7 +556,7 @@ export default function CronogramaSection() {
                         </div>
 
                         {/* Headline */}
-                        <h2 className="font-display text-4xl font-extrabold uppercase leading-[1.04] tracking-tight text-white/92 sm:text-5xl xl:text-6xl"
+                        <h2 className="font-display text-3xl font-extrabold uppercase leading-[1.04] tracking-tight text-white/92 md:text-4xl sm:text-5xl xl:text-6xl"
                             style={{ textShadow: `0 0 60px rgba(59,130,246,0.09), 0 4px 40px rgba(0,0,0,0.95)` }}>
                             Cronograma<br />
                             <span style={{ color: ACCENT }}>vivo.</span>
@@ -601,215 +601,217 @@ export default function CronogramaSection() {
                     <motion.div variants={slideRight} initial="hidden" whileInView="visible"
                         viewport={{ once: true, amount: 0.2 }} className="flex w-full justify-center">
 
-                        <div ref={ganttRef}
-                            className="relative flex w-full max-w-[600px] flex-col overflow-hidden rounded-2xl border border-white/8"
-                            style={{
-                                height: "520px", background: "#111111",
-                                boxShadow: `0 0 70px rgba(59,130,246,0.07), 0 28px 60px rgba(0,0,0,0.80)`
-                            }}>
+                        <div className="w-full overflow-x-auto pb-2 md:overflow-visible">
+                            <div ref={ganttRef}
+                                className="relative flex w-full min-w-[320px] max-w-[600px] flex-col overflow-hidden rounded-2xl border border-white/8 mx-auto"
+                                style={{
+                                    height: "520px", background: "#111111",
+                                    boxShadow: `0 0 70px rgba(59,130,246,0.07), 0 28px 60px rgba(0,0,0,0.80)`
+                                }}>
 
 
 
-                            {/* ── Chrome bar ── */}
-                            <div className="flex shrink-0 items-center gap-3 border-b px-4 py-3"
-                                style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                                <div className="flex items-center gap-1.5">
-                                    <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-                                    <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
-                                    <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-                                </div>
-                                <div className="flex flex-1 items-center justify-center">
-                                    <span className="relative px-3 py-1 text-[10px] font-semibold uppercase tracking-wider"
-                                        style={{ color: ACCENT }}>
-                                        Staging (Borrador)
-                                        <div
-                                            className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full"
-                                            style={{ background: ACCENT }} />
-                                    </span>
-                                </div>
-                                <SyncButton state={syncState} />
-                            </div>
-
-                            {/* ── Gantt body ── */}
-                            <div className="flex flex-1 overflow-hidden">
-
-                                {/* Task list */}
-                                <div className="flex w-[185px] shrink-0 flex-col border-r"
-                                    style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-
-                                    {/* Header */}
-                                    <div className="grid shrink-0 grid-cols-[28px_1fr_34px] items-center gap-1 border-b px-3 py-2"
-                                        style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-                                        <span className="text-[8px] font-semibold uppercase tracking-wider text-white/20">Clave</span>
-                                        <span className="text-[8px] font-semibold uppercase tracking-wider text-white/20">Tarea</span>
-                                        <span className="text-center text-[8px] font-semibold uppercase tracking-wider text-white/20">Dur.</span>
-                                    </div>
-
-                                    {/* Rows */}
-                                    <div className="flex flex-1 flex-col overflow-hidden">
-                                        {BASE_TASKS.map((t, i) => {
-                                            const claveColor = t.isMilestone ? MILESTONE.border : (t.isCritical ? CRIT.border : FLOAT.border);
-                                            const { durDays } = effective(t);
-                                            const durLabel = t.isMilestone ? "◆" : `${durDays}d`;
-                                            const isDelayedTask = phase !== "nominal" && t.id === "t1";
-                                            return (
-                                                <div key={t.id}
-                                                    className="grid grid-cols-[28px_1fr_34px] items-center gap-1 border-b px-3"
-                                                    style={{
-                                                        borderColor: "rgba(255,255,255,0.04)",
-                                                        height: `${100 / BASE_TASKS.length}%`,
-                                                        background: isDelayedTask
-                                                            ? "rgba(239,68,68,0.06)"
-                                                            : (i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.012)"),
-                                                        transition: "background 0.5s ease",
-                                                    }}>
-                                                    <span className="font-mono text-[8px] font-bold" style={{ color: claveColor }}>
-                                                        {t.clave}
-                                                    </span>
-                                                    <span className="flex items-center gap-1 truncate text-[9px] text-white/50">
-                                                        {isDelayedTask && (
-                                                            <motion.span
-                                                                initial={{ opacity: 0, scale: 0.5 }}
-                                                                animate={{ opacity: 1, scale: 1 }}
-                                                                className="text-[8px] shrink-0"
-                                                            >
-                                                                ⚠️
-                                                            </motion.span>
-                                                        )}
-                                                        <span className="truncate" style={{ color: isDelayedTask ? "#EF4444" : undefined }}>
-                                                            {t.name}
-                                                        </span>
-                                                    </span>
-                                                    <motion.span
-                                                        animate={{
-                                                            color: isDelayedTask
-                                                                ? "#EF4444"
-                                                                : "rgba(255,255,255,0.25)"
-                                                        }}
-                                                        transition={{ duration: 0.3 }}
-                                                        className="text-center font-mono text-[8px]">
-                                                        {durLabel}
-                                                    </motion.span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                {/* Timeline */}
-                                <div className="flex flex-1 flex-col overflow-hidden">
-
-                                    {/* Day headers */}
-                                    <div className="grid shrink-0 border-b"
-                                        style={{
-                                            gridTemplateColumns: `repeat(${DAYS.length}, minmax(0, 1fr))`,
-                                            borderColor: "rgba(255,255,255,0.05)"
-                                        }}>
-                                        {DAYS.map((d) => (
-                                            <div key={d} className="border-r py-2 text-center text-[7px] font-semibold text-white/18"
-                                                style={{ borderColor: "rgba(255,255,255,0.04)" }}>
-                                                {d}
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* ── Delay banner — sits between day-header and bar rows ── */}
-                                    <DelayBanner visible={phase !== "nominal"} />
-
-                                    {/* Bar rows */}
-                                    <div className="relative flex flex-1 flex-col overflow-hidden">
-                                        {BASE_TASKS.map((task, i) => {
-                                            const { startDay, durDays } = effective(task);
-                                            return (
-                                                <div key={task.id}
-                                                    className="relative shrink-0 border-b"
-                                                    style={{
-                                                        borderColor: "rgba(255,255,255,0.04)",
-                                                        height: `${100 / BASE_TASKS.length}%`,
-                                                        background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.012)"
-                                                    }}>
-
-                                                    {/* Grid lines */}
-                                                    <div className="pointer-events-none absolute inset-0 grid"
-                                                        style={{ gridTemplateColumns: `repeat(${DAYS.length}, minmax(0, 1fr))` }}>
-                                                        {DAYS.map((d) => (
-                                                            <div key={d} className="border-r"
-                                                                style={{ borderColor: "rgba(255,255,255,0.03)" }} />
-                                                        ))}
-                                                    </div>
-
-                                                    {/* Animated bar or milestone diamond */}
-                                                    <GanttBar
-                                                        task={task}
-                                                        inView={inView}
-                                                        entryDelay={0.15 + i * 0.11}
-                                                        effectStartDay={startDay}
-                                                        effectDurDays={durDays}
-                                                        flickerT1={phase === "flicker"}
-                                                    />
-                                                </div>
-                                            );
-                                        })}
-
-                                        {/* ── Dependency arrows (critical path connectors) ── */}
-                                        {inView && arrows.map((a, i) => (
-                                            <DependencyArrow
-                                                key={`arrow-${i}`}
-                                                fromEndDay={a.fromEndDay}
-                                                toStartDay={a.toStartDay}
-                                                fromRowIndex={a.fromIdx}
-                                                toRowIndex={a.toIdx}
-                                                totalRows={BASE_TASKS.length}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* ── Status bar / Legend ── */}
-                            <div className="flex shrink-0 items-center justify-between border-t px-4 py-2"
-                                style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-                                <div className="flex items-center gap-4">
+                                {/* ── Chrome bar ── */}
+                                <div className="flex shrink-0 items-center gap-3 border-b px-4 py-3"
+                                    style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="h-2 w-2 rounded-full"
-                                            style={{ background: CRIT.border, boxShadow: CRIT.glow }} />
-                                        <span className="text-[8px] text-white/35">
-                                            Ruta Crítica <span className="text-white/20">(Holgura 0)</span>
+                                        <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+                                        <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+                                        <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+                                    </div>
+                                    <div className="flex flex-1 items-center justify-center">
+                                        <span className="relative px-3 py-1 text-[10px] font-semibold uppercase tracking-wider"
+                                            style={{ color: ACCENT }}>
+                                            Staging (Borrador)
+                                            <div
+                                                className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full"
+                                                style={{ background: ACCENT }} />
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="h-2 w-2 rounded-full"
-                                            style={{ background: FLOAT.border, boxShadow: FLOAT.glow }} />
-                                        <span className="text-[8px] text-white/35">Actividades con holgura</span>
+                                    <SyncButton state={syncState} />
+                                </div>
+
+                                {/* ── Gantt body ── */}
+                                <div className="flex flex-1 overflow-hidden">
+
+                                    {/* Task list */}
+                                    <div className="flex w-[185px] shrink-0 flex-col border-r"
+                                        style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+
+                                        {/* Header */}
+                                        <div className="grid shrink-0 grid-cols-[28px_1fr_34px] items-center gap-1 border-b px-3 py-2"
+                                            style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+                                            <span className="text-[8px] font-semibold uppercase tracking-wider text-white/20">Clave</span>
+                                            <span className="text-[8px] font-semibold uppercase tracking-wider text-white/20">Tarea</span>
+                                            <span className="text-center text-[8px] font-semibold uppercase tracking-wider text-white/20">Dur.</span>
+                                        </div>
+
+                                        {/* Rows */}
+                                        <div className="flex flex-1 flex-col overflow-hidden">
+                                            {BASE_TASKS.map((t, i) => {
+                                                const claveColor = t.isMilestone ? MILESTONE.border : (t.isCritical ? CRIT.border : FLOAT.border);
+                                                const { durDays } = effective(t);
+                                                const durLabel = t.isMilestone ? "◆" : `${durDays}d`;
+                                                const isDelayedTask = phase !== "nominal" && t.id === "t1";
+                                                return (
+                                                    <div key={t.id}
+                                                        className="grid grid-cols-[28px_1fr_34px] items-center gap-1 border-b px-3"
+                                                        style={{
+                                                            borderColor: "rgba(255,255,255,0.04)",
+                                                            height: `${100 / BASE_TASKS.length}%`,
+                                                            background: isDelayedTask
+                                                                ? "rgba(239,68,68,0.06)"
+                                                                : (i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.012)"),
+                                                            transition: "background 0.5s ease",
+                                                        }}>
+                                                        <span className="font-mono text-[8px] font-bold" style={{ color: claveColor }}>
+                                                            {t.clave}
+                                                        </span>
+                                                        <span className="flex items-center gap-1 truncate text-[9px] text-white/50">
+                                                            {isDelayedTask && (
+                                                                <motion.span
+                                                                    initial={{ opacity: 0, scale: 0.5 }}
+                                                                    animate={{ opacity: 1, scale: 1 }}
+                                                                    className="text-[8px] shrink-0"
+                                                                >
+                                                                    ⚠️
+                                                                </motion.span>
+                                                            )}
+                                                            <span className="truncate" style={{ color: isDelayedTask ? "#EF4444" : undefined }}>
+                                                                {t.name}
+                                                            </span>
+                                                        </span>
+                                                        <motion.span
+                                                            animate={{
+                                                                color: isDelayedTask
+                                                                    ? "#EF4444"
+                                                                    : "rgba(255,255,255,0.25)"
+                                                            }}
+                                                            transition={{ duration: 0.3 }}
+                                                            className="text-center font-mono text-[8px]">
+                                                            {durLabel}
+                                                        </motion.span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="h-2.5 w-2.5 rotate-45"
-                                            style={{ background: MILESTONE.bg, border: `1px solid ${MILESTONE.border}` }} />
-                                        <span className="text-[8px] text-white/35">Hito</span>
+
+                                    {/* Timeline */}
+                                    <div className="flex flex-1 flex-col overflow-hidden">
+
+                                        {/* Day headers */}
+                                        <div className="grid shrink-0 border-b"
+                                            style={{
+                                                gridTemplateColumns: `repeat(${DAYS.length}, minmax(0, 1fr))`,
+                                                borderColor: "rgba(255,255,255,0.05)"
+                                            }}>
+                                            {DAYS.map((d) => (
+                                                <div key={d} className="border-r py-2 text-center text-[7px] font-semibold text-white/18"
+                                                    style={{ borderColor: "rgba(255,255,255,0.04)" }}>
+                                                    {d}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* ── Delay banner — sits between day-header and bar rows ── */}
+                                        <DelayBanner visible={phase !== "nominal"} />
+
+                                        {/* Bar rows */}
+                                        <div className="relative flex flex-1 flex-col overflow-hidden">
+                                            {BASE_TASKS.map((task, i) => {
+                                                const { startDay, durDays } = effective(task);
+                                                return (
+                                                    <div key={task.id}
+                                                        className="relative shrink-0 border-b"
+                                                        style={{
+                                                            borderColor: "rgba(255,255,255,0.04)",
+                                                            height: `${100 / BASE_TASKS.length}%`,
+                                                            background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.012)"
+                                                        }}>
+
+                                                        {/* Grid lines */}
+                                                        <div className="pointer-events-none absolute inset-0 grid"
+                                                            style={{ gridTemplateColumns: `repeat(${DAYS.length}, minmax(0, 1fr))` }}>
+                                                            {DAYS.map((d) => (
+                                                                <div key={d} className="border-r"
+                                                                    style={{ borderColor: "rgba(255,255,255,0.03)" }} />
+                                                            ))}
+                                                        </div>
+
+                                                        {/* Animated bar or milestone diamond */}
+                                                        <GanttBar
+                                                            task={task}
+                                                            inView={inView}
+                                                            entryDelay={0.15 + i * 0.11}
+                                                            effectStartDay={startDay}
+                                                            effectDurDays={durDays}
+                                                            flickerT1={phase === "flicker"}
+                                                        />
+                                                    </div>
+                                                );
+                                            })}
+
+                                            {/* ── Dependency arrows (critical path connectors) ── */}
+                                            {inView && arrows.map((a, i) => (
+                                                <DependencyArrow
+                                                    key={`arrow-${i}`}
+                                                    fromEndDay={a.fromEndDay}
+                                                    toStartDay={a.toStartDay}
+                                                    fromRowIndex={a.fromIdx}
+                                                    toRowIndex={a.toIdx}
+                                                    totalRows={BASE_TASKS.length}
+                                                />
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                                {/* Phase indicator */}
-                                <AnimatePresence mode="wait">
-                                    {phase !== "nominal" ? (
-                                        <motion.span key="recalc"
-                                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                            className="text-[8px] font-semibold" style={{ color: "#EF4444" }}>
-                                            ⟳ Recalculando...
-                                        </motion.span>
-                                    ) : (
-                                        <motion.span key="ok"
-                                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                            className="text-[8px] text-white/20">
-                                            {BASE_TASKS.length} tareas · Días 1–{TOTAL_DAYS}
-                                        </motion.span>
-                                    )}
-                                </AnimatePresence>
+
+                                {/* ── Status bar / Legend ── */}
+                                <div className="flex shrink-0 items-center justify-between border-t px-4 py-2"
+                                    style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="h-2 w-2 rounded-full"
+                                                style={{ background: CRIT.border, boxShadow: CRIT.glow }} />
+                                            <span className="text-[8px] text-white/35">
+                                                Ruta Crítica <span className="text-white/20">(Holgura 0)</span>
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="h-2 w-2 rounded-full"
+                                                style={{ background: FLOAT.border, boxShadow: FLOAT.glow }} />
+                                            <span className="text-[8px] text-white/35">Actividades con holgura</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="h-2.5 w-2.5 rotate-45"
+                                                style={{ background: MILESTONE.bg, border: `1px solid ${MILESTONE.border}` }} />
+                                            <span className="text-[8px] text-white/35">Hito</span>
+                                        </div>
+                                    </div>
+                                    {/* Phase indicator */}
+                                    <AnimatePresence mode="wait">
+                                        {phase !== "nominal" ? (
+                                            <motion.span key="recalc"
+                                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                                className="text-[8px] font-semibold" style={{ color: "#EF4444" }}>
+                                                ⟳ Recalculando...
+                                            </motion.span>
+                                        ) : (
+                                            <motion.span key="ok"
+                                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                                className="text-[8px] text-white/20">
+                                                {BASE_TASKS.length} tareas · Días 1–{TOTAL_DAYS}
+                                            </motion.span>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+
                             </div>
-
                         </div>
-                    </motion.div>
+            </motion.div>
 
-                </div>
+        </div>
             </div>
         </section>
     );

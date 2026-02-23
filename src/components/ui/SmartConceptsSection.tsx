@@ -397,7 +397,7 @@ export default function SmartConceptsSection() {
             style={{ height: "130vh" }}
         >
             {/* ── STICKY WRAPPER ── */}
-            <div className="sticky top-0 w-full h-screen flex flex-col justify-center pt-[120px] pb-10 overflow-hidden">
+            <div className="sticky top-0 w-full h-screen flex flex-col justify-center pt-24 md:pt-[120px] pb-10 overflow-hidden">
                 {/* ── ATMOSPHERIC LAYER 1: Multi-zone emerald focal glow ── */}
                 <div
                     className="pointer-events-none absolute inset-0 z-0"
@@ -541,7 +541,7 @@ export default function SmartConceptsSection() {
                     ))}
                 </div>
 
-                <div className="relative z-10 mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 px-6 lg:grid-cols-2 lg:gap-16 lg:px-12">
+                <div className="relative z-10 mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 px-4 md:px-6 lg:grid-cols-2 lg:gap-16 lg:px-12">
 
                     {/* ── LEFT: Animated Mockup ─────────────────────────────── */}
                     <motion.div
@@ -627,7 +627,7 @@ export default function SmartConceptsSection() {
                         {/* Headline */}
                         <div>
                             <h2
-                                className="font-display text-4xl font-extrabold uppercase leading-[1.05] tracking-tight text-white/92 sm:text-4xl lg:text-5xl"
+                                className="font-display text-3xl font-extrabold uppercase leading-[1.05] tracking-tight text-white/92 md:text-4xl lg:text-5xl"
                                 style={{ textShadow: "0 0 60px rgba(0,210,106,0.09), 0 4px 40px rgba(0,0,0,0.95)" }}
                             >
                                 De cero a<br />
