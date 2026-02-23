@@ -121,7 +121,7 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                         }}
                     >
                         <Image
-                            src="/images/render3d.webp"
+                            src="/plataforma/images/render3d.webp"
                             alt="Estructura arquitectónica — base"
                             fill
                             priority
@@ -145,7 +145,7 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                         }}
                     >
                         <Image
-                            src="/images/render3d.webp"
+                            src="/plataforma/images/render3d.webp"
                             alt="Estructura arquitectónica — iluminada"
                             fill
                             priority={false}
@@ -198,7 +198,7 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                     }}
                 >
                     <Image
-                        src="/images/LOGO-BITACORIA-IMPI-TRANSPARENTE-PNG-01.png"
+                        src="/plataforma/images/LOGO-BITACORIA-IMPI-TRANSPARENTE-PNG-01.webp"
                         alt="BitacorIA"
                         width={100}
                         height={32}
