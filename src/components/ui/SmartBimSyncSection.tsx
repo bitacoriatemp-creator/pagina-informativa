@@ -213,7 +213,7 @@ function DataHubMockup() {
     return (
         <div
             ref={ref}
-            className="relative h-[600px] w-full flex items-center justify-center"
+            className="relative h-[390px] md:h-[600px] w-full flex items-center justify-center scale-75 origin-top md:scale-100"
         >
             {/* ConnectorSVG — spans full canvas + animated data packets */}
             <ConnectorSVG inView={inView} />
@@ -267,16 +267,17 @@ export default function SmartBimSyncSection() {
         <section
             id="bim-sync"
             className="relative w-full border-t border-white/5"
-            style={{ backgroundColor: "#050505", height: "150vh" }}
+            style={{ backgroundColor: "#050505", minHeight: "150dvh", height: "auto" }}
         >
             {/* ── STICKY WRAPPER ── */}
-            <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
+            <div className="sticky top-0 min-h-[100dvh] h-auto md:h-screen w-full flex items-center justify-center pt-32 md:pt-0 pb-32 md:pb-0">
 
                 {/* ── ATMOSPHERIC LAYER 1: Deep purple glow ── */}
                 <div
                     className="pointer-events-none absolute inset-0 z-0"
                     style={{
                         backgroundImage: `
+                        radial-gradient(ellipse 80% 40% at 50% 78%, rgba(168,85,247,0.09) 0%, transparent 60%),
                         radial-gradient(ellipse 50% 55% at 72% 50%, rgba(168,85,247,0.08) 0%, transparent 70%),
                         radial-gradient(ellipse 25% 30% at 72% 50%, rgba(168,85,247,0.05) 0%, transparent 45%),
                         radial-gradient(ellipse 70% 40% at 50% 50%, rgba(59,130,246,0.025) 0%, transparent 65%)

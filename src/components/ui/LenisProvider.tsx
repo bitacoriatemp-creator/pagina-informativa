@@ -32,11 +32,13 @@ export default function LenisProvider({
     const lenisRef = useRef<Lenis | null>(null);
 
     useEffect(() => {
+        const isMobile = window.matchMedia("(max-width: 767px)").matches;
+
         const lenis = new Lenis({
-            duration: 1.8,           // heavy inertia — small ticks move less distance
-            easing: appleEase,       // exponential deceleration (Apple-like tail)
-            touchMultiplier: 1.2,    // slightly heavier on mobile too
-            smoothWheel: true,
+            duration: isMobile ? 0.8 : 1.8,   // móvil: rápido y natural; desktop: premium inertia
+            easing: appleEase,
+            touchMultiplier: isMobile ? 0 : 1.2, // móvil: scroll táctil nativo (0 = sin override)
+            smoothWheel: !isMobile,              // wheel smoothing solo en desktop
         });
 
         lenisRef.current = lenis;

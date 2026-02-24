@@ -394,15 +394,16 @@ export default function SmartConceptsSection() {
         <section
             id="smart-concepts"
             className="relative w-full border-t border-white/5 bg-[#050505]"
-            style={{ height: "130vh" }}
+            style={{ minHeight: "130dvh", height: "auto" }}
         >
             {/* ── STICKY WRAPPER ── */}
-            <div className="sticky top-0 w-full h-screen flex flex-col justify-center pt-24 md:pt-[120px] pb-10 overflow-hidden">
+            <div className="sticky top-0 w-full min-h-[100dvh] h-auto md:h-screen flex flex-col justify-center pt-24 md:pt-[120px] pb-32 md:pb-10">
                 {/* ── ATMOSPHERIC LAYER 1: Multi-zone emerald focal glow ── */}
                 <div
                     className="pointer-events-none absolute inset-0 z-0"
                     style={{
                         backgroundImage: `
+                            radial-gradient(ellipse 80% 55% at 50% 15%, rgba(0,210,106,0.07) 0%, transparent 65%),
                             radial-gradient(ellipse 50% 55% at 28% 50%, rgba(0,210,106,0.06) 0%, transparent 65%),
                             radial-gradient(ellipse 30% 35% at 28% 50%, rgba(0,210,106,0.035) 0%, transparent 45%),
                             radial-gradient(ellipse 55% 40% at 72% 45%, rgba(0,210,106,0.025) 0%, transparent 55%),

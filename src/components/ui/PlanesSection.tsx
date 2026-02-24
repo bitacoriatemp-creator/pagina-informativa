@@ -30,7 +30,7 @@ const PLANS = [
         accentColor: "rgba(255,255,255,0.22)",
         glowColor: "rgba(255,255,255,0.06)",
         featured: false,
-        image: "/plataforma/images/plan_free.webp",
+        image: "/images/plan_free.webp",
         features: [
             { title: "Licencia de Aprendizaje", desc: "Ideal para estudiantes y primeros pasos en la metodología BIM." },
             { title: "1 Bitácora Activa", desc: "Un slot único para gestionar tu proyecto de prueba." },
@@ -50,7 +50,7 @@ const PLANS = [
         accentColor: `${BRONZE}70`,
         glowColor: `${BRONZE}14`,
         featured: false,
-        image: "/plataforma/images/plan_theresident.webp",
+        image: "/images/plan_theresident.webp",
         features: [
             { title: "2 Bitácoras Activas", desc: "Gestiona dos obras de forma simultánea con control total." },
             { title: "Múltiples Frentes", desc: "Organiza tu obra por zonas, niveles o etapas constructivas." },
@@ -70,7 +70,7 @@ const PLANS = [
         accentColor: BRONZE,
         glowColor: `${BRONZE}20`,
         featured: true,
-        image: "/plataforma/images/sitemanager.webp",
+        image: "/images/sitemanager.webp",
         features: [
             { title: "5 Bitácoras Activas", desc: "Capacidad robusta diseñada para constructoras y PyMES." },
             { title: "Team Work (3 Usuarios)", desc: "Colaboración en tiempo real entre residente, supervisor y director." },
@@ -94,7 +94,7 @@ const PLANS = [
         accentColor: `${PURPLE}90`,
         glowColor: `${PURPLE}14`,
         featured: false,
-        image: "/plataforma/images/executive_plan.webp",
+        image: "/images/executive_plan.webp",
         features: [
             { title: "Volumen Corporativo", desc: "Despliegues desde 10 bitácoras con capacidad de escalar a nivel Enterprise." },
             { title: "Frentes Ilimitados", desc: "Controla megaproyectos y desarrollos complejos sin restricciones." },
@@ -249,7 +249,7 @@ export default function PlanesSection() {
     return (
         <section
             id="soluciones"
-            className="w-full min-h-screen flex flex-col justify-center snap-center snap-always shrink-0 relative overflow-hidden scroll-mt-24"
+            className="w-full min-h-screen flex flex-col justify-center md:snap-center md:snap-always shrink-0 relative overflow-hidden scroll-mt-24"
             style={{
                 backgroundColor: "#080808",
                 borderTop: "1px solid rgba(255,255,255,0.05)",

@@ -394,15 +394,16 @@ export default function CronogramaSection() {
         <section
             id="smart-calendar"
             className="relative w-full border-t border-white/5"
-            style={{ backgroundColor: "#050505", height: "150vh" }}
+            style={{ backgroundColor: "#050505", minHeight: "150dvh", height: "auto" }}
         >
             {/* ── STICKY WRAPPER ── */}
-            <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center pt-20">
+            <div className="sticky top-0 min-h-[100dvh] h-auto md:h-screen w-full flex items-center justify-center pt-32 md:pt-20 pb-32 md:pb-0">
                 {/* ── ATMOSPHERIC LAYER 1: Multi-zone focal glow ── */}
                 <div
                     className="pointer-events-none absolute inset-0 z-0"
                     style={{
                         backgroundImage: `
+                            radial-gradient(ellipse 90% 40% at 50% 25%, rgba(59,130,246,0.07) 0%, transparent 60%),
                             radial-gradient(ellipse 50% 55% at 72% 48%, rgba(59,130,246,0.07) 0%, transparent 65%),
                             radial-gradient(ellipse 30% 40% at 72% 48%, rgba(59,130,246,0.04) 0%, transparent 45%),
                             radial-gradient(ellipse 80% 30% at 30% 50%, rgba(239,68,68,0.02) 0%, transparent 55%),
@@ -809,9 +810,9 @@ export default function CronogramaSection() {
 
                             </div>
                         </div>
-            </motion.div>
+                    </motion.div>
 
-        </div>
+                </div>
             </div>
         </section>
     );

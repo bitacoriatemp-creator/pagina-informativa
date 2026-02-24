@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Facebook, Instagram, Linkedin, ArrowRight, X } from "lucide-react";
 import Image from "next/image";
 
+import { supabase } from "@/lib/supabase";
+
 /* ══════════════════════════════════════════════════════════════
    FooterSection — Contacto y Legal (con Modales)
    ──────────────────────────────────────────────────────────────
@@ -15,6 +17,7 @@ import Image from "next/image";
 const BRONZE = "#C39767";
 
 type LegalDocument = "faq" | "terms" | "privacy" | null;
+type SubscribeStatus = "idle" | "loading" | "success" | "error";
 
 const LEGAL_CONTENT = {
     faq: {
@@ -121,6 +124,35 @@ const LEGAL_CONTENT = {
 export default function FooterSection() {
     const [activeModal, setActiveModal] = useState<LegalDocument>(null);
 
+    // ── NEWSLETTER STATE ──
+    const [email, setEmail] = useState("");
+    const [status, setStatus] = useState<SubscribeStatus>("idle");
+    const [errorMessage, setErrorMessage] = useState("");
+
+    const handleSubscribe = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email.trim()) return;
+        setStatus("loading");
+        setErrorMessage("");
+
+        const { error } = await supabase
+            .from("newsletter")
+            .insert([{ email: email.trim().toLowerCase() }]);
+
+        if (error) {
+            // Postgres unique constraint violation = code 23505
+            if (error.code === "23505" || error.message?.includes("duplicate")) {
+                setErrorMessage("Este correo ya está registrado.");
+            } else {
+                setErrorMessage("Hubo un error al suscribirte. Inténtalo de nuevo.");
+            }
+            setStatus("error");
+        } else {
+            setEmail("");
+            setStatus("success");
+        }
+    };
+
     // Scroll lock implementation correctly placed inside useEffect
     useEffect(() => {
         if (typeof window === "undefined") return;
@@ -159,7 +191,7 @@ export default function FooterSection() {
                         <div className="mb-6 flex items-center">
                             {/* ENLARGED LOGO (changed h-10 to h-24 with dynamic width wrapper) */}
                             <Image
-                                src="/plataforma/images/LOGO-BITACORIA-IMPI-TRANSPARENTE-PNG-01.webp"
+                                src="/images/LOGO-BITACORIA-IMPI-TRANSPARENTE-PNG-01.webp"
                                 alt="BitacorIA"
                                 width={240}
                                 height={96}
@@ -170,22 +202,56 @@ export default function FooterSection() {
                             Suscríbete para recibir actualizaciones de la plataforma.
                         </p>
 
-                        {/* Newsletter Input */}
-                        <form className="relative flex w-full max-w-sm items-center" onSubmit={(e) => e.preventDefault()}>
-                            <input
-                                type="email"
-                                placeholder="tu@email.com"
-                                className="w-full rounded-xl bg-white/5 py-3 pl-4 pr-12 text-[13px] text-white/90 placeholder-white/30 outline-none transition-colors focus:bg-white/[0.07] focus:ring-1 focus:ring-[#C39767]/50"
-                                style={{ border: "1px solid rgba(255, 255, 255, 0.08)" }}
-                            />
-                            <button
-                                type="submit"
-                                aria-label="Suscribirse"
-                                className="absolute right-1.5 top-1.5 bottom-1.5 flex w-9 items-center justify-center rounded-lg bg-white/10 text-white/50 transition-colors hover:bg-[#C39767]/20 hover:text-[#e8b97a]"
-                            >
-                                <ArrowRight size={14} strokeWidth={2.5} />
-                            </button>
-                        </form>
+                        {/* Newsletter Form */}
+                        {status === "success" ? (
+                            <div className="flex items-center gap-2.5 rounded-xl bg-green-500/10 border border-green-500/20 px-4 py-3">
+                                <span className="text-green-400 text-lg">✓</span>
+                                <p className="text-[13px] text-green-400 font-medium">
+                                    ¡Gracias por suscribirte a las actualizaciones!
+                                </p>
+                            </div>
+                        ) : (
+                            <div>
+                                <form
+                                    className="relative flex w-full max-w-sm items-center"
+                                    onSubmit={handleSubscribe}
+                                >
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="tu@email.com"
+                                        required
+                                        disabled={status === "loading"}
+                                        className="w-full rounded-xl bg-white/5 py-3 pl-4 pr-12 text-[13px] text-white/90 placeholder-white/30 outline-none transition-colors focus:bg-white/[0.07] focus:ring-1 focus:ring-[#C39767]/50 disabled:opacity-50"
+                                        style={{ border: "1px solid rgba(255, 255, 255, 0.08)" }}
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={status === "loading"}
+                                        aria-label="Suscribirse"
+                                        className="absolute right-1.5 top-1.5 bottom-1.5 flex w-9 items-center justify-center rounded-lg bg-white/10 text-white/50 transition-colors hover:bg-[#C39767]/20 hover:text-[#e8b97a] disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {status === "loading" ? (
+                                            <svg
+                                                className="animate-spin h-3.5 w-3.5 text-white/40"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                            </svg>
+                                        ) : (
+                                            <ArrowRight size={14} strokeWidth={2.5} />
+                                        )}
+                                    </button>
+                                </form>
+                                {status === "error" && (
+                                    <p className="mt-2 text-[12px] text-red-400">{errorMessage}</p>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* 2. Columna de Contacto */}

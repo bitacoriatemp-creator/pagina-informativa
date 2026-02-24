@@ -52,6 +52,14 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [isHovering, setIsHovering] = useState(false);
     const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    // ── Glow effect state (whole section) ──
+    const [pointer, setPointer] = useState({ x: 0, y: 0, active: false });
+
+    const handlePointerMove = useCallback((e: React.PointerEvent<HTMLElement>) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        setPointer({ x: e.clientX - rect.left, y: e.clientY - rect.top, active: true });
+    }, []);
 
     const handleMouseMove = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
@@ -73,7 +81,19 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
     ].join(", ");
 
     return (
-        <section className="relative min-h-screen overflow-hidden">
+        <section
+            className="relative min-h-screen overflow-hidden"
+            onPointerMove={handlePointerMove}
+            onPointerLeave={() => setPointer(p => ({ ...p, active: false }))}
+        >
+            {/* ── SECCIÓN GLOW — sigue al puntero / dedo en toda la sección ── */}
+            <div
+                className="absolute inset-0 pointer-events-none z-[3] transition-opacity duration-500"
+                style={{
+                    opacity: pointer.active ? 1 : 0,
+                    background: `radial-gradient(circle 280px at ${pointer.x}px ${pointer.y}px, rgba(196,167,125,0.13), transparent 80%)`,
+                }}
+            />
 
             {/* ══════════════════════════════════════════════
                 BACKGROUND LAYERS
@@ -121,7 +141,7 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                         }}
                     >
                         <Image
-                            src="/plataforma/images/render3d.webp"
+                            src="/images/render3d.webp"
                             alt="Estructura arquitectónica — base"
                             fill
                             priority
@@ -145,7 +165,7 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                         }}
                     >
                         <Image
-                            src="/plataforma/images/render3d.webp"
+                            src="/images/render3d.webp"
                             alt="Estructura arquitectónica — iluminada"
                             fill
                             priority={false}
@@ -182,13 +202,13 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                 FROSTED-GLASS NAVBAR
                 ══════════════════════════════════════════════ */}
             <motion.nav
-                className="absolute top-6 left-1/2 z-50 -translate-x-1/2 w-[calc(100%-32px)] md:w-auto"
+                className="absolute top-4 left-0 right-0 z-50 flex justify-center px-4 md:left-1/2 md:right-auto md:top-6 md:px-0 md:-translate-x-1/2"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.6, ease: [0.25, 0.4, 0.25, 1] as const }}
             >
                 <div
-                    className="flex items-center justify-between md:justify-start gap-4 md:gap-8 rounded-full px-5 md:px-8 py-3"
+                    className="flex items-center justify-between md:justify-start gap-3 md:gap-8 rounded-full px-4 py-2.5 md:px-8 md:py-3 w-full md:w-auto"
                     style={{
                         background: "rgba(12, 6, 4, 0.5)",
                         backdropFilter: "blur(16px)",
@@ -198,11 +218,11 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                     }}
                 >
                     <Image
-                        src="/plataforma/images/LOGO-BITACORIA-IMPI-TRANSPARENTE-PNG-01.webp"
+                        src="/images/LOGO-BITACORIA-IMPI-TRANSPARENTE-PNG-01.webp"
                         alt="BitacorIA"
                         width={100}
                         height={32}
-                        className="shrink-0"
+                        className="shrink-0 w-16 md:w-[100px] h-auto"
                         style={{
                             filter:
                                 "brightness(0) invert(1) sepia(1) saturate(0.3) hue-rotate(350deg) brightness(0.85)",
@@ -270,14 +290,76 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                             );
                         })}
                     </div>
-                    <a
-                        href="#contacto"
-                        className="md:hidden font-ui text-[10px] uppercase tracking-widest rounded-full px-4 py-1.5 border"
-                        style={{ color: "rgba(255,255,255,0.6)", borderColor: "rgba(195,151,103,0.3)" }}
+                    {/* ── HAMBURGER BUTTON (solo móvil) ── */}
+                    <button
+                        className="flex md:hidden items-center justify-center w-9 h-9 rounded-full shrink-0 transition-colors"
+                        style={{ background: "rgba(195,151,103,0.1)", border: "1px solid rgba(195,151,103,0.25)" }}
+                        onClick={() => setIsMenuOpen(o => !o)}
+                        aria-label="Abrir menú"
                     >
-                        Contacto
-                    </a>
+                        {isMenuOpen ? (
+                            /* ── X icon ── */
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                <path d="M1 1l12 12M13 1L1 13" stroke="#c39767" strokeWidth="1.8" strokeLinecap="round" />
+                            </svg>
+                        ) : (
+                            /* ── Hamburger icon ── */
+                            <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+                                <path d="M0 1h16M0 6h16M0 11h16" stroke="#c39767" strokeWidth="1.6" strokeLinecap="round" />
+                            </svg>
+                        )}
+                    </button>
                 </div>
+
+                {/* ── MOBILE DROPDOWN MENU ── */}
+                {isMenuOpen && (
+                    <div
+                        className="absolute top-full left-0 right-0 mt-3 md:hidden rounded-2xl overflow-hidden"
+                        style={{
+                            background: "rgba(8, 4, 2, 0.92)",
+                            backdropFilter: "blur(20px)",
+                            WebkitBackdropFilter: "blur(20px)",
+                            border: "1px solid rgba(195,151,103,0.15)",
+                            boxShadow: "0 16px 40px rgba(0,0,0,0.6)",
+                        }}
+                    >
+                        <nav className="flex flex-col py-4">
+                            {NAV_LINKS.map((link) => {
+                                const baseClass = "w-full text-left font-ui text-xs uppercase tracking-widest px-6 py-3.5 transition-colors duration-200 border-b border-white/[0.04] last:border-0";
+                                const style = { color: "rgba(255,255,255,0.55)" };
+
+                                if (link.href === "#quienes") {
+                                    return (
+                                        <button key={link.href}
+                                            className={baseClass} style={style}
+                                            onClick={() => { onOpenQuienesSomos(); setIsMenuOpen(false); }}
+                                        >
+                                            {link.label}
+                                        </button>
+                                    );
+                                }
+                                if (link.href === "#como-funciona") {
+                                    return (
+                                        <button key={link.href}
+                                            className={baseClass} style={style}
+                                            onClick={() => { setIsHowItWorksOpen(true); setIsMenuOpen(false); }}
+                                        >
+                                            {link.label}
+                                        </button>
+                                    );
+                                }
+                                return (
+                                    <a key={link.href} href={link.href}
+                                        className={baseClass} style={style}
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        {link.label}
+                                    </a>
+                                );
+                            })}
+                        </nav>
+                    </div>
+                )}
             </motion.nav>
 
             {/* ══════════════════════════════════════════════
