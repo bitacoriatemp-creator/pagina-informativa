@@ -1,12 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // basePath requerido: la app se sirve en bitacoria.com/plataforma
+    // La app se sirve en bitacoria.com/plataforma
     basePath: process.env.NODE_ENV === 'production' ? '/plataforma' : '',
-    // Con basePath, el optimizador de next/image usa /plataforma/_next/image
-    // que SÍ funciona en Vercel. NO usar unoptimized:true con basePath porque
-    // eso genera /plataforma/images/*.webp que da 404 (public/ sirve desde raíz).
+    // En Next.js 14, public/ TAMBIÉN se sirve bajo el basePath.
+    // unoptimized:true hace que <Image src="/images/x.webp"> genere
+    // <img src="/plataforma/images/x.webp"> — ruta correcta en producción.
     images: {
-        remotePatterns: [],
+        unoptimized: true,
     },
 };
 
