@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
@@ -151,16 +152,23 @@ function PlanCard({ plan, index }: { plan: typeof PLANS[number]; index: number }
                 }}
             >
                 {/* Artwork — z-0 sits above card bg, below z-10 text; mask fades leftward */}
-                <img
-                    src={plan.image}
-                    alt=""
+                <div
                     aria-hidden="true"
-                    className="absolute bottom-0 right-0 w-full h-auto max-h-[70%] object-cover object-bottom mix-blend-screen opacity-40 z-0 pointer-events-none"
+                    className="absolute bottom-0 right-0 w-full max-h-[70%] h-48 z-0 pointer-events-none"
                     style={{
                         maskImage: "linear-gradient(to top, white 40%, transparent 100%)",
                         WebkitMaskImage: "linear-gradient(to top, white 40%, transparent 100%)",
+                        opacity: 0.4,
+                        mixBlendMode: "screen",
                     }}
-                />
+                >
+                    <Image
+                        src={plan.image}
+                        alt=""
+                        fill
+                        className="object-cover object-bottom"
+                    />
+                </div>
 
                 {/* All text content above image + gradient */}
                 <div className="relative z-10 flex flex-col h-full">
