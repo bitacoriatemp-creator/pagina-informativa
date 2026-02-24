@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { assetPath } from "@/lib/assetPath";
 import { ArrowRight } from "lucide-react";
 
 
@@ -141,7 +142,7 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                         }}
                     >
                         <Image
-                            src="/images/render3d.webp"
+                            src={assetPath("/images/render3d.webp")}
                             alt="Estructura arquitectónica — base"
                             fill
                             priority
@@ -165,7 +166,7 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                         }}
                     >
                         <Image
-                            src="/images/render3d.webp"
+                            src={assetPath("/images/render3d.webp")}
                             alt="Estructura arquitectónica — iluminada"
                             fill
                             priority={false}
@@ -218,7 +219,7 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                     }}
                 >
                     <Image
-                        src="/images/logo-bitacoria.webp"
+                        src={assetPath("/images/logo-bitacoria.webp")}
                         alt="BitacorIA"
                         width={100}
                         height={32}

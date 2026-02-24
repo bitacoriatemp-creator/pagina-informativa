@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import { assetPath } from "@/lib/assetPath";
 
 /* ══════════════════════════════════════════════════════════════
    PlanesSection — Compact Premium Dark Pricing Grid
@@ -31,7 +32,7 @@ const PLANS = [
         accentColor: "rgba(255,255,255,0.22)",
         glowColor: "rgba(255,255,255,0.06)",
         featured: false,
-        image: "/images/plan_free.webp",
+        image: assetPath("/images/plan_free.webp"),
         features: [
             { title: "Licencia de Aprendizaje", desc: "Ideal para estudiantes y primeros pasos en la metodología BIM." },
             { title: "1 Bitácora Activa", desc: "Un slot único para gestionar tu proyecto de prueba." },
@@ -51,7 +52,7 @@ const PLANS = [
         accentColor: `${BRONZE}70`,
         glowColor: `${BRONZE}14`,
         featured: false,
-        image: "/images/plan_theresident.webp",
+        image: assetPath("/images/plan_theresident.webp"),
         features: [
             { title: "2 Bitácoras Activas", desc: "Gestiona dos obras de forma simultánea con control total." },
             { title: "Múltiples Frentes", desc: "Organiza tu obra por zonas, niveles o etapas constructivas." },
@@ -71,7 +72,7 @@ const PLANS = [
         accentColor: BRONZE,
         glowColor: `${BRONZE}20`,
         featured: true,
-        image: "/images/sitemanager.webp",
+        image: assetPath("/images/sitemanager.webp"),
         features: [
             { title: "5 Bitácoras Activas", desc: "Capacidad robusta diseñada para constructoras y PyMES." },
             { title: "Team Work (3 Usuarios)", desc: "Colaboración en tiempo real entre residente, supervisor y director." },
@@ -95,7 +96,7 @@ const PLANS = [
         accentColor: `${PURPLE}90`,
         glowColor: `${PURPLE}14`,
         featured: false,
-        image: "/images/executive_plan.webp",
+        image: assetPath("/images/executive_plan.webp"),
         features: [
             { title: "Volumen Corporativo", desc: "Despliegues desde 10 bitácoras con capacidad de escalar a nivel Enterprise." },
             { title: "Frentes Ilimitados", desc: "Controla megaproyectos y desarrollos complejos sin restricciones." },
