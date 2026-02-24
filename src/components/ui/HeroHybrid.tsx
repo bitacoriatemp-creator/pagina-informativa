@@ -218,7 +218,7 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                     }}
                 >
                     <Image
-                        src="/images/LOGO-BITACORIA-IMPI-TRANSPARENTE-PNG-01.webp"
+                        src="/images/logo-bitacoria.webp"
                         alt="BitacorIA"
                         width={100}
                         height={32}

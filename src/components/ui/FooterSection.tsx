@@ -191,7 +191,7 @@ export default function FooterSection() {
                         <div className="mb-6 flex items-center">
                             {/* ENLARGED LOGO (changed h-10 to h-24 with dynamic width wrapper) */}
                             <Image
-                                src="/images/LOGO-BITACORIA-IMPI-TRANSPARENTE-PNG-01.webp"
+                                src="/images/logo-bitacoria.webp"
                                 alt="BitacorIA"
                                 width={240}
                                 height={96}
