@@ -36,7 +36,7 @@ const LEGAL_CONTENT = {
                 </div>
                 <div>
                     <h5 className="font-bold text-white mb-1">¿BitacorIA utiliza Inteligencia Artificial generativa?</h5>
-                    <p>No somos un "chatbot" ni una IA conversacional abierta. Nuestra tecnología, conocida como "Smart Concepts", es un potente configurador guiado y estructurado basado en millones de datos históricos de construcción. Funciona recomendando los catálogos y conceptos correctos para cada etapa de tu obra de manera predecible y determinista, asegurando que tus residentes llenen la bitácora de forma técnica y estandarizada, sin riesgo de alucinaciones o errores de captura libre.</p>
+                    <p>No somos un &quot;chatbot&quot; ni una IA conversacional abierta. Nuestra tecnología, conocida como &quot;Smart Concepts&quot;, es un potente configurador guiado y estructurado basado en millones de datos históricos de construcción. Funciona recomendando los catálogos y conceptos correctos para cada etapa de tu obra de manera predecible y determinista, asegurando que tus residentes llenen la bitácora de forma técnica y estandarizada, sin riesgo de alucinaciones o errores de captura libre.</p>
                 </div>
                 <div>
                     <h5 className="font-bold text-white mb-1">¿Puedo invitar a subcontratistas y al cliente final a la misma bitácora?</h5>
@@ -149,22 +149,24 @@ export default function FooterSection() {
     // ── SCROLL LOCK: Freeze Lenis + body overflow when any modal is open ──
     useEffect(() => {
         if (typeof window === "undefined") return;
+        // Copy ref to local variable so the cleanup always references the same instance
+        const lenis = lenisRef.current;
 
         if (activeModal) {
             // 1. Stop Lenis so it doesn't swallow wheel/touch events
-            lenisRef.current?.stop();
+            lenis?.stop();
             // 2. Also lock native body scroll as a fallback
             document.body.style.overflow = "hidden";
         } else {
             // 1. Re-enable Lenis smooth scrolling
-            lenisRef.current?.start();
+            lenis?.start();
             // 2. Restore native body scroll
             document.body.style.overflow = "unset";
         }
 
         // Cleanup on unmount or on modal change
         return () => {
-            lenisRef.current?.start();
+            lenis?.start();
             document.body.style.overflow = "unset";
         };
     }, [activeModal, lenisRef]);
