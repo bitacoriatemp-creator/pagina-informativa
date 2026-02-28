@@ -12,6 +12,7 @@ import { assetPath } from "@/lib/assetPath";
 
 const BRONZE = "#C39767";
 const PURPLE = "#A855F7";
+const GOLD = "#C5A880";   // muted crema/dorado — subtle premium accent
 
 const cardVariants = {
     hidden: { opacity: 0, y: 32 },
@@ -23,6 +24,7 @@ const cardVariants = {
 };
 
 const PLANS = [
+    /* ─── 1. DRAFT ─────────────────────────────────────────── */
     {
         id: "draft",
         title: "DRAFT",
@@ -31,6 +33,7 @@ const PLANS = [
         priceSuffix: "MXN",
         accentColor: "rgba(255,255,255,0.22)",
         glowColor: "rgba(255,255,255,0.06)",
+        checkColor: "rgba(255,255,255,0.40)",
         featured: false,
         image: assetPath("/images/plan_free.webp"),
         features: [
@@ -42,15 +45,19 @@ const PLANS = [
         ],
         cta: "Empezar Gratis",
         note: null,
+        dualCta: false,
     },
+
+    /* ─── 2. THE RESIDENT ───────────────────────────────────── */
     {
         id: "resident",
         title: "THE RESIDENT",
         subtitle: "Para Arquitectos e Ingenieros Independientes.",
-        price: "$1,699",
+        price: "$2,499",
         priceSuffix: "MXN / mes",
         accentColor: `${BRONZE}70`,
         glowColor: `${BRONZE}14`,
+        checkColor: BRONZE,
         featured: false,
         image: assetPath("/images/plan_theresident.webp"),
         features: [
@@ -58,19 +65,23 @@ const PLANS = [
             { title: "Múltiples Frentes", desc: "Organiza tu obra por zonas, niveles o etapas constructivas." },
             { title: "Single User Pro", desc: "Acceso exclusivo y centralizado para el ingeniero residente." },
             { title: "Smart Calendar & Concepts", desc: "Desbloquea la IA predictiva para cronogramas y catálogos de conceptos." },
-            { title: "Reportes Profesionales", desc: "Exportación de PDFs limpios, listos para firma y sin marcas de agua." },
+            { title: "Reportes Profesionales", desc: "Exportación de PDFs limpios, listos para firmar, sin marcas de agua." },
         ],
         cta: "Comenzar",
         note: null,
+        dualCta: false,
     },
+
+    /* ─── 3. THE SITE MANAGER (⭐ FEATURED) ─────────────────── */
     {
         id: "site-manager",
         title: "THE SITE MANAGER",
         subtitle: "El estándar para Constructores y PyMES.",
-        price: "$2,299",
+        price: "$3,899",
         priceSuffix: "MXN / mes",
-        accentColor: BRONZE,
-        glowColor: `${BRONZE}20`,
+        accentColor: `${GOLD}55`,   // low-opacity border — elegant, not neon
+        glowColor: `rgba(197,168,128,0.14)`,
+        checkColor: `${GOLD}CC`,
         featured: true,
         image: assetPath("/images/sitemanager.webp"),
         features: [
@@ -82,19 +93,23 @@ const PLANS = [
         ],
         cta: "Comenzar",
         note: {
-            label: "¿Pagar por obra?",
+            label: "¿Pago por obra?",
             pill: "LICENCIA ÚNICA DE PROYECTO",
-            detail: "$5,499 MXN · Pago único · 12 meses · 1 obra.",
+            detail: "$8,999 MXN · Pago único · 12 meses · 1 obra.",
         },
+        dualCta: false,
     },
+
+    /* ─── 4. EXECUTIVE PLAN ─────────────────────────────────── */
     {
         id: "executive",
         title: "EXECUTIVE PLAN",
         subtitle: "Control total y escala ilimitada.",
-        price: "$8,999",
+        price: "$12,999",
         priceSuffix: "MXN / mes",
         accentColor: `${PURPLE}90`,
         glowColor: `${PURPLE}14`,
+        checkColor: PURPLE,
         featured: false,
         image: assetPath("/images/executive_plan.webp"),
         features: [
@@ -106,6 +121,7 @@ const PLANS = [
         ],
         cta: "Contactar",
         note: null,
+        dualCta: true,  // shows "Comprar" + "Contactar"
     },
 ] as const;
 
@@ -115,14 +131,14 @@ function PlanCard({ plan, index }: { plan: typeof PLANS[number]; index: number }
 
     return (
         <div className="relative pt-4">
-            {/* Featured badge — sibling of card, outside overflow-hidden */}
+            {/* Featured badge — peer of card, outside overflow-hidden */}
             {plan.featured && (
                 <div
                     className="absolute -top-[1px] left-1/2 -translate-x-1/2 z-20 whitespace-nowrap rounded-full px-3 py-[3px] text-[9px] font-bold uppercase tracking-[0.22em]"
                     style={{
-                        background: "#151515",
-                        border: `1px solid ${BRONZE}55`,
-                        color: BRONZE,
+                        background: "#141210",
+                        border: `1px solid ${GOLD}40`,
+                        color: `${GOLD}CC`,   // pastel/crema — not electric
                     }}
                 >
                     Recomendado
@@ -139,20 +155,20 @@ function PlanCard({ plan, index }: { plan: typeof PLANS[number]; index: number }
                 onMouseLeave={() => setHovered(false)}
                 className="relative overflow-hidden flex flex-col rounded-2xl p-5 min-h-[520px]"
                 style={{
-                    backgroundColor: plan.featured ? "#151515" : "#0f0f0f",
+                    backgroundColor: plan.featured ? "#121008" : "#0f0f0f",
                     border: (hovered || plan.featured)
                         ? `1px solid ${plan.accentColor}`
                         : "1px solid rgba(255,255,255,0.07)",
                     boxShadow: hovered
                         ? `0 0 28px ${plan.glowColor}, 0 16px 48px rgba(0,0,0,0.6)`
                         : plan.featured
-                            ? `0 0 18px ${plan.glowColor}, 0 12px 40px rgba(0,0,0,0.5)`
+                            ? `0 0 22px ${plan.glowColor}, 0 12px 40px rgba(0,0,0,0.5)`
                             : "0 6px 24px rgba(0,0,0,0.4)",
                     transform: hovered ? "translateY(-4px)" : "translateY(0)",
                     transition: "transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease",
                 }}
             >
-                {/* Artwork — z-0 sits above card bg, below z-10 text; mask fades leftward */}
+                {/* Background artwork */}
                 <div
                     aria-hidden="true"
                     className="absolute bottom-0 right-0 w-full max-h-[70%] h-48 z-0 pointer-events-none"
@@ -163,21 +179,14 @@ function PlanCard({ plan, index }: { plan: typeof PLANS[number]; index: number }
                         mixBlendMode: "screen",
                     }}
                 >
-                    <Image
-                        src={plan.image}
-                        alt=""
-                        fill
-                        className="object-cover object-bottom"
-                    />
+                    <Image src={plan.image} alt="" fill className="object-cover object-bottom" />
                 </div>
 
-                {/* All text content above image + gradient */}
+                {/* All content above image */}
                 <div className="relative z-10 flex flex-col h-full">
 
                     {/* Title */}
-                    <h3
-                        className="mb-0.5 font-display text-base font-extrabold uppercase leading-tight tracking-tight text-white/90"
-                    >
+                    <h3 className="mb-0.5 font-display text-base font-extrabold uppercase leading-tight tracking-tight text-white/90">
                         {plan.title}
                     </h3>
 
@@ -189,7 +198,10 @@ function PlanCard({ plan, index }: { plan: typeof PLANS[number]; index: number }
                         className="mb-4 border-b pb-4"
                         style={{ borderColor: "rgba(255,255,255,0.05)" }}
                     >
-                        <span className="font-display text-2xl font-extrabold tracking-tight text-white/92">
+                        <span
+                            className="font-display text-2xl font-extrabold tracking-tight"
+                            style={{ color: "rgba(255,255,255,0.92)" }}
+                        >
                             {plan.price}
                         </span>
                         <span className="ml-1 text-[10px] text-white/28">{plan.priceSuffix}</span>
@@ -203,7 +215,7 @@ function PlanCard({ plan, index }: { plan: typeof PLANS[number]; index: number }
                                     size={12}
                                     strokeWidth={2.5}
                                     className="mt-[2px] shrink-0"
-                                    style={{ color: plan.accentColor }}
+                                    style={{ color: plan.checkColor }}
                                 />
                                 <div>
                                     <p className="text-[11.5px] font-semibold leading-snug text-white/80">{f.title}</p>
@@ -215,20 +227,23 @@ function PlanCard({ plan, index }: { plan: typeof PLANS[number]; index: number }
 
                     <div className="flex-1" />
 
-                    {/* Bottom-anchored wrapper — note + CTA always at card base */}
+                    {/* Bottom-anchored wrapper */}
                     <div className="mt-auto">
 
-                        {/* Note box (card 3 only) */}
+                        {/* Licencia Única note — Site Manager only */}
                         {plan.note && (
                             <div
                                 className="mb-4 rounded-lg p-3"
                                 style={{
-                                    background: `${BRONZE}08`,
-                                    border: `1px solid ${BRONZE}22`,
+                                    background: `${GOLD}08`,
+                                    border: `1px solid ${GOLD}22`,
                                 }}
                             >
                                 <p className="mb-0.5 text-[9px] text-white/25">{plan.note.label}</p>
-                                <p className="mb-0.5 text-[9.5px] font-bold uppercase tracking-widest" style={{ color: `${BRONZE}BB` }}>
+                                <p
+                                    className="mb-0.5 text-[9.5px] font-bold uppercase tracking-widest"
+                                    style={{ color: `${GOLD}BB` }}
+                                >
                                     {plan.note.pill}
                                 </p>
                                 <p className="text-[9.5px] leading-snug text-white/32">{plan.note.detail}</p>
@@ -236,18 +251,54 @@ function PlanCard({ plan, index }: { plan: typeof PLANS[number]; index: number }
                         )}
 
                         {/* CTA */}
-                        <button
-                            className={
-                                plan.featured
-                                    ? "w-full py-3 mt-auto rounded-lg bg-amber-950/40 border border-amber-700/50 text-amber-500 font-bold shadow-[0_0_15px_rgba(120,53,15,0.3)] hover:bg-amber-900/60 hover:border-amber-500 hover:text-amber-400 hover:shadow-[0_0_20px_rgba(180,83,9,0.4)] hover:scale-[1.02] transition-all duration-300 z-20"
-                                    : "w-full py-3 mt-auto rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 font-semibold hover:bg-amber-950/20 hover:border-amber-800/50 hover:text-amber-600 transition-all duration-300 z-20"
-                            }
-                        >
-                            {plan.cta}
-                        </button>
-                    </div> {/* end mt-auto */}
+                        {plan.dualCta ? (
+                            /* Dual buttons — Executive Plan */
+                            <div className="flex gap-2">
+                                <button
+                                    className="relative flex-1 py-3 rounded-lg font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95"
+                                    style={{
+                                        background: "linear-gradient(180deg, #442485 0%, #201140 100%)",
+                                        border: `1px solid ${PURPLE}90`,
+                                        color: "#f3e8ff",
+                                        boxShadow: `inset 0 1px 1px rgba(255,255,255,0.2), 0 6px 15px rgba(168,85,247,0.25)`,
+                                    }}
+                                >
+                                    Comenzar
+                                </button>
+                                <button
+                                    className="relative flex-1 py-3 rounded-lg font-semibold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-125 active:scale-95"
+                                    style={{
+                                        background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
+                                        border: "1px solid rgba(255,255,255,0.15)",
+                                        color: "rgba(255,255,255,0.85)",
+                                        boxShadow: "inset 0 1px 1px rgba(255,255,255,0.05), 0 6px 15px rgba(0,0,0,0.5)",
+                                    }}
+                                >
+                                    Contactar
+                                </button>
+                            </div>
+                        ) : (
+                            /* Single CTA */
+                            <button
+                                className="relative w-full py-3 rounded-lg font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95"
+                                style={plan.featured ? {
+                                    background: "linear-gradient(180deg, #322511 0%, #181208 100%)",
+                                    border: `1px solid ${GOLD}90`,
+                                    color: GOLD,
+                                    boxShadow: `inset 0 1px 1px rgba(255,255,255,0.15), 0 6px 20px rgba(197,168,128,0.25)`,
+                                } : {
+                                    background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
+                                    border: "1px solid rgba(255,255,255,0.15)",
+                                    color: "rgba(255,255,255,0.85)",
+                                    boxShadow: "inset 0 1px 1px rgba(255,255,255,0.05), 0 6px 15px rgba(0,0,0,0.6)",
+                                }}
+                            >
+                                {plan.cta}
+                            </button>
+                        )}
 
-                </div> {/* end z-10 text wrapper */}
+                    </div>
+                </div>
             </motion.div>
         </div>
     );
@@ -262,7 +313,6 @@ export default function PlanesSection() {
             style={{
                 backgroundColor: "#080808",
                 borderTop: "1px solid rgba(255,255,255,0.05)",
-                /* isolation: new stacking context so z-20 sticky island doesn't bleed in */
                 isolation: "isolate",
             }}
         >
@@ -290,7 +340,7 @@ export default function PlanesSection() {
                     <div className="mb-4 inline-flex items-center gap-2.5">
                         <span className="h-px w-8" style={{ background: `linear-gradient(to right, transparent, ${BRONZE}50)` }} />
                         <span className="font-ui text-[10px] font-semibold uppercase tracking-[0.32em]" style={{ color: `${BRONZE}65` }}>
-                            Planes & Precios
+                            Planes &amp; Precios
                         </span>
                         <span className="h-px w-8" style={{ background: `linear-gradient(to left, transparent, ${BRONZE}50)` }} />
                     </div>
@@ -306,12 +356,12 @@ export default function PlanesSection() {
                         </span>
                     </h2>
                     <p className="mx-auto mt-4 max-w-md text-[13px] leading-relaxed text-white/32">
-                        Desde estudiantes hasta constructoras. El nivel exact para tu escala.
+                        Desde estudiantes hasta constructoras. El nivel exacto para tu escala.
                     </p>
                 </motion.div>
 
-                {/* Cards grid */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {/* 4-column card grid */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {PLANS.map((plan, i) => (
                         <PlanCard key={plan.id} plan={plan} index={i} />
                     ))}

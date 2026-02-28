@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Facebook, Instagram, Linkedin, ArrowRight, X } from "lucide-react";
 import Image from "next/image";
 import { assetPath } from "@/lib/assetPath";
+import { useLenis } from "@/components/ui/LenisProvider";
 
 import { supabase } from "@/lib/supabase";
 
@@ -24,18 +25,18 @@ const LEGAL_CONTENT = {
     faq: {
         title: "Preguntas Frecuentes",
         body: (
-            <div className="space-y-6 text-[13px] leading-relaxed text-white/70">
+            <div className="flex flex-col gap-8 text-[13px] leading-relaxed text-white/70">
                 <div>
                     <h5 className="font-bold text-white mb-1">¿Qué es BitacorIA y cómo beneficia a mi constructora?</h5>
-                    <p>BitacorIA es la primera plataforma de gestión inteligente diseñada específicamente para el sector de la construcción en América Latina. Moderniza el control de obra tradicional reemplazando el papel por procesos digitales ágiles, integrando firma electrónica avanzada (respaldada por la NOM-151) y procesamiento de lenguaje natural (IA) para detectar anomalías antes de que cuesten dinero.</p>
+                    <p>BitacorIA es la primera plataforma de gestión estructurada diseñada específicamente para el sector de la construcción en América Latina. Moderniza el control de obra tradicional reemplazando el papel por procesos digitales ágiles e integrando firma electrónica avanzada (respaldada por la NOM-151), optimizando el tiempo de captura táctica de los residentes de obra.</p>
                 </div>
                 <div>
                     <h5 className="font-bold text-white mb-1">¿Mi información de obra está segura y es legalmente vinculante?</h5>
                     <p>Absolutamente. Toda la información, desde los reportes fotográficos hasta los presupuestos, está encriptada de extremo a extremo y alojada en servidores con redundancia geográfica. Las bitácoras firmadas digitalmente tienen pleno sustento legal en México de acuerdo a la Ley de Firma Electrónica Avanzada y la NOM-151, generando sellos de tiempo y constancias de conservación irrefutables ante peritajes.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">¿Cómo funciona la lectura predictiva de la Inteligencia Artificial?</h5>
-                    <p>Nuestra IA, conocida como &quot;Smart Concepts&quot;, lee diariamente las entradas de los residentes de obra. Su base de conocimiento está entrenada con miles de parámetros de construcción. Es capaz de correlacionar retrasos en suministros climáticos con la ruta crítica del cronograma, y enviar alertas automáticas a los directores de proyecto si detecta patrones de riesgo (ej. vaciados de concreto fuera de norma). El usuario controla qué nivel de intervención tiene la IA.</p>
+                    <h5 className="font-bold text-white mb-1">¿BitacorIA utiliza Inteligencia Artificial generativa?</h5>
+                    <p>No somos un "chatbot" ni una IA conversacional abierta. Nuestra tecnología, conocida como "Smart Concepts", es un potente configurador guiado y estructurado basado en millones de datos históricos de construcción. Funciona recomendando los catálogos y conceptos correctos para cada etapa de tu obra de manera predecible y determinista, asegurando que tus residentes llenen la bitácora de forma técnica y estandarizada, sin riesgo de alucinaciones o errores de captura libre.</p>
                 </div>
                 <div>
                     <h5 className="font-bold text-white mb-1">¿Puedo invitar a subcontratistas y al cliente final a la misma bitácora?</h5>
@@ -43,7 +44,7 @@ const LEGAL_CONTENT = {
                 </div>
                 <div>
                     <h5 className="font-bold text-white mb-1">¿De qué trata el protocolo &quot;Smart BIM Sync&quot;?</h5>
-                    <p>Smart BIM Sync es nuestro protocolo insignia para empresas avanzadas. Permite enlazar las entradas de la bitácora física directamente con elementos de modelos 3D (Revit, Navisworks o IFC). Si se reporta una desviación estructural en campo, el modelo digital se actualiza visualmente en rojo para los coordinadores VDC en la oficina, acortando la brecha entre el modelo teórico y la realidad construida.</p>
+                    <p>Smart BIM Sync es nuestro ecosistema avanzado de sincronización de proyectos. En lugar de limitarse a modelos 3D, nuestra tecnología conecta el avance físico real de la obra (registrado en la bitácora) directamente con el presupuesto y el cronograma financiero del proyecto. Esto permite a los gerentes de proyecto y supervisores comparar la planeación teórica contra la realidad ejecutada en tiempo récord, evitando sobrecostos y desviaciones de cronograma de forma predictiva.</p>
                 </div>
                 <div>
                     <h5 className="font-bold text-white mb-1">¿Qué pasa con mis datos si decido cancelar la suscripción?</h5>
@@ -55,33 +56,26 @@ const LEGAL_CONTENT = {
     terms: {
         title: "Términos y Condiciones",
         body: (
-            <div className="space-y-6 text-[13px] leading-relaxed text-white/70">
-                <p><strong className="text-white">Última actualización:</strong> Octubre 2026</p>
-                <p>Bienvenido a BitacorIA (&quot;La Plataforma&quot;). Estos Términos y Condiciones (&quot;Términos&quot;) constituyen un contrato legalmente vinculante entre el usuario (y su empresa constructora) y Moltbook S.A.P.I de C.V., desarrolladora de BitacorIA. Al crear una cuenta, usted declara tener la autoridad legal para comprometer a la entidad que representa. Si no acepta estos Términos, abandone el uso de la Plataforma inmediatamente.</p>
-
+            <div className="flex flex-col gap-8 text-[13px] leading-relaxed text-white/70">
+                <div>
+                    <p><strong className="text-white">Última actualización:</strong> Febrero 2026</p>
+                    <p className="mt-2">Bienvenido a BitacorIA (&quot;La Plataforma&quot;). Estos Términos y Condiciones (&quot;Términos&quot;) constituyen un contrato legalmente vinculante entre el usuario (y su empresa constructora) y BitacorIA. Al crear una cuenta, usted declara tener la autoridad legal para comprometer a la entidad que representa. Si no acepta estos Términos, abandone el uso de la Plataforma inmediatamente.</p>
+                </div>
                 <div>
                     <h5 className="font-bold text-white mb-1">1. Objeto del Servicio y Licenciamiento</h5>
-                    <p>Moltbook otorga al cliente una licencia limitada, no exclusiva, intransferible y revocable, bajo la modalidad de Software como Servicio (SaaS), para acceder remotamente a la plataforma BitacorIA y utilizar sus herramientas de administración, captura fotográfica estructural, bitácoras normativas e integración BIM, exclusivamente para la duración de su plan de facturación activo.</p>
+                    <p>BitacorIA otorga al cliente una licencia limitada, no exclusiva, intransferible y revocable, bajo la modalidad de Software como Servicio (SaaS), para acceder a la plataforma y utilizar sus herramientas de administración de obra, control de costos, cronogramas y asistencia por Inteligencia Artificial, exclusivamente para la duración de su plan de facturación activo.</p>
                 </div>
-
                 <div>
-                    <h5 className="font-bold text-white mb-1">2. Disposiciones de Firmas Electrónicas (NOM-151)</h5>
-                    <p>La Plataforma proporciona infraestructura técnica e integraciones API con Proveedores de Certificación Autorizados (PSC) en México para generar sellos de tiempo y recabar Firmas Electrónicas Avanzadas (FIEL/e.firma). El cliente asume total responsabilidad sobre el resguardo de sus claves privadas y la designación formal (ante notario si aplica) de los residentes de obra autorizados a asentar firmas. BitacorIA no actúa como perito ni certificador directo.</p>
+                    <h5 className="font-bold text-white mb-1">2. Inteligencia Artificial, Privacidad y Entrenamiento de Modelos</h5>
+                    <p>Nuestra plataforma utiliza motores de Inteligencia Artificial para el procesamiento de planos, catálogos en PDF y análisis fotográfico. Toda la información capturada por el cliente sigue siendo de su propiedad. Sin embargo, al utilizar el servicio, el cliente otorga a BitacorIA una licencia técnica para procesar, anonimizar y utilizar estos datos con el fin exclusivo de <strong className="text-white">entrenar, refinar y mejorar nuestros modelos de Inteligencia Artificial internos y algoritmos predictivos</strong> (como Smart Concepts y Smart Calendar). Garantizamos estrictamente que su información confidencial <strong className="text-white">nunca</strong> será vendida a terceros, ni será extraída para entrenar modelos de lenguaje públicos o externos a la plataforma.</p>
                 </div>
-
                 <div>
-                    <h5 className="font-bold text-white mb-1">3. Confidencialidad y Propiedad Intelectual</h5>
-                    <p>Toda la información capturada por el cliente (planos, presupuestos, manuales) sigue siendo de su absoluta y exclusiva propiedad. BitacorIA solo obtiene el derecho de procesarlos temporalmente para garantizar la operatividad funcional de la Plataforma. Por nuestra parte, el código fuente, la lógica algorítmica de la Inteligencia Artificial (Smart Concepts), el diseño de interfaz y la marca BitacorIA están protegidos bajo normas internacionales de propiedad intelectual y no pueden ser decodificados bajo ningún motivo por usuarios ni terceros.</p>
+                    <h5 className="font-bold text-white mb-1">3. Disposiciones de Firmas Electrónicas (NOM-151)</h5>
+                    <p>La Plataforma proporciona infraestructura técnica e integraciones para generar sellos de tiempo y recabar Firmas Electrónicas Avanzadas (FIEL/e.firma). El cliente asume total responsabilidad sobre el resguardo de sus claves privadas y la designación formal (ante notario si aplica) de los residentes de obra autorizados a asentar firmas. BitacorIA actúa como proveedor tecnológico, no como perito ni certificador directo.</p>
                 </div>
-
                 <div>
-                    <h5 className="font-bold text-white mb-1">4. Garantías de Disponibilidad (SLA)</h5>
-                    <p>Nos comprometemos, dentro del marco tecnológico posible, a un &quot;uptime&quot; del 99.5% estandarizado, en servidores dedicados. No obstante, al tratarse de herramientas operativas en la nube que dependen de las redes de los operadores de internet local y del clima de obra, la empresa desarrolladora queda indemne respecto a demoras en cargas cuando esto dependa de agentes o compañías de conectividad externas.</p>
-                </div>
-
-                <div>
-                    <h5 className="font-bold text-white mb-1">5. Usos Prohibidos y Suspensión de Cuentas</h5>
-                    <p>El cliente se abstendrá de (a) aplicar ingeniería inversa, manipular o atacar los protocolos criptográficos de la plataforma; (b) proporcionar contraseñas o compartir asientos adquiridos a empresas que no estén dentro de su holding; (c) usar el servicio para subir datos clasificados que caigan en prohibiciones de seguridad nacional. Cualquier infracción da el derecho a Moltbook a la suspensión unilateral o cierre sistemático del proyecto infractor remitiendo notificación oportuna.</p>
+                    <h5 className="font-bold text-white mb-1">4. Disponibilidad del Sistema y Respaldos</h5>
+                    <p>BitacorIA se esfuerza por mantener un &quot;uptime&quot; (tiempo de actividad) del 99.9%. Toda la información y documentos generados en el ecosistema &quot;Smart BIM Sync&quot; cuentan con redundancia en la nube para prevenir pérdida de datos, asegurando que su fuente única de verdad esté siempre disponible.</p>
                 </div>
             </div>
         ),
@@ -89,33 +83,30 @@ const LEGAL_CONTENT = {
     privacy: {
         title: "Aviso de Privacidad",
         body: (
-            <div className="space-y-6 text-[13px] leading-relaxed text-white/70">
-                <p><strong className="text-white">Última actualización:</strong> Octubre 2026</p>
-                <p>En cumplimiento a lo dispuesto por la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (en adelante, &quot;La Ley&quot;) y su Reglamento, BitacorIA (&quot;Nosotros&quot;, Moltbook S.A.P.I. de C.V.) hace de su conocimiento la presente normativa sobre cómo es tratada, protegida y almacenada su información como contratista, residente o supervisor de obra al operar en nuestra infraestructura global.</p>
-
+            <div className="flex flex-col gap-8 text-[13px] leading-relaxed text-white/70">
+                <div>
+                    <p><strong className="text-white">Última actualización:</strong> Febrero 2026</p>
+                    <p className="mt-2">En cumplimiento a lo dispuesto por la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (en adelante, &quot;La Ley&quot;) y su Reglamento, <strong className="text-white">BitacorIA</strong> (&quot;Nosotros&quot; o &quot;La Plataforma&quot;) hace de su conocimiento la presente normativa sobre cómo es tratada, protegida y almacenada su información como contratista, residente, supervisor o director de obra al operar en nuestra infraestructura.</p>
+                </div>
                 <div>
                     <h5 className="font-bold text-white mb-1">I. Datos que Recabamos</h5>
-                    <p>Para la plena ejecución del aplicativo constructivo, recabamos los siguientes datos personales y corporativos: (a) Datos de Identificación (Nombre completo, CURP, RFC de representantes legales para contratos), (b) Datos de Contacto (correos electrónicos, extensiones telefónicas de control), (c) Credenciales de Autenticación, (d) Datos Biométricos, exclusivamente huellas dactilares si su corporativo adopta controles de acceso con terminales en terreno operados internamente; y (e) Posición de geolocalización de las entradas fotográficas realizadas vía aplicación móvil en obra remota, para auditar la ejecución de trabajos in-situ.</p>
+                    <p>Para la plena ejecución del aplicativo constructivo, recabamos los siguientes datos personales y corporativos: (a) Datos de Identificación (Nombre completo, cargo, RFC de representantes legales para contratos de suscripción), (b) Datos de Contacto (correos electrónicos institucionales, teléfonos), (c) Credenciales de Autenticación, y (d) <strong className="text-white">Metadatos y Geolocalización</strong>, provenientes exclusivamente de las fotografías y evidencias cargadas a la Bitácora para auditar la ejecución de trabajos in-situ. No recabamos datos biométricos.</p>
                 </div>
-
                 <div>
                     <h5 className="font-bold text-white mb-1">II. Finalidades del Tratamiento</h5>
-                    <p>Los datos arriba mencionados son catalogados de tratamiento primario y necesarios para la obligación y existencia del servicio de BitacorIA; utilizados específicamente para: habilitar acceso al dashboard administrativo, facturación y cobro automático, envío de notificaciones de desviación estructural y retrasos, auditorías internas del flujo de construcción y correlaciones criptográficas en casos de arbitraje legar con sus propios clientes o instancias gubernamentales.</p>
+                    <p>Los datos arriba mencionados son de tratamiento primario y necesarios para la prestación del servicio de BitacorIA. Se utilizan específicamente para: habilitar el acceso al ecosistema &quot;Smart BIM Sync&quot;, facturación y cobro de planes (Draft, Resident, Site Manager, Executive), envío de alertas automáticas sobre desviaciones o retrasos en el cronograma, y la generación de reportes en PDF listos para procesos de auditoría y firma.</p>
                 </div>
-
                 <div>
-                    <h5 className="font-bold text-white mb-1">III. Tratamiento Interno por Inteligencia Artificial</h5>
-                    <p>Los reportes de progreso (&quot;smart concepts&quot;) creados por los usuarios pasan por canalizaciones encriptadas de procesamiento de lenguaje natural de nuestra Inteligencia Artificial, que asiste buscando discrepancias (como faltantes de volúmenes de concreto o acero contra nómina). Estos motores LLMs son instancias internas, en contenedores privados &quot;Zero-Trust&quot;; ninguna IA externa de terceros está entrenando sus redes públicas a expensas de la propiedad intelectual ni de los parámetros privados de su empresa.</p>
+                    <h5 className="font-bold text-white mb-1">III. Tratamiento Interno por Inteligencia Artificial y Entrenamiento de Modelos</h5>
+                    <p>Toda la información ingresada a la plataforma (reportes fotográficos, catálogos de conceptos, interacciones en el chat) es procesada por nuestros motores de Inteligencia Artificial para automatizar la gestión de obra. Al utilizar BitacorIA, el usuario acepta que estos datos sean anonimizados y utilizados con el fin exclusivo de <strong className="text-white">entrenar, refinar y mejorar nuestros propios modelos de lenguaje (LLMs) internos y algoritmos predictivos</strong> (Smart Concepts y Smart Calendar). Estos motores operan en contenedores privados bajo arquitectura &quot;Zero-Trust&quot;. <strong className="text-white">Garantizamos que ninguna IA externa de terceros utilizará su propiedad intelectual para entrenar redes públicas.</strong></p>
                 </div>
-
                 <div>
                     <h5 className="font-bold text-white mb-1">IV. Transferencias a Terceros</h5>
-                    <p>Solo bajo obligación procesal dictaminada y con orden ejecutoria BitacorIA transferirá paquetes de archivos al Poder Judicial de la Federación o fiscalías competentes. Asimismo, para el cumplimiento técnico (facturación y notariado digital) trabajaremos con PACs y Prestadores de Certificación avalados bajo convenio riguroso de no diseminación.</p>
+                    <p>BitacorIA solo transferirá información bajo obligación procesal dictaminada y con orden ejecutoria a las autoridades competentes. Asimismo, para el cumplimiento técnico y fiscal, trabajaremos con Proveedores Autorizados de Certificación (PACs) y servicios de sellado de tiempo (NOM-151) avalados bajo estrictos convenios de confidencialidad y no diseminación.</p>
                 </div>
-
                 <div>
                     <h5 className="font-bold text-white mb-1">V. Ejercicio de los Derechos ARCO</h5>
-                    <p>Usted, o quien funja como Delegado de Privacidad dentro de la empresa cliente, tendrá siempre el derecho al Acceso, Rectificación, Cancelación u Oposición del manejo de estos datos (solicitando portabilidad total si fuera el caso). Deberá iniciar contacto formal con el oficial de datos de BitacorIA apuntando al buzón administrativo en `privacidad@bitacoria.com`, presentando evidencia documentaria legal representativa para que la solicitud surta efecto en no más de veinte días hábiles.</p>
+                    <p>Usted, o quien funja como responsable dentro de la empresa cliente, tendrá siempre el derecho al Acceso, Rectificación, Cancelación u Oposición del manejo de estos datos. Deberá iniciar contacto formal con el oficial de datos de BitacorIA escribiendo a <strong className="text-white">privacidad@bitacoria.com</strong>, presentando acreditación de identidad o representación legal para que la solicitud sea procesada en los plazos que marca La Ley.</p>
                 </div>
             </div>
         ),
@@ -124,6 +115,7 @@ const LEGAL_CONTENT = {
 
 export default function FooterSection() {
     const [activeModal, setActiveModal] = useState<LegalDocument>(null);
+    const lenisRef = useLenis();
 
     // ── NEWSLETTER STATE ──
     const [email, setEmail] = useState("");
@@ -154,23 +146,28 @@ export default function FooterSection() {
         }
     };
 
-    // Scroll lock implementation correctly placed inside useEffect
+    // ── SCROLL LOCK: Freeze Lenis + body overflow when any modal is open ──
     useEffect(() => {
         if (typeof window === "undefined") return;
 
-        // Grab current html/body attributes if we were tracking strict resets,
-        // but for standard scrolling with Lenis, overflow hidden on body is sufficient
         if (activeModal) {
+            // 1. Stop Lenis so it doesn't swallow wheel/touch events
+            lenisRef.current?.stop();
+            // 2. Also lock native body scroll as a fallback
             document.body.style.overflow = "hidden";
         } else {
-            document.body.style.overflow = "auto";
+            // 1. Re-enable Lenis smooth scrolling
+            lenisRef.current?.start();
+            // 2. Restore native body scroll
+            document.body.style.overflow = "unset";
         }
 
         // Cleanup on unmount or on modal change
         return () => {
-            document.body.style.overflow = "auto";
+            lenisRef.current?.start();
+            document.body.style.overflow = "unset";
         };
-    }, [activeModal]);
+    }, [activeModal, lenisRef]);
 
     return (
         <section
@@ -385,42 +382,36 @@ export default function FooterSection() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
-                        style={{
-                            backgroundColor: "rgba(0, 0, 0, 0.6)",
-                            backdropFilter: "blur(12px)",
-                            WebkitBackdropFilter: "blur(12px)",
-                        }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6"
                         onClick={() => setActiveModal(null)}
                     >
-                        {/* Modal Container */}
+                        {/* 2. VENTANA DEL MODAL (Aquí está la magia del scroll interno) */}
+                        {/* DEBE TENER: max-h-[85vh] y overflow-y-auto */}
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="relative flex w-full max-w-3xl flex-col rounded-2xl border border-white/10 bg-[#0c0604] shadow-2xl overflow-hidden"
-                            onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside
-                            style={{
-                                boxShadow: "0 0 0 1px rgba(255,255,255,0.05), 0 30px 60px rgba(0,0,0,0.5)",
-                            }}
+                            className="relative w-full max-w-3xl max-h-[85vh] overflow-y-auto bg-[#0a0a0a] border border-[#333] rounded-2xl p-6 sm:p-10 shadow-2xl overscroll-contain"
+                            onClick={(e) => e.stopPropagation()}
+                            data-lenis-prevent
                         >
-                            {/* Header */}
-                            <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 shrink-0">
-                                <h3 className="font-display text-lg font-bold tracking-wide text-white">
-                                    {LEGAL_CONTENT[activeModal].title}
-                                </h3>
-                                <button
-                                    onClick={() => setActiveModal(null)}
-                                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/50 transition-colors hover:bg-white/10 hover:text-white flex-shrink-0"
-                                    aria-label="Cerrar modal"
-                                >
-                                    <X size={16} strokeWidth={2} />
-                                </button>
-                            </div>
+                            {/* Botón de cerrar absoluto arriba a la derecha */}
+                            <button
+                                onClick={() => setActiveModal(null)}
+                                className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+                                aria-label="Cerrar modal"
+                            >
+                                <X size={16} strokeWidth={2} />
+                            </button>
 
-                            {/* Scrollable Body - FIX INSTALLED (max-h restricted) */}
-                            <div className="overflow-y-auto px-6 py-8 pb-12 custom-scrollbar max-h-[70vh]">
+                            {/* Título */}
+                            <h3 className="font-display text-xl font-bold tracking-wide text-white mb-6 border-b border-white/10 pb-4">
+                                {LEGAL_CONTENT[activeModal].title}
+                            </h3>
+
+                            {/* 3. CONTENIDO (Preguntas y respuestas) */}
+                            <div className="flex flex-col gap-8 mt-4">
                                 {LEGAL_CONTENT[activeModal].body}
                             </div>
                         </motion.div>

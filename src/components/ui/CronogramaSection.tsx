@@ -344,32 +344,46 @@ export default function CronogramaSection() {
 
     // ── Domino loop (runs while inView) ───────────────────────────
     // Phase timeline per cycle:
-    //   0s    → "nominal"  (bars just entered / reset)
-    //   3000ms → "flicker"  (t1 flashes)
+    //   0s     → "nominal"  (bars just entered / reset)
+    //   3000ms → "flicker"  (t1 flashes red)
     //   3500ms → "delayed"  (full cascade)
-    //   8500ms → "nominal"  (reset → repeat)
+    //   8500ms → "nominal"  (reset → repeat after 500ms pause)
+    //
+    // FIX: All timeout IDs are collected in a ref array.
+    // The effect's cleanup function clears EVERY pending timeout,
+    // stopping the recursive chain immediately on unmount or inView change.
+    // Previously, returning a cleanup inside runCycle() was a no-op —
+    // React only calls the return value of the useEffect callback itself.
+    const timerIdsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
     useEffect(() => {
         if (!inView) return;
 
-        // Kick off first cycle after initial bar grow-in (~1.5s)
-        const bootstrap = setTimeout(runCycle, 1500);
-
-        function runCycle() {
-            // ① Flicker: t1 glows red, label appears
-            const tFlicker = setTimeout(() => setPhase("flicker"), 3000);
-            // ② Cascade: all critical shift
-            const tDelay = setTimeout(() => setPhase("delayed"), 3500);
-            // ③ Reset
-            const tReset = setTimeout(() => {
-                setPhase("nominal");
-                // Start next cycle
-                setTimeout(runCycle, 500); // small pause after reset
-            }, 8500);
-
-            return () => { clearTimeout(tFlicker); clearTimeout(tDelay); clearTimeout(tReset); };
+        // Helper: schedule a timeout and track its ID for cleanup
+        function schedule(fn: () => void, delay: number) {
+            const id = setTimeout(fn, delay);
+            timerIdsRef.current.push(id);
+            return id;
         }
 
-        return () => clearTimeout(bootstrap);
+        function runCycle() {
+            schedule(() => setPhase("flicker"), 3000);
+            schedule(() => setPhase("delayed"), 3500);
+            schedule(() => {
+                setPhase("nominal");
+                schedule(runCycle, 500); // next cycle — also tracked
+            }, 8500);
+        }
+
+        // Kick off first cycle after initial bar grow-in (~1.5s)
+        schedule(runCycle, 1500);
+
+        // Cleanup: cancel every pending timeout when unmounting or inView changes
+        return () => {
+            timerIdsRef.current.forEach(clearTimeout);
+            timerIdsRef.current = [];
+            setPhase("nominal"); // reset visual state on cleanup
+        };
     }, [inView]);
 
     // ── Compute dependency arrows for critical path ──
