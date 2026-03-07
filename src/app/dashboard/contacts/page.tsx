@@ -367,7 +367,7 @@ export default function ContactosDashboard() {
                 <TopBar />
 
                 {/* Directorio Body */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-6" data-lenis-prevent>
                     {filteredContacts.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center">
                             <div className={`w-16 h-16 rounded-2xl ${cardBg} border ${cardBorder} flex items-center justify-center mb-4`}>
