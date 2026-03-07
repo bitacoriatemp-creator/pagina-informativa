@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Kumbh_Sans, Orbitron, Teko, Roboto_Mono } from "next/font/google";
 import LenisProvider from "@/components/ui/LenisProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 const kumbhSans = Kumbh_Sans({
@@ -49,9 +50,12 @@ export default function RootLayout({
     <html
       lang="es"
       className={`dark scroll-smooth ${kumbhSans.variable} ${orbitron.variable} ${teko.variable} ${robotoMono.variable}`}
+      suppressHydrationWarning
     >
-      <body className="font-sans antialiased">
-        <LenisProvider>{children}</LenisProvider>
+      <body className="font-sans antialiased" suppressHydrationWarning>
+        <ThemeProvider>
+          <LenisProvider>{children}</LenisProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
