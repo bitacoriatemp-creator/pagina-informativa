@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
     Home,
@@ -253,7 +252,7 @@ export default function CalendarioGlobal() {
                 <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#C39767]/40 to-transparent" />
                 <Link href="/dashboard" className="flex items-center gap-3 group">
                     <div className="relative w-48 h-14 flex items-center justify-center flex-shrink-0">
-                        <Image src="/images/logo_horizontal-removebg-preview.png" alt="BitacorIA" width={192} height={56}
+                        <img src={process.env.NODE_ENV === "production" ? "/plataforma/images/logo_horizontal-removebg-preview.png" : "/images/logo_horizontal-removebg-preview.png"} alt="BitacorIA"
                             className="object-contain w-full h-full drop-shadow-[0_0_14px_rgba(195,151,103,0.5)] group-hover:drop-shadow-[0_0_22px_rgba(195,151,103,0.7)] transition-all duration-300" />
                     </div>
                 </Link>
