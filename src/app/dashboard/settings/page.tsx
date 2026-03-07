@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import {
@@ -60,9 +61,9 @@ export default function SettingsDashboard() {
                 <Link href="/" className="flex items-center justify-center relative cursor-pointer group h-full">
                     <div className={`w-[130px] h-full ${sidebarBgClass} border-x border-b ${borderClass} flex items-center justify-center shrink-0 rounded-b-2xl shadow-sm transition-colors px-3`}>
                         {isDark ? (
-                            <img src="/images/logo_horizontal-removebg-preview.png" alt="BitacorIA Logo" className="object-contain w-full drop-shadow-[0_0_14px_rgba(195,151,103,0.5)] transition-transform duration-300 group-hover:scale-105" />
+                            <Image src="/images/logo_horizontal-removebg-preview.png" alt="BitacorIA Logo" width={130} height={64} className="object-contain w-full drop-shadow-[0_0_14px_rgba(195,151,103,0.5)] transition-transform duration-300 group-hover:scale-105" />
                         ) : (
-                            <img src="/images/logo_horizontal-removebg-preview.png" alt="BitacorIA Logo" className="object-contain w-full drop-shadow-[0_2px_10px_rgba(168,123,76,0.3)] transition-transform duration-300 group-hover:scale-105" style={{ filter: "brightness(0.3) sepia(1) hue-rotate(-30deg) saturate(3)" }} />
+                            <Image src="/images/logo_horizontal-removebg-preview.png" alt="BitacorIA Logo" width={130} height={64} className="object-contain w-full drop-shadow-[0_2px_10px_rgba(168,123,76,0.3)] transition-transform duration-300 group-hover:scale-105" style={{ filter: "brightness(0.3) sepia(1) hue-rotate(-30deg) saturate(3)" }} />
                         )}
                     </div>
                 </Link>
