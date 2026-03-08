@@ -253,6 +253,18 @@ export default function ContactosDashboard() {
                     </div>
                 )}
             </div>
+
+            {/* Premium "Añadir Contacto" Button (PC Only) */}
+            <div className="hidden md:block ml-2 border-l pl-4 border-[#C39767]/20">
+                <button
+                    onClick={() => setIsAddContactModalOpen(true)}
+                    className="h-9 px-4 rounded-lg bg-[#C39767] text-white font-medium text-xs tracking-wider flex items-center gap-2 hover:bg-[#d4a878] shadow-lg shadow-[#C39767]/20 transition-all duration-300"
+                    title="Añadir Nuevo Contacto"
+                >
+                    <UserPlus size={16} />
+                    <span>Añadir</span>
+                </button>
+            </div>
         </div>
     );
 
@@ -282,10 +294,10 @@ export default function ContactosDashboard() {
                         </div>
                     ) : (
                         <div className="flex flex-col gap-4 relative z-10">
-                            {/* Botón Añadir Principal (Dashed Pill) */}
+                            {/* Botón Añadir Principal (Dashed Pill) - SOLO MÓVIL */}
                             <button
                                 onClick={() => setIsAddContactModalOpen(true)}
-                                className={`w-full py-4 md:py-5 rounded-2xl border-2 border-dashed ${isDark ? 'border-[#C39767]/30 hover:border-[#C39767]/60' : 'border-[#C39767]/40 hover:border-[#C39767]'} flex items-center justify-center gap-3 transition-all duration-300 group ${cardBg} hover:bg-[#C39767]/5 shadow-sm`}
+                                className={`w-full md:hidden py-4 rounded-2xl border-2 border-dashed ${isDark ? 'border-[#C39767]/30 hover:border-[#C39767]/60' : 'border-[#C39767]/40 hover:border-[#C39767]'} flex items-center justify-center gap-3 transition-all duration-300 group ${cardBg} hover:bg-[#C39767]/5 shadow-sm`}
                             >
                                 <UserPlus size={20} className="text-[#C39767] group-hover:scale-110 transition-transform" />
                                 <span className={`font-display font-medium text-sm md:text-base text-[#C39767] uppercase tracking-widest`}>
