@@ -5,6 +5,11 @@ import Image from "next/image";
 import { X, Check } from "lucide-react";
 import { useThemeVars } from "@/hooks/useThemeVars";
 
+// Helper for basePath support in production
+const getImagePath = (path: string) => {
+    return process.env.NODE_ENV === "production" ? `/plataforma${path}` : path;
+};
+
 interface PlanManagementModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -51,7 +56,7 @@ export default function PlanManagementModal({ isOpen, onClose }: PlanManagementM
                             subtitle="Para Estudiantes y Pruebas."
                             price="$0"
                             period="MXN"
-                            imageSrc="/images/plan_free.webp"
+                            imageSrc={getImagePath("/images/plan_free.webp")}
                             buttonText="Empezar Gratis"
                             features={[
                                 { title: "Licencia de Aprendizaje", desc: "Ideal para estudiantes y primeros pasos en la metodología BIM." },
@@ -67,9 +72,9 @@ export default function PlanManagementModal({ isOpen, onClose }: PlanManagementM
                             title="THE RESIDENT"
                             subtitle="Para Arquitectos e Ingenieros Independientes."
                             price="$2,499"
-                            period="MXN / mes"
-                            imageSrc="/images/plan_theresident.webp"
-                            buttonText="Comenzar"
+                            period="MXN / MES"
+                            imageSrc={getImagePath("/images/plan_theresident.webp")}
+                            buttonText="Cámbiate a este Plan"
                             features={[
                                 { title: "2 Bitácoras Activas", desc: "Gestiona dos obras de forma simultánea con control total." },
                                 { title: "Múltiples Frentes", desc: "Organiza tu obra por zonas, niveles o etapas constructivas." },
@@ -109,11 +114,10 @@ export default function PlanManagementModal({ isOpen, onClose }: PlanManagementM
                             title="EXECUTIVE PLAN"
                             subtitle="Control total y escala ilimitada."
                             price="$12,999"
-                            period="MXN / mes"
-                            imageSrc="/images/executive_plan.webp"
-                            buttonText="Comenzar"
-                            secondaryButtonText="Contactar"
+                            period="MXN / MES"
+                            imageSrc={getImagePath("/images/executive_plan.webp")}
                             isPurple={true}
+                            buttonText="Plan Actual"
                             features={[
                                 { title: "Volumen Corporativo", desc: "Despliegues desde 10 bitácoras con capacidad de escalar a nivel Enterprise." },
                                 { title: "Frentes Ilimitados", desc: "Controla megaproyectos y desarrollos complejos sin restricciones." },
@@ -138,6 +142,7 @@ interface PlanCardProps {
     period: string;
     imageSrc: string;
     buttonText: string;
+    actualPlan?: boolean;
     secondaryButtonText?: string;
     features: { title: string, desc: string }[];
     isRecommended?: boolean;
@@ -156,7 +161,7 @@ function PlanCard({ title, subtitle, price, period, imageSrc, buttonText, second
             {/* Imagen de fondo inferior */}
             <div className="absolute inset-x-0 bottom-0 h-[60%] z-0 overflow-hidden mix-blend-screen opacity-60 pointer-events-none fade-in mask-image-bottom">
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
-                <Image src={imageSrc} alt={title} fill className="object-contain sm:object-cover object-bottom sm:object-right-bottom translate-y-2 sm:translate-y-0" unoptimized />
+                <Image src={imageSrc} alt={title} fill className="object-cover lg:object-contain object-bottom sm:object-right-bottom translate-y-2 sm:translate-y-0" unoptimized />
                 <div className="absolute inset-0 bg-black/40 mix-blend-overlay z-10" />
             </div>
 
