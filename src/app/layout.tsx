@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Kumbh_Sans, Orbitron, Teko, Roboto_Mono } from "next/font/google";
 import LenisProvider from "@/components/ui/LenisProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -39,6 +39,13 @@ export const metadata: Metadata = {
     "field intelligence",
     "gestión de obra",
   ],
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

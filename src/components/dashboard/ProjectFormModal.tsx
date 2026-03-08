@@ -150,7 +150,7 @@ export default function ProjectFormModal({
                 </div>
 
                 {/* Modal Body */}
-                <div data-lenis-prevent className={`p-5 overflow-y-auto custom-scrollbar flex-1 ${bgClass}`}>
+                <div data-lenis-prevent className={`p-5 overflow-y-auto flex-1 ${bgClass}`}>
                     <form id="projectForm" onSubmit={handleSubmit}>
                         {/* ──────── TAB: DETALLES ──────── */}
                         {activeTab === "detalles" && (
@@ -189,7 +189,7 @@ export default function ProjectFormModal({
                                         />
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-4">
                                     <div>
                                         <label className={`block text-[11px] font-bold ${textMuted} uppercase tracking-widest mb-2`}>Inicio</label>
                                         <input
