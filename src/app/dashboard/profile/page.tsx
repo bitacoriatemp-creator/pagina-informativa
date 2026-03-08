@@ -57,7 +57,6 @@ export default function ProfileDashboard() {
         avatarGrad: "from-[#C39767] to-amber-600",
         customAvatarUrl: null as string | null,
         customCoverUrl: null as string | null,
-        cvvName: null as string | null,
         stats: {
             activeProjects: 4,
             completedProjects: 12,
@@ -90,7 +89,6 @@ export default function ProfileDashboard() {
 
     const avatarInputRef = useRef<HTMLInputElement>(null);
     const coverInputRef = useRef<HTMLInputElement>(null);
-    const cvvInputRef = useRef<HTMLInputElement>(null);
 
     if (!mounted) return null;
 
@@ -102,16 +100,6 @@ export default function ProfileDashboard() {
             setUser({ ...user, customAvatarUrl: ev.target?.result as string });
         };
         reader.readAsDataURL(file);
-        e.target.value = '';
-    };
-
-    const handleCvvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file || file.type !== "application/pdf") {
-            alert("Por favor, sube únicamente archivos PDF.");
-            return;
-        }
-        setUser({ ...user, cvvName: file.name });
         e.target.value = '';
     };
 
@@ -284,38 +272,6 @@ export default function ProfileDashboard() {
                                         <div className={`flex items-center gap-3 ${textMuted} font-medium text-sm`}>
                                             <Calendar size={14} className={textFaint} />
                                             {user.joinDate}
-                                        </div>
-                                    </div>
-                                    <div className={`pt-4 mt-2 border-t ${borderColor} `}>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <p className={`text-[10px] font-mono ${textFaint} uppercase tracking-widest`}>Curriculum Vitae (PDF)</p>
-                                        </div>
-                                        <div
-                                            onClick={() => cvvInputRef.current?.click()}
-                                            className={`w-full flex items-center justify-between p-3.5 border-2 border-dashed ${isDark ? 'border-white/10 hover:border-[#C39767]' : 'border-[#2A241E]/10 hover:border-[#C39767]'} rounded-xl cursor-pointer transition-colors group`}
-                                        >
-                                            <input
-                                                type="file"
-                                                accept="application/pdf"
-                                                ref={cvvInputRef}
-                                                className="hidden"
-                                                onChange={handleCvvUpload}
-                                            />
-                                            <div className="flex items-center gap-3 flex-1 overflow-hidden">
-                                                <div className={`w-8 h-8 rounded-lg ${isDark ? 'bg-white/5 group-hover:bg-[#C39767]/20 group-hover:text-[#C39767]' : 'bg-[#2A241E]/5 group-hover:bg-[#C39767]/10 group-hover:text-[#C39767]'} flex items-center justify-center transition-colors shrink-0`}>
-                                                    <FileText size={16} className={user.cvvName ? 'text-[#C39767]' : textMuted} />
-                                                </div>
-                                                {user.cvvName ? (
-                                                    <div className="flex flex-col overflow-hidden">
-                                                        <span className={`text-sm font-medium ${textClass} opacity-90 truncate`}>{user.cvvName}</span>
-                                                        <span className={`text-[10px] ${textFaint} uppercase tracking-wider`}>PDF Subido con éxito</span>
-                                                    </div>
-                                                ) : (
-                                                    <span className={`text-sm font-medium ${textMuted} group-hover:text-[#C39767] transition-colors`}>Subir CV (.pdf)</span>
-                                                )}
-                                            </div>
-                                            {!user.cvvName && <UploadCloud size={16} className={`${textFaint} group-hover:text-[#C39767] transition-colors shrink-0`} />}
-                                            {user.cvvName && <CheckCircle2 size={16} className="text-[#34d399] shrink-0" />}
                                         </div>
                                     </div>
                                 </div>

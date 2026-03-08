@@ -415,9 +415,6 @@ export default function ContactosDashboard() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                    <button className="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                                        <Phone size={16} />
-                                    </button>
                                     <button onClick={() => setActiveChat(null)} className="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
                                         <X size={18} />
                                     </button>
