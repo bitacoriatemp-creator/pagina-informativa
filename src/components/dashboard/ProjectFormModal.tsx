@@ -189,25 +189,25 @@ export default function ProjectFormModal({
                                         />
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-3 sm:gap-4">
+                                <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                     <div>
                                         <label className={`block text-[11px] font-bold ${textMuted} uppercase tracking-widest mb-2`}>Inicio</label>
                                         <input
-                                            type="date"
+                                            type="text"
                                             value={formStartDate}
                                             onChange={e => setFormStartDate(e.target.value)}
-                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-1.5 sm:py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base [color-scheme:dark_light]`}
-                                            style={{ colorScheme: isDark ? 'dark' : 'light' }}
+                                            placeholder="dd/mm/aaaa"
+                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-1.5 sm:py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base`}
                                         />
                                     </div>
                                     <div>
                                         <label className={`block text-[11px] font-bold ${textMuted} uppercase tracking-widest mb-2`}>Fin Estimado</label>
                                         <input
-                                            type="date"
+                                            type="text"
                                             value={formEndDate}
                                             onChange={e => setFormEndDate(e.target.value)}
-                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-1.5 sm:py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base [color-scheme:dark_light]`}
-                                            style={{ colorScheme: isDark ? 'dark' : 'light' }}
+                                            placeholder="dd/mm/aaaa"
+                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-1.5 sm:py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base`}
                                         />
                                     </div>
                                 </div>
