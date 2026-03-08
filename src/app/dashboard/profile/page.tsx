@@ -45,8 +45,6 @@ export default function ProfileDashboard() {
         accentGlow,
     } = useThemeVars();
 
-    if (!mounted) return null;
-
     // Mock User Data -> State to allow local edits
     const [user, setUser] = useState({
         name: "Eduardo Mora",
@@ -93,6 +91,8 @@ export default function ProfileDashboard() {
     const avatarInputRef = useRef<HTMLInputElement>(null);
     const coverInputRef = useRef<HTMLInputElement>(null);
     const cvvInputRef = useRef<HTMLInputElement>(null);
+
+    if (!mounted) return null;
 
     const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
