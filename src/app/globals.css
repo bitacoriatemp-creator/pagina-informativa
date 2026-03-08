@@ -437,3 +437,53 @@
 .led-pulse {
   animation: ledPulse 3s ease-in-out infinite;
 }
+
+/* ── Dashboard Scrollbar ────────────────────────── */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(195, 151, 103, 0.15);
+  border-radius: 20px;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(195, 151, 103, 0.3);
+}
+
+/* ── Dashboard TopBar / Content Area ──────────── */
+.dark-topbar,
+.light-topbar {
+  position: sticky;
+  top: 0;
+}
+
+.dark-content-area,
+.light-content-area {
+  /* scroll-area specific for main content */
+  overscroll-behavior: contain;
+}
+
+/* ── Fade-In Animation (used by settings panels) ── */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Force Rebuild */

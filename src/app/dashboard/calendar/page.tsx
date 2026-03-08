@@ -2,6 +2,9 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import { useThemeVars } from "@/hooks/useThemeVars";
+import DashboardTopBar from "@/components/dashboard/DashboardTopBar";
+import { useDashboard } from "@/context/DashboardContext";
 import {
     Home,
     CalendarDays,
@@ -197,7 +200,8 @@ function toDateStr(year: number, month: number, day: number) {
    COMPONENTE PRINCIPAL
    ════════════════════════════════════════════════ */
 export default function CalendarioGlobal() {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const { isSidebarOpen, setIsSidebarOpen } = useDashboard();
+    const { isDark, cardBg, cardBorder, textMuted, textFaint, hoverBg, borderColor } = useThemeVars();
     const [currentMonth, setCurrentMonth] = useState(TODAY.getMonth()); // 2 = Marzo
     const [currentYear, setCurrentYear] = useState(TODAY.getFullYear()); // 2026
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -245,270 +249,210 @@ export default function CalendarioGlobal() {
         setSelectedDate(null);
     };
 
-    /* ── SIDEBAR COMPARTIDO ── */
-    const Sidebar = () => (
-        <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#080808]/95 backdrop-blur-xl border-r border-white/[0.06] flex flex-col transform transition-transform duration-300 md:relative md:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-            <div className="h-20 flex items-center px-5 border-b border-white/[0.06] relative">
-                <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#C39767]/40 to-transparent" />
-                <Link href="/dashboard" className="flex items-center gap-3 group">
-                    <div className="relative w-48 h-14 flex items-center justify-center flex-shrink-0">
-                        <img src={process.env.NODE_ENV === "production" ? "/plataforma/images/logo_horizontal-removebg-preview.png" : "/images/logo_horizontal-removebg-preview.png"} alt="BitacorIA"
-                            className="object-contain w-full h-full drop-shadow-[0_0_14px_rgba(195,151,103,0.5)] group-hover:drop-shadow-[0_0_22px_rgba(195,151,103,0.7)] transition-all duration-300" />
-                    </div>
-                </Link>
-            </div>
-            <div className="flex-1 overflow-y-auto py-6 flex flex-col custom-scrollbar">
-                <div className="px-3 space-y-0.5 mb-6">
-                    <Link href="/dashboard" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/50 hover:bg-white/[0.04] hover:text-white/90 transition-colors">
-                        <Home size={18} strokeWidth={1.5} />
-                        <span className="text-sm">Inicio</span>
-                    </Link>
-                    <div className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#C39767]/10 border border-[#C39767]/20 text-[#C39767] font-medium cursor-default">
-                        <CalendarDays size={18} strokeWidth={2} />
-                        <span className="text-sm">Calendario Global</span>
-                    </div>
-                </div>
-                <div className="px-3 mb-6">
-                    <div className="px-3 mb-2 flex items-center gap-2 text-white/30">
-                        <FolderGit2 size={14} /><span className="text-[10px] font-bold uppercase tracking-widest">Mis Obras</span>
-                    </div>
-                    <div className="px-3 text-xs text-white/30 italic">Torre Reforma</div>
-                </div>
-                <div className="px-3 mb-6">
-                    <div className="px-3 mb-2 flex items-center gap-2 text-white/30">
-                        <Users size={14} /><span className="text-[10px] font-bold uppercase tracking-widest">Compartidas</span>
-                    </div>
-                    <div className="px-3 text-xs text-white/30 italic">No tienes invitaciones</div>
-                </div>
-                <div className="mt-auto px-3 border-t border-white/[0.05] pt-4 space-y-0.5 pb-4">
-                    {[{ icon: User, label: "Mi Perfil" }, { icon: Settings, label: "Configuración" }, { icon: LifeBuoy, label: "Centro de Ayuda" }].map(({ icon: Icon, label }) => (
-                        <button key={label} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/40 hover:bg-white/[0.04] hover:text-white/80 transition-colors">
-                            <Icon size={16} /><span className="text-sm">{label}</span>
-                        </button>
-                    ))}
-                    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500/50 hover:bg-red-500/10 hover:text-red-500 transition-colors mt-1">
-                        <LogOut size={16} /><span className="text-sm">Cerrar Sesión</span>
-                    </button>
-                </div>
-            </div>
-        </aside>
-    );
-
     return (
-        <div className="flex h-screen bg-[#060606] text-white font-sans overflow-hidden"
-            style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.035) 1px, transparent 0)", backgroundSize: "32px 32px" }}>
-
-            <Sidebar />
-
-            {isSidebarOpen && <div className="fixed inset-0 bg-black/70 z-30 md:hidden" onClick={() => setIsSidebarOpen(false)} />}
-
-            {/* MAIN */}
-            <div className="flex-1 flex flex-col h-full overflow-hidden">
-                {/* Top Bar */}
-                <header className="h-14 border-b border-white/[0.06] bg-[#080808]/80 backdrop-blur-xl flex items-center justify-between px-5 sticky top-0 z-20">
-                    <div className="flex items-center gap-4">
-                        <button className="p-1.5 text-white/60 hover:text-white md:hidden" onClick={() => setIsSidebarOpen(true)}><Menu size={22} /></button>
-                        <div className="hidden sm:flex items-center gap-2">
-                            <span className="font-mono text-[11px] text-white/30 uppercase tracking-widest">BIT —</span>
-                            <h1 className="text-base font-display font-medium tracking-widest uppercase text-white/80">Calendario Global</h1>
-                        </div>
-                    </div>
+        <>
+            <DashboardTopBar
+                activePage="inicio" // Calendar falls under 'inicio' context conceptually, or just none if it's separate
+                pageTitle="Calendario"
+                onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                rightActions={
                     <div className="flex items-center gap-3">
                         {/* Filtro de Proyecto */}
-                        <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.07] rounded-lg px-3 py-1.5">
-                            <Filter size={14} className="text-white/40" />
+                        <div className={`flex items-center gap-2 bg-white/[0.04] border ${borderColor} rounded-lg px-3 py-1.5`}>
+                            <Filter size={14} className={textMuted} />
                             <select
                                 value={filterProject}
                                 onChange={e => setFilterProject(e.target.value)}
-                                className="bg-transparent text-white/70 text-xs font-mono focus:outline-none cursor-pointer"
+                                className="bg-transparent text-sm text-white/80 focus:outline-none appearance-none pr-4 cursor-pointer"
                             >
-                                {projects.map(p => <option key={p} value={p} className="bg-[#111]">{p}</option>)}
+                                {projects.map(p => <option key={p} value={p} className={isDark ? "bg-[#111]" : "bg-white"}>{p}</option>)}
                             </select>
                         </div>
-                        <button className="relative p-2 text-white/60 hover:text-white rounded-full hover:bg-white/5 transition-colors"><Bell size={18} /></button>
-                        <button className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C39767] to-amber-600 flex items-center justify-center text-xs font-bold shadow-lg ring-2 ring-white/10">EM</button>
+                        <button className="hidden sm:flex items-center gap-2 bg-[#C39767] hover:bg-[#d4a878] text-black px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors shadow-[0_0_15px_rgba(195,151,103,0.3)]">
+                            <Plus size={16} /> Nuevo
+                        </button>
                     </div>
-                </header>
+                }
+            />
 
-                {/* BODY */}
-                <div className="flex-1 flex min-h-0">
-                    {/* ── CALENDAR MAIN ── */}
-                    <div className="flex-1 flex flex-col p-5 overflow-hidden">
-                        {/* Month Nav */}
-                        <div className="flex items-center justify-between mb-5">
-                            <div className="flex items-center gap-4">
-                                <button onClick={prevMonth} className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.08] transition-colors">
-                                    <ChevronLeft size={18} className="text-white/70" />
-                                </button>
-                                <div>
-                                    <h2 className="text-xl font-display font-semibold text-white tracking-wide">{MONTHS_ES[currentMonth]}</h2>
-                                    <span className="font-mono text-[11px] text-white/30">{currentYear}</span>
-                                </div>
-                                <button onClick={nextMonth} className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.08] transition-colors">
-                                    <ChevronRight size={18} className="text-white/70" />
-                                </button>
+            {/* BODY */}
+            <div className={`flex-1 flex min-h-0 relative ${isDark ? 'dark-content-area' : 'light-content-area'}`}>
+                {/* ── CALENDAR MAIN ── */}
+                <div className="flex-1 flex flex-col p-5 overflow-hidden">
+                    {/* Month Nav */}
+                    <div className="flex items-center justify-between mb-5">
+                        <div className="flex items-center gap-4">
+                            <button onClick={prevMonth} className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.08] transition-colors">
+                                <ChevronLeft size={18} className="text-white/70" />
+                            </button>
+                            <div>
+                                <h2 className="text-xl font-display font-semibold text-white tracking-wide">{MONTHS_ES[currentMonth]}</h2>
+                                <span className="font-mono text-[11px] text-white/30">{currentYear}</span>
                             </div>
-                            <button
-                                onClick={() => { setCurrentMonth(TODAY.getMonth()); setCurrentYear(TODAY.getFullYear()); setSelectedDate(todayStr); }}
-                                className="font-mono text-[11px] tracking-widest uppercase px-3 py-1.5 rounded-lg bg-[#C39767]/10 border border-[#C39767]/20 text-[#C39767] hover:bg-[#C39767]/20 transition-colors"
-                            >
-                                HOY
+                            <button onClick={nextMonth} className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.08] transition-colors">
+                                <ChevronRight size={18} className="text-white/70" />
                             </button>
                         </div>
+                        <button
+                            onClick={() => { setCurrentMonth(TODAY.getMonth()); setCurrentYear(TODAY.getFullYear()); setSelectedDate(todayStr); }}
+                            className="font-mono text-[11px] tracking-widest uppercase px-3 py-1.5 rounded-lg bg-[#C39767]/10 border border-[#C39767]/20 text-[#C39767] hover:bg-[#C39767]/20 transition-colors"
+                        >
+                            HOY
+                        </button>
+                    </div>
 
-                        {/* Day Headers */}
-                        <div className="grid grid-cols-7 mb-1">
-                            {DAYS_ES.map(d => (
-                                <div key={d} className="text-center py-2 font-mono text-[10px] uppercase tracking-widest text-white/30">{d}</div>
-                            ))}
-                        </div>
+                    {/* Day Headers */}
+                    <div className="grid grid-cols-7 mb-1">
+                        {DAYS_ES.map(d => (
+                            <div key={d} className="text-center py-2 font-mono text-[10px] uppercase tracking-widest text-white/30">{d}</div>
+                        ))}
+                    </div>
 
-                        {/* Calendar Grid */}
-                        <div className="grid grid-cols-7 gap-1 flex-1">
-                            {/* Empty cells before first day */}
-                            {Array.from({ length: firstDay }).map((_, i) => (
-                                <div key={`empty-${i}`} className="rounded-lg" />
-                            ))}
+                    {/* Calendar Grid */}
+                    <div className="grid grid-cols-7 gap-1 flex-1">
+                        {/* Empty cells before first day */}
+                        {Array.from({ length: firstDay }).map((_, i) => (
+                            <div key={`empty-${i}`} className="rounded-lg" />
+                        ))}
 
-                            {/* Day cells */}
-                            {Array.from({ length: daysInMonth }).map((_, i) => {
-                                const day = i + 1;
-                                const dateStr = toDateStr(currentYear, currentMonth, day);
-                                const isToday = dateStr === todayStr;
-                                const isSelected = dateStr === selectedDate;
-                                const dayEvents = eventMap[dateStr] || [];
-                                const hasHighPriority = dayEvents.some(e => e.priority === "alta");
+                        {/* Day cells */}
+                        {Array.from({ length: daysInMonth }).map((_, i) => {
+                            const day = i + 1;
+                            const dateStr = toDateStr(currentYear, currentMonth, day);
+                            const isToday = dateStr === todayStr;
+                            const isSelected = dateStr === selectedDate;
+                            const dayEvents = eventMap[dateStr] || [];
+                            const hasHighPriority = dayEvents.some(e => e.priority === "alta");
 
-                                return (
-                                    <div
-                                        key={day}
-                                        onClick={() => setSelectedDate(isSelected ? null : dateStr)}
-                                        className={`
+                            return (
+                                <div
+                                    key={day}
+                                    onClick={() => setSelectedDate(isSelected ? null : dateStr)}
+                                    className={`
                                             relative rounded-xl p-2 flex flex-col cursor-pointer transition-all duration-200 min-h-[72px] border
                                             ${isSelected ? "bg-[#C39767]/10 border-[#C39767]/30 shadow-[0_0_20px_rgba(195,151,103,0.1)]" : "border-white/[0.05] hover:bg-white/[0.03] hover:border-white/[0.1]"}
                                             ${isToday && !isSelected ? "border-[#C39767]/30 bg-[#C39767]/5" : ""}
                                         `}
-                                    >
-                                        <div className="flex items-center justify-between mb-1">
-                                            <span className={`font-mono text-sm leading-none ${isToday ? "text-[#C39767] font-bold" : "text-white/60"
-                                                }`}>
-                                                {day}
-                                            </span>
-                                            {hasHighPriority && (
-                                                <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-                                            )}
-                                        </div>
-
-                                        {/* Event dots / pills */}
-                                        <div className="flex flex-wrap gap-1 mt-auto">
-                                            {dayEvents.slice(0, 3).map(ev => {
-                                                const meta = CATEGORY_META[ev.category];
-                                                return (
-                                                    <div
-                                                        key={ev.id}
-                                                        className="w-2 h-2 rounded-full flex-shrink-0"
-                                                        style={{ backgroundColor: meta.accent }}
-                                                        title={ev.title}
-                                                    />
-                                                );
-                                            })}
-                                            {dayEvents.length > 3 && (
-                                                <span className="font-mono text-[9px] text-white/30">+{dayEvents.length - 3}</span>
-                                            )}
-                                        </div>
-
-                                        {/* Today line */}
-                                        {isToday && (
-                                            <div className="absolute top-0 left-2 right-2 h-px bg-gradient-to-r from-transparent via-[#C39767]/70 to-transparent" />
+                                >
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className={`font-mono text-sm leading-none ${isToday ? "text-[#C39767] font-bold" : "text-white/60"
+                                            }`}>
+                                            {day}
+                                        </span>
+                                        {hasHighPriority && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
                                         )}
                                     </div>
-                                );
-                            })}
-                        </div>
 
-                        {/* Legend */}
-                        <div className="flex flex-wrap items-center gap-4 pt-3 mt-2 border-t border-white/[0.05]">
-                            {Object.entries(CATEGORY_META).map(([key, meta]) => (
-                                <div key={key} className="flex items-center gap-1.5">
-                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: meta.accent }} />
-                                    <span className="font-mono text-[10px] text-white/30 uppercase tracking-wider">{meta.label}</span>
+                                    {/* Event dots / pills */}
+                                    <div className="flex flex-wrap gap-1 mt-auto">
+                                        {dayEvents.slice(0, 3).map(ev => {
+                                            const meta = CATEGORY_META[ev.category];
+                                            return (
+                                                <div
+                                                    key={ev.id}
+                                                    className="w-2 h-2 rounded-full flex-shrink-0"
+                                                    style={{ backgroundColor: meta.accent }}
+                                                    title={ev.title}
+                                                />
+                                            );
+                                        })}
+                                        {dayEvents.length > 3 && (
+                                            <span className="font-mono text-[9px] text-white/30">+{dayEvents.length - 3}</span>
+                                        )}
+                                    </div>
+
+                                    {/* Today line */}
+                                    {isToday && (
+                                        <div className="absolute top-0 left-2 right-2 h-px bg-gradient-to-r from-transparent via-[#C39767]/70 to-transparent" />
+                                    )}
                                 </div>
-                            ))}
+                            );
+                        })}
+                    </div>
+
+                    {/* Legend */}
+                    <div className="flex flex-wrap items-center gap-4 pt-3 mt-2 border-t border-white/[0.05]">
+                        {Object.entries(CATEGORY_META).map(([key, meta]) => (
+                            <div key={key} className="flex items-center gap-1.5">
+                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: meta.accent }} />
+                                <span className="font-mono text-[10px] text-white/30 uppercase tracking-wider">{meta.label}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* ── RIGHT PANEL ── */}
+                <div className="w-80 border-l border-white/[0.06] flex flex-col overflow-hidden bg-[#080808]/60 backdrop-blur-sm hidden lg:flex">
+                    {/* Panel Header */}
+                    <div className="px-5 py-4 border-b border-white/[0.06]">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="font-mono text-[10px] text-white/30 uppercase tracking-widest mb-1">
+                                    {selectedDate ? new Date(selectedDate + "T12:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" }) : `${MONTHS_ES[currentMonth]} ${currentYear}`}
+                                </p>
+                                <h3 className="text-sm font-display font-medium text-white/90">
+                                    {selectedDate
+                                        ? eventsForDay.length > 0 ? `${eventsForDay.length} evento${eventsForDay.length > 1 ? "s" : ""}` : "Sin eventos"
+                                        : `${eventsForMonth.length} eventos este mes`
+                                    }
+                                </h3>
+                            </div>
+                            {selectedDate && (
+                                <button onClick={() => setSelectedDate(null)} className="text-white/30 hover:text-white p-1 transition-colors">
+                                    <X size={16} />
+                                </button>
+                            )}
                         </div>
                     </div>
 
-                    {/* ── RIGHT PANEL ── */}
-                    <div className="w-80 border-l border-white/[0.06] flex flex-col overflow-hidden bg-[#080808]/60 backdrop-blur-sm hidden lg:flex">
-                        {/* Panel Header */}
-                        <div className="px-5 py-4 border-b border-white/[0.06]">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="font-mono text-[10px] text-white/30 uppercase tracking-widest mb-1">
-                                        {selectedDate ? new Date(selectedDate + "T12:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" }) : `${MONTHS_ES[currentMonth]} ${currentYear}`}
-                                    </p>
-                                    <h3 className="text-sm font-display font-medium text-white/90">
-                                        {selectedDate
-                                            ? eventsForDay.length > 0 ? `${eventsForDay.length} evento${eventsForDay.length > 1 ? "s" : ""}` : "Sin eventos"
-                                            : `${eventsForMonth.length} eventos este mes`
-                                        }
-                                    </h3>
-                                </div>
-                                {selectedDate && (
-                                    <button onClick={() => setSelectedDate(null)} className="text-white/30 hover:text-white p-1 transition-colors">
-                                        <X size={16} />
-                                    </button>
-                                )}
+                    {/* Events List */}
+                    <div className="flex-1 overflow-y-auto custom-scrollbar py-3">
+                        {(selectedDate ? eventsForDay : eventsForMonth).length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-full text-center px-6">
+                                <CalendarDays size={28} className="text-white/15 mb-3" />
+                                <p className="text-xs text-white/30 font-mono uppercase tracking-wider">Sin eventos registrados</p>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="space-y-2 px-3">
+                                {(selectedDate ? eventsForDay : eventsForMonth).map(ev => {
+                                    const meta = CATEGORY_META[ev.category];
+                                    const Icon = meta.icon;
+                                    return (
+                                        <div
+                                            key={ev.id}
+                                            onClick={() => setSelectedEvent(ev)}
+                                            className="p-3 rounded-xl border border-white/[0.06] hover:border-white/[0.12] bg-white/[0.02] hover:bg-white/[0.05] cursor-pointer transition-all group relative overflow-hidden"
+                                        >
+                                            {/* Left accent bar */}
+                                            <div className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full" style={{ backgroundColor: meta.accent }} />
 
-                        {/* Events List */}
-                        <div className="flex-1 overflow-y-auto custom-scrollbar py-3">
-                            {(selectedDate ? eventsForDay : eventsForMonth).length === 0 ? (
-                                <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                                    <CalendarDays size={28} className="text-white/15 mb-3" />
-                                    <p className="text-xs text-white/30 font-mono uppercase tracking-wider">Sin eventos registrados</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-2 px-3">
-                                    {(selectedDate ? eventsForDay : eventsForMonth).map(ev => {
-                                        const meta = CATEGORY_META[ev.category];
-                                        const Icon = meta.icon;
-                                        return (
-                                            <div
-                                                key={ev.id}
-                                                onClick={() => setSelectedEvent(ev)}
-                                                className="p-3 rounded-xl border border-white/[0.06] hover:border-white/[0.12] bg-white/[0.02] hover:bg-white/[0.05] cursor-pointer transition-all group relative overflow-hidden"
-                                            >
-                                                {/* Left accent bar */}
-                                                <div className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full" style={{ backgroundColor: meta.accent }} />
-
-                                                <div className="pl-2">
-                                                    <div className="flex items-start justify-between gap-2 mb-1.5">
-                                                        <span className="text-xs font-medium text-white/90 leading-tight line-clamp-2">{ev.title}</span>
-                                                        <Icon size={14} className="flex-shrink-0 mt-0.5" style={{ color: meta.accent }} />
-                                                    </div>
-                                                    <div className="flex items-center flex-wrap gap-x-3 gap-y-1">
-                                                        {!selectedDate && (
-                                                            <span className="font-mono text-[10px] text-white/40">
-                                                                {new Date(ev.date + "T12:00").toLocaleDateString("es-MX", { day: "numeric", month: "short" })}
-                                                            </span>
-                                                        )}
-                                                        {ev.time && (
-                                                            <span className="font-mono text-[10px] text-white/40 flex items-center gap-1">
-                                                                <Clock size={10} /> {ev.time}
-                                                            </span>
-                                                        )}
-                                                        <span className="inline-block font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: `${ev.projectColor}20`, color: ev.projectColor }}>
-                                                            {ev.project}
+                                            <div className="pl-2">
+                                                <div className="flex items-start justify-between gap-2 mb-1.5">
+                                                    <span className="text-xs font-medium text-white/90 leading-tight line-clamp-2">{ev.title}</span>
+                                                    <Icon size={14} className="flex-shrink-0 mt-0.5" style={{ color: meta.accent }} />
+                                                </div>
+                                                <div className="flex items-center flex-wrap gap-x-3 gap-y-1">
+                                                    {!selectedDate && (
+                                                        <span className="font-mono text-[10px] text-white/40">
+                                                            {new Date(ev.date + "T12:00").toLocaleDateString("es-MX", { day: "numeric", month: "short" })}
                                                         </span>
-                                                    </div>
+                                                    )}
+                                                    {ev.time && (
+                                                        <span className="font-mono text-[10px] text-white/40 flex items-center gap-1">
+                                                            <Clock size={10} /> {ev.time}
+                                                        </span>
+                                                    )}
+                                                    <span className="inline-block font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: `${ev.projectColor}20`, color: ev.projectColor }}>
+                                                        {ev.project}
+                                                    </span>
                                                 </div>
                                             </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -576,6 +520,6 @@ export default function CalendarioGlobal() {
                 .color-scheme-dark { color-scheme: dark; }
                 select option { background-color: #111; }
             `}</style>
-        </div>
+        </>
     );
 }
