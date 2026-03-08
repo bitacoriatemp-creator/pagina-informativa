@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
     Home,
@@ -8,7 +8,6 @@ import {
     User,
     Settings,
     LifeBuoy,
-    Menu,
     Moon,
     SunDim,
     Bell,
@@ -31,7 +30,7 @@ import { useThemeVars } from "@/hooks/useThemeVars";
    - rightActions: elementos adicionales para el lado derecho
    ══════════════════════════════════════════════════════════════ */
 
-type PageKey = "inicio" | "contactos" | "perfil" | "configuracion" | "ayuda";
+type PageKey = "inicio" | "contactos" | "perfil" | "configuracion" | "ayuda" | string;
 
 interface DashboardTopBarProps {
     activePage: PageKey;
@@ -44,7 +43,7 @@ const NAV_ITEMS: { key: PageKey; href: string; label: string; icon: React.Elemen
     { key: "inicio", href: "/dashboard", label: "Inicio", icon: Home, maxWidth: "100px" },
     { key: "contactos", href: "/dashboard/contacts", label: "Contactos", icon: Users, maxWidth: "100px" },
     { key: "perfil", href: "/dashboard/profile", label: "Perfil", icon: User, maxWidth: "100px" },
-    { key: "configuracion", href: "/dashboard/settings", label: "Configuración", icon: Settings, maxWidth: "120px" },
+    { key: "configuracion", href: "/dashboard/settings", label: "Sistema", icon: Settings, maxWidth: "120px" },
     { key: "ayuda", href: "/dashboard/help", label: "Ayuda", icon: LifeBuoy, maxWidth: "100px" },
 ];
 
@@ -61,10 +60,22 @@ export default function DashboardTopBar({ activePage, pageTitle, rightActions, o
         topBarBg,
         sidebarBg,
         textMuted,
-        textFaint,
         hoverBg,
         activeItemBg,
     } = useThemeVars();
+
+    const [isMobileExpanded, setIsMobileExpanded] = useState(false);
+    const mobileIslandRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (mobileIslandRef.current && !mobileIslandRef.current.contains(event.target as Node)) {
+                setIsMobileExpanded(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     return (
         <header className={`h-16 border-b ${borderColor} ${topBarBg} backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 z-50 sticky top-0 transition-colors duration-500 ${isDark ? 'dark-topbar' : 'light-topbar'}`}>
@@ -88,58 +99,102 @@ export default function DashboardTopBar({ activePage, pageTitle, rightActions, o
                 </div>
             </div>
 
-            {/* CENTER: Smart Island Navigation */}
-            <nav className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden lg:flex items-center gap-1 p-1.5 rounded-2xl shadow-sm border transition-colors duration-300"
-                style={{
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                }}
-            >
-                {NAV_ITEMS.map((item, idx) => {
-                    const isActive = item.key === activePage;
-                    const Icon = item.icon;
+            {/* CENTER: Mobile & Desktop Smart Island Navigation */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-[60]">
+                {/* Desktop Version */}
+                <nav className="hidden lg:flex items-center gap-1 p-1.5 rounded-2xl shadow-sm border transition-colors duration-300"
+                    style={{
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+                        borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                    }}
+                >
+                    {NAV_ITEMS.map((item, idx) => {
+                        const isActive = item.key === activePage;
+                        const Icon = item.icon;
 
-                    // Divider after "contactos"
-                    const showDivider = item.key === "contactos";
+                        // Divider after "contactos"
+                        const showDivider = item.key === "contactos";
 
-                    return (
-                        <React.Fragment key={item.key}>
-                            {isActive ? (
-                                <button className={`flex items-center h-9 px-3 rounded-xl transition-all duration-300 group/nav ${activeItemBg}`}>
-                                    <Icon size={16} strokeWidth={2.5} className="shrink-0" />
-                                    <span className="text-[13px] font-medium whitespace-nowrap overflow-hidden transition-all duration-300 max-w-[100px] ml-2 opacity-100"
-                                        style={{ maxWidth: item.maxWidth }}
-                                    >
-                                        {item.label}
-                                    </span>
-                                </button>
-                            ) : (
-                                <Link href={item.href} className={`flex items-center h-9 px-3 rounded-xl transition-all duration-300 group/nav ${textMuted} ${hoverBg}`}>
-                                    <Icon size={16} strokeWidth={1.5} className="shrink-0" />
-                                    <span className="text-[13px] font-medium whitespace-nowrap overflow-hidden transition-all duration-300 max-w-0 opacity-0 group-hover/nav:max-w-[100px] group-hover/nav:ml-2 group-hover/nav:opacity-100"
-                                        style={{ '--max-expand': item.maxWidth } as React.CSSProperties}
-                                    >
-                                        {item.label}
-                                    </span>
-                                </Link>
-                            )}
-                            {showDivider && (
-                                <div className={`w-px h-4 mx-1 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
-                            )}
-                        </React.Fragment>
-                    );
-                })}
-            </nav>
+                        return (
+                            <React.Fragment key={item.key}>
+                                {isActive ? (
+                                    <button className={`flex items-center h-9 px-3 rounded-xl transition-all duration-300 group/nav ${activeItemBg}`}>
+                                        <Icon size={16} strokeWidth={2.5} className="shrink-0" />
+                                        <span className="text-[13px] font-medium whitespace-nowrap overflow-hidden transition-all duration-300 max-w-[100px] ml-2 opacity-100"
+                                            style={{ maxWidth: item.maxWidth }}
+                                        >
+                                            {item.label}
+                                        </span>
+                                    </button>
+                                ) : (
+                                    <Link href={item.href} className={`flex items-center h-9 px-3 rounded-xl transition-all duration-300 group/nav ${textMuted} ${hoverBg}`}>
+                                        <Icon size={16} strokeWidth={1.5} className="shrink-0" />
+                                        <span className="text-[13px] font-medium whitespace-nowrap overflow-hidden transition-all duration-300 max-w-0 opacity-0 group-hover/nav:max-w-[100px] group-hover/nav:ml-2 group-hover/nav:opacity-100"
+                                            style={{ '--max-expand': item.maxWidth } as React.CSSProperties}
+                                        >
+                                            {item.label}
+                                        </span>
+                                    </Link>
+                                )}
+                                {showDivider && (
+                                    <div className={`w-px h-4 mx-1 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
+                </nav>
+
+                {/* Mobile Version — Centered expanding pill */}
+                <div
+                    ref={mobileIslandRef}
+                    className={`lg:hidden flex items-center shadow-lg border transition-all duration-[400ms] ease-out overflow-hidden rounded-[100px] ${isMobileExpanded ? 'p-1.5 gap-1' : 'p-1 gap-0'}`}
+                    style={{
+                        backgroundColor: isDark ? 'rgba(30,30,30,0.95)' : 'rgba(250,245,240,0.95)',
+                        borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+                        backdropFilter: 'blur(20px)'
+                    }}
+                >
+                    {NAV_ITEMS.map((item) => {
+                        const isActive = item.key === activePage;
+                        const Icon = item.icon;
+                        // Ensure the active item is visually present even when collapsed
+                        const isVisible = isMobileExpanded || isActive;
+
+                        return (
+                            <Link
+                                key={item.key}
+                                href={item.href}
+                                onClick={(e) => {
+                                    if (!isMobileExpanded) {
+                                        // Collapsed -> Expand! (prevent navigation)
+                                        e.preventDefault();
+                                        setIsMobileExpanded(true);
+                                    } else {
+                                        // Expanded -> Collapse and logic
+                                        if (isActive) {
+                                            e.preventDefault(); // already here
+                                            setIsMobileExpanded(false);
+                                        } else {
+                                            // Wait for micro animation to let user see feedback before route change
+                                            setTimeout(() => setIsMobileExpanded(false), 200);
+                                        }
+                                    }
+                                }}
+                                className={`flex items-center justify-center rounded-full transition-all duration-[400ms] ease-out overflow-hidden ${isVisible
+                                        ? `w-10 h-10 opacity-100 ${isActive ? activeItemBg : `${textMuted} ${hoverBg}`}`
+                                        : 'w-0 h-10 opacity-0 px-0 mx-0 border-0 pointer-events-none'
+                                    }`}
+                                aria-label={item.label}
+                            >
+                                <Icon size={18} strokeWidth={isActive ? 2.5 : 1.5} className="shrink-0" />
+                            </Link>
+                        )
+                    })}
+                </div>
+            </div>
 
             {/* RIGHT: Actions */}
-            <div className="flex items-center justify-end gap-3 sm:gap-5 shrink-0 ml-auto">
-                {/* Mobile Menu Toggle — hidden on desktop */}
-                <button
-                    onClick={onMenuClick}
-                    className={`p-2 lg:hidden ${textMuted} rounded-lg ${hoverBg} transition-colors`}
-                >
-                    <Menu size={20} />
-                </button>
+            <div className="flex items-center justify-end gap-3 sm:gap-5 shrink-0 ml-auto relative">
 
                 {/* Page-specific actions (Create, Search, etc.) */}
                 {rightActions}

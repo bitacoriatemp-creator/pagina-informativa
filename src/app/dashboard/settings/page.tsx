@@ -58,23 +58,23 @@ export default function SettingsDashboard() {
             <DashboardTopBar activePage="configuracion" pageTitle="Configuración" />
 
             {/* Settings Content - Compactor sin scroll excesivo */}
-            <div className="flex-1 p-6 lg:p-8 relative z-10 flex items-start justify-center">
-                <div className="w-full max-w-5xl flex flex-col lg:flex-row gap-6 lg:gap-8">
+            <div className="flex-1 overflow-y-auto custom-scrollbar w-full p-4 lg:p-8 relative z-10 flex flex-col items-center">
+                <div className="w-full max-w-5xl flex flex-col lg:flex-row gap-6 lg:gap-8 pb-32">
 
                     {/* Tab Menu List */}
-                    <div className="w-full lg:w-72 flex-shrink-0 space-y-1">
+                    <div className="w-full lg:w-72 flex-shrink-0 flex sm:flex-col gap-3 lg:gap-1 overflow-x-auto sm:overflow-visible pb-3 pt-1 lg:pb-0 snap-x custom-scrollbar">
                         {TABS.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`w-full flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 ${activeTab === tab.id ? (isDark ? 'bg-white/[0.06] shadow-lg border border-white/10' : 'bg-white border-[#2A241E]/10 shadow-md border') : `bg-transparent ${hoverBgClass} border border-transparent`}`}
+                                className={`flex-shrink-0 min-w-[200px] sm:min-w-0 sm:w-full snap-start flex items-start gap-4 p-3.5 lg:p-4 rounded-2xl transition-all duration-300 ${activeTab === tab.id ? (isDark ? 'bg-white/[0.06] shadow-lg border border-white/10' : 'bg-white border-[#2A241E]/10 shadow-md border') : `bg-transparent ${hoverBgClass} border border-transparent`}`}
                             >
                                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${activeTab === tab.id ? (isDark ? 'bg-[#C39767]/20 text-[#C39767]' : 'bg-[#A87B4C]/10 text-[#A87B4C]') : (isDark ? 'bg-white/5 text-white/40' : 'bg-[#2A241E]/5 text-[#2A241E]/50')}`}>
                                     <tab.icon size={20} />
                                 </div>
-                                <div className="text-left flex-1 pt-0.5">
-                                    <h3 className={`font-display font-bold text-sm ${activeTab === tab.id ? '' : 'opacity-70'}`}>{tab.id}</h3>
-                                    <p className={`text-[11px] mt-0.5 ${textMuted}`}>{tab.description}</p>
+                                <div className="text-left flex-1 pt-0.5 pointer-events-none">
+                                    <h3 className={`font-display font-bold text-sm ${activeTab === tab.id ? '' : 'opacity-70'} whitespace-nowrap`}>{tab.id}</h3>
+                                    <p className={`text-[11px] mt-0.5 ${textMuted} line-clamp-1`}>{tab.description}</p>
                                 </div>
                             </button>
                         ))}

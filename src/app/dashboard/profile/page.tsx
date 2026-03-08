@@ -16,8 +16,16 @@ import {
     Calendar,
     Camera,
     Building2,
+    Edit2,
+    FileText,
+    UploadCloud,
+    CreditCard,
+    Sparkles
 } from "lucide-react";
+import Image from "next/image";
+import React, { useState, useRef } from "react";
 import DashboardTopBar from "@/components/dashboard/DashboardTopBar";
+import PlanManagementModal from "@/components/dashboard/PlanManagementModal";
 import { useDashboard } from "@/context/DashboardContext";
 import { useThemeVars } from "@/hooks/useThemeVars";
 
@@ -39,8 +47,8 @@ export default function ProfileDashboard() {
 
     if (!mounted) return null;
 
-    // Mock User Data
-    const user = {
+    // Mock User Data -> State to allow local edits
+    const [user, setUser] = useState({
         name: "Eduardo Mora",
         email: "eduardo.mora@constructora.com",
         phone: "+52 55 1234 5678",
@@ -49,6 +57,9 @@ export default function ProfileDashboard() {
         location: "Ciudad de México, MX",
         joinDate: "Enero 2026",
         avatarGrad: "from-[#C39767] to-amber-600",
+        customAvatarUrl: null as string | null,
+        customCoverUrl: null as string | null,
+        cvvName: null as string | null,
         stats: {
             activeProjects: 4,
             completedProjects: 12,
@@ -64,7 +75,62 @@ export default function ProfileDashboard() {
                 "Firma electrónica autorizada",
                 "Sincronización móvil offline"
             ]
+        },
+        subscription: {
+            planName: "THE SITE MANAGER",
+            status: "Activo",
+            cycle: "Mensual",
+            nextBilling: "15 de Abril, 2026",
+            price: "$3,899",
+            storageUsed: 42, // percentage
         }
+    });
+
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [tempName, setTempName] = useState(user.name);
+    const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+
+    const avatarInputRef = useRef<HTMLInputElement>(null);
+    const coverInputRef = useRef<HTMLInputElement>(null);
+    const cvvInputRef = useRef<HTMLInputElement>(null);
+
+    const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            setUser({ ...user, customAvatarUrl: ev.target?.result as string });
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
+    };
+
+    const handleCvvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || file.type !== "application/pdf") {
+            alert("Por favor, sube únicamente archivos PDF.");
+            return;
+        }
+        setUser({ ...user, cvvName: file.name });
+        e.target.value = '';
+    };
+
+    const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            setUser({ ...user, customCoverUrl: ev.target?.result as string });
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
+    };
+
+    const handleSaveName = () => {
+        if (tempName.trim()) {
+            setUser({ ...user, name: tempName });
+        }
+        setIsEditingName(false);
     };
 
     return (
@@ -78,41 +144,104 @@ export default function ProfileDashboard() {
             <main data-lenis-prevent className={`flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-10 relative z-10 ${isDark ? 'dark-content-area' : 'light-content-area'}`}>
                 <div className="max-w-5xl mx-auto space-y-6">
 
-                    {/* Banner & Identidad */}
-                    <div className={`rounded-3xl border ${cardBorder} ${cardBg} backdrop-blur-md overflow-hidden flex flex-col shadow-2xl`}>
-                        {/* Banner Gradient */}
-                        <div className="h-32 md:h-40 bg-gradient-to-r from-[#1a1a1a] via-[#2a241e] to-[#C39767]/20 relative overflow-hidden">
-                            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px)" }} />
+                    {/* Tarjeta de Presentación / Banner & Identidad */}
+                    <div className={`rounded-[2rem] border ${cardBorder} ${cardBg} backdrop-blur-md overflow-hidden flex flex-col shadow-2xl mb-8 group/card`}>
+                        {/* Cover Area */}
+                        <div
+                            className="h-40 md:h-48 relative overflow-hidden group/cover cursor-pointer"
+                            onClick={() => coverInputRef.current?.click()}
+                        >
+                            <input
+                                type="file"
+                                accept="image/*"
+                                ref={coverInputRef}
+                                className="hidden"
+                                onChange={handleCoverUpload}
+                            />
+                            {user.customCoverUrl ? (
+                                <Image src={user.customCoverUrl} alt="Portada" fill className="object-cover" unoptimized />
+                            ) : (
+                                <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a1a] via-[#2a241e] to-[#C39767]/20">
+                                    <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px)" }} />
+                                </div>
+                            )}
+
+                            {/* Cover Edit Overlay */}
+                            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover/cover:opacity-100 transition-opacity duration-300">
+                                <Camera size={28} className="text-white mb-2" />
+                                <span className="text-[10px] font-mono text-white uppercase tracking-widest font-bold">Cambiar Portada</span>
+                            </div>
                         </div>
 
-                        <div className="px-6 md:px-10 pb-8 flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-8 -mt-16 md:-mt-20 relative z-10">
-                            {/* Avatar Grande */}
-                            <div className={`w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-gradient-to-br ${user.avatarGrad} p-1 shadow-2xl flex-shrink-0 relative group cursor-pointer`}>
-                                <div className={`w-full h-full rounded-[22px] ${isDark ? 'bg-[#0a0a0a]/60' : 'bg-[#E8E0D5]/60'} backdrop-blur-xl flex items-center justify-center font-display font-bold ${textClass} text-4xl relative overflow-hidden transition-all duration-300 ${isDark ? 'group-hover:bg-[#0a0a0a]/80' : 'group-hover:bg-[#E8E0D5]/80'}`}>
-                                    <div className={`absolute inset-0 ${isDark ? 'bg-white/10' : 'bg-[#2A241E]/10'} mix-blend-overlay`} />
-                                    <span className="group-hover:opacity-0 transition-opacity duration-300">
-                                        {user.name.split(" ").map(n => n[0]).join("")}
-                                    </span>
-                                    {/* Edit Overlay */}
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <Camera size={28} className={`${textClass} mb-2`} />
-                                        <span className={`text-[10px] font-mono uppercase tracking-widest ${textMuted} font-medium`}>Cambiar</span>
+                        {/* Contenido Centrado (Business Card Print) */}
+                        <div className="px-6 pb-10 flex flex-col items-center -mt-20 relative z-10 text-center">
+                            {/* Avatar */}
+                            {/* Note: The user explicitly wants a squircle-like shape based on the image provided where corners are very rounded like rounded-[2rem] */}
+                            <div
+                                className={`w-36 h-36 md:w-40 md:h-40 rounded-[2rem] bg-gradient-to-br ${user.avatarGrad} p-1.5 shadow-2xl relative group/avatar cursor-pointer z-10 mb-6`}
+                                onClick={() => avatarInputRef.current?.click()}
+                            >
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    ref={avatarInputRef}
+                                    className="hidden"
+                                    onChange={handleAvatarUpload}
+                                />
+                                {user.customAvatarUrl ? (
+                                    <div className="w-full h-full rounded-[1.7rem] overflow-hidden relative bg-[#0a0a0a]">
+                                        <Image src={user.customAvatarUrl} alt="Foto de perfil" fill className="object-cover" unoptimized />
+                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300">
+                                            <Camera size={28} className="text-white mb-1.5" />
+                                        </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className={`w-full h-full rounded-[1.7rem] ${isDark ? 'bg-[#0a0a0a]' : 'bg-[#E8E0D5]'} flex items-center justify-center font-display font-medium ${textClass} text-5xl relative overflow-hidden transition-all duration-300`}>
+                                        <div className={`absolute inset-0 block`} />
+                                        <span className="group-hover/avatar:opacity-0 transition-opacity duration-300 leading-none">
+                                            {user.name.split(" ").map(n => n[0]).join("").substring(0, 2)}
+                                        </span>
+                                        {/* Edit Overlay */}
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300">
+                                            <Camera size={28} className={`${textClass}`} />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="flex-1 text-center md:text-left mb-2">
-                                <h2 className={`text-3xl md:text-4xl font-display font-bold ${textClass} tracking-wide mb-2`}>{user.name}</h2>
-                                <div className={`flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm ${textMuted} font-medium`}>
-                                    <span className="flex items-center gap-1.5"><Briefcase size={16} className="text-[#C39767]" /> {user.role}</span>
-                                    <span className={`hidden md:inline ${textFaint} `}>•</span>
-                                    <span className="flex items-center gap-1.5"><HardHat size={16} className={textClass} /> {user.company}</span>
+                            {/* Nombre y Rol */}
+                            <div className="w-full max-w-sm flex flex-col items-center">
+                                {isEditingName ? (
+                                    <div className="flex items-center justify-center gap-2 mb-3 w-full">
+                                        <input
+                                            type="text"
+                                            value={tempName}
+                                            onChange={(e) => setTempName(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') handleSaveName();
+                                                if (e.key === 'Escape') setIsEditingName(false);
+                                            }}
+                                            autoFocus
+                                            className={`text-3xl font-display font-bold ${textClass} bg-transparent border-b-2 border-[#C39767] focus:outline-none w-full text-center`}
+                                        />
+                                        <button onClick={handleSaveName} className="p-1.5 rounded-md bg-[#C39767]/20 text-[#C39767] hover:bg-[#C39767]/30 transition-colors shrink-0">
+                                            <CheckCircle2 size={24} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <h2 className={`text-4xl font-display font-medium ${textClass} tracking-wide mb-3 flex items-center justify-center gap-3 group/name`}>
+                                        {user.name}
+                                        <button onClick={() => { setTempName(user.name); setIsEditingName(true); }} className={`p-1.5 rounded-md ${isDark ? 'bg-white/5 opacity-0 group-hover/name:opacity-100' : 'bg-[#2A241E]/5 opacity-100 lg:opacity-0 lg:group-hover/name:opacity-100'} text-[#C39767] transition-all`}>
+                                            <Edit2 size={18} />
+                                        </button>
+                                    </h2>
+                                )}
+
+                                <div className={`flex flex-col items-center gap-2 text-[15px] ${textMuted} font-medium mb-8`}>
+                                    <span className="flex items-center gap-2"><Briefcase size={16} className="text-[#C39767]" /> {user.role}</span>
+                                    <span className="flex items-center gap-2"><HardHat size={16} className={textClass} /> {user.company}</span>
                                 </div>
                             </div>
-
-                            <button className={`mt-4 md:mt-0 px-6 py-2.5 rounded-xl ${isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-[#2A241E]/5 hover:bg-[#2A241E]/10'} border ${cardBorder} ${textClass} font-medium flex items-center justify-center gap-2 transition-all`}>
-                                <Settings size={16} /> Editar Perfil
-                            </button>
                         </div>
                     </div>
 
@@ -157,6 +286,38 @@ export default function ProfileDashboard() {
                                             {user.joinDate}
                                         </div>
                                     </div>
+                                    <div className={`pt-4 mt-2 border-t ${borderColor} `}>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <p className={`text-[10px] font-mono ${textFaint} uppercase tracking-widest`}>Curriculum Vitae (PDF)</p>
+                                        </div>
+                                        <div
+                                            onClick={() => cvvInputRef.current?.click()}
+                                            className={`w-full flex items-center justify-between p-3.5 border-2 border-dashed ${isDark ? 'border-white/10 hover:border-[#C39767]' : 'border-[#2A241E]/10 hover:border-[#C39767]'} rounded-xl cursor-pointer transition-colors group`}
+                                        >
+                                            <input
+                                                type="file"
+                                                accept="application/pdf"
+                                                ref={cvvInputRef}
+                                                className="hidden"
+                                                onChange={handleCvvUpload}
+                                            />
+                                            <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                                                <div className={`w-8 h-8 rounded-lg ${isDark ? 'bg-white/5 group-hover:bg-[#C39767]/20 group-hover:text-[#C39767]' : 'bg-[#2A241E]/5 group-hover:bg-[#C39767]/10 group-hover:text-[#C39767]'} flex items-center justify-center transition-colors shrink-0`}>
+                                                    <FileText size={16} className={user.cvvName ? 'text-[#C39767]' : textMuted} />
+                                                </div>
+                                                {user.cvvName ? (
+                                                    <div className="flex flex-col overflow-hidden">
+                                                        <span className={`text-sm font-medium ${textClass} opacity-90 truncate`}>{user.cvvName}</span>
+                                                        <span className={`text-[10px] ${textFaint} uppercase tracking-wider`}>PDF Subido con éxito</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className={`text-sm font-medium ${textMuted} group-hover:text-[#C39767] transition-colors`}>Subir CV (.pdf)</span>
+                                                )}
+                                            </div>
+                                            {!user.cvvName && <UploadCloud size={16} className={`${textFaint} group-hover:text-[#C39767] transition-colors shrink-0`} />}
+                                            {user.cvvName && <CheckCircle2 size={16} className="text-[#34d399] shrink-0" />}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -182,6 +343,54 @@ export default function ProfileDashboard() {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+
+                            {/* Tarjeta de Mi Plan (Suscripción Horizontal Estilo Mockup) */}
+                            <div className={`relative w-full rounded-3xl border ${isDark ? 'border-white/10' : 'border-[#2A241E]/10'} ${isDark ? 'bg-[#111111]/80' : 'bg-[#E8E0D5]/80'} shadow-xl flex flex-col pt-8 pb-6 px-8 overflow-hidden`}>
+
+                                {/* Imagen de fondo derecha/inferior con Mask suave */}
+                                <div
+                                    className={`absolute inset-0 z-0 overflow-hidden ${isDark ? 'mix-blend-screen opacity-50' : 'mix-blend-multiply opacity-30'} pointer-events-none fade-in`}
+                                    style={{ WebkitMaskImage: 'linear-gradient(to right, transparent 0%, transparent 20%, black 60%)', maskImage: 'linear-gradient(to right, transparent 0%, transparent 20%, black 60%)' }}
+                                >
+                                    <div className={`absolute inset-0 bg-gradient-to-t ${isDark ? 'from-[#111111]' : 'from-[#E8E0D5]'} via-transparent to-transparent z-10`} />
+
+                                    <Image src={
+                                        user.subscription.planName.includes("DRAFT") ? "/images/plan_free.webp" :
+                                            user.subscription.planName.includes("RESIDENT") ? "/images/plan_theresident.webp" :
+                                                user.subscription.planName.includes("MANAGER") ? "/images/sitemanager.webp" :
+                                                    user.subscription.planName.includes("EXECUTIVE") ? "/images/executive_plan.webp" :
+                                                        "/images/sitemanager.webp" // Default fallback
+                                    } alt="Plan Actual" fill className="object-cover object-right-bottom scale-[1.2] translate-y-4" unoptimized />
+                                    <div className="absolute inset-0 bg-black/40 mix-blend-overlay z-10" />
+                                </div>
+
+                                <div className="relative z-20 flex flex-col mb-8 mt-2">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <Sparkles className="text-[#C39767]" size={20} />
+                                        <h3 className={`text-xl font-display font-medium ${textClass}`}>Plan Actual</h3>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4">
+                                        <p className={`text-4xl md:text-5xl font-display font-bold ${textClass} tracking-tight leading-none`}>
+                                            {user.subscription.planName}
+                                        </p>
+                                        <p className={`text-sm md:text-base ${textMuted} font-medium tracking-wide sm:pb-1`}>
+                                            / {user.subscription.price} MXN {user.subscription.cycle}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="relative z-20 mt-auto flex flex-col gap-4">
+                                    <button
+                                        onClick={() => setIsPlanModalOpen(true)}
+                                        className="w-full py-4 rounded-xl bg-gradient-to-r from-[#8a6845]/90 to-[#4a3a2a]/90 hover:from-[#9c7852] hover:to-[#5e4b37] border border-[#C39767]/30 text-white text-[15px] font-medium transition-colors shadow-[0_0_20px_rgba(195,151,103,0.15)] flex items-center justify-center gap-2"
+                                    >
+                                        <CreditCard size={20} /> Administrar Plan
+                                    </button>
+                                    <p className={`text-[11px] text-center font-mono uppercase tracking-widest ${textFaint} font-bold`}>
+                                        PRÓX. COBRO: {user.subscription.nextBilling}
+                                    </p>
+                                </div>
                             </div>
 
                             {/* Tarjeta de Organización Activa (Perfil Trabajador) */}
@@ -220,6 +429,12 @@ export default function ProfileDashboard() {
 
                 </div>
             </main>
+
+            {/* Modal de Planes */}
+            <PlanManagementModal
+                isOpen={isPlanModalOpen}
+                onClose={() => setIsPlanModalOpen(false)}
+            />
         </>
     );
 }

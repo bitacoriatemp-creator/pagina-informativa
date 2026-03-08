@@ -18,7 +18,9 @@ import {
     Laptop,
     MoreVertical,
     ShieldCheck,
-    MapPin
+    MapPin,
+    FileText,
+    UserPlus
 } from "lucide-react";
 
 import { useThemeVars } from "@/hooks/useThemeVars";
@@ -41,6 +43,7 @@ interface Contact {
     projects: { name: string; color: string }[];
     avatarColor: string;
     status: "activo" | "ocupado" | "inactivo";
+    hasCvv?: boolean;
 }
 
 const CATEGORY_COLORS: Record<Category, string> = {
@@ -69,7 +72,8 @@ const MOCK_CONTACTS: Contact[] = [
         email: "d.ramirez@bitacoria.app",
         avatarColor: "from-[#C39767] to-amber-600",
         status: "activo",
-        projects: [{ name: "Torre Reforma", color: "#C39767" }, { name: "Residencial Pedregal", color: "#60a5fa" }]
+        projects: [{ name: "Torre Reforma", color: "#C39767" }, { name: "Residencial Pedregal", color: "#60a5fa" }],
+        hasCvv: true
     },
     {
         id: "c2",
@@ -91,7 +95,8 @@ const MOCK_CONTACTS: Contact[] = [
         email: "c.medina@estructuras.inc",
         avatarColor: "from-red-500 to-rose-700",
         status: "activo",
-        projects: [{ name: "Torre Reforma", color: "#C39767" }, { name: "Hospital Regional", color: "#34d399" }]
+        projects: [{ name: "Torre Reforma", color: "#C39767" }, { name: "Hospital Regional", color: "#34d399" }],
+        hasCvv: true
     },
     {
         id: "c4",
@@ -140,6 +145,9 @@ export default function ContactosDashboard() {
     const [chatMessages, setChatMessages] = useState<{ id: number, text: string }[]>([]);
     const chatInputRef = useRef<HTMLTextAreaElement>(null);
 
+    const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
+    const [newContactCode, setNewContactCode] = useState("");
+
     const {
         isDark,
         mounted,
@@ -150,6 +158,8 @@ export default function ContactosDashboard() {
         cardBorder,
         borderColor,
         hoverBg,
+        bgClass,
+        topBarBg
     } = useThemeVars();
     const [searchQuery, setSearchQuery] = useState("");
     const [filterCategory, setFilterCategory] = useState<string>("Todas");
@@ -271,99 +281,121 @@ export default function ContactosDashboard() {
                             <p className={`${textMuted} text-sm`}>Cambia tu búsqueda o los filtros aplicados.</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 relative z-10">
-                            {filteredContacts.map(contact => {
-                                const Icon = CATEGORY_ICONS[contact.category] || Users;
-                                const color = CATEGORY_COLORS[contact.category];
+                        <div className="flex flex-col gap-4 relative z-10">
+                            {/* Botón Añadir Principal (Dashed Pill) */}
+                            <button
+                                onClick={() => setIsAddContactModalOpen(true)}
+                                className={`w-full py-4 md:py-5 rounded-2xl border-2 border-dashed ${isDark ? 'border-[#C39767]/30 hover:border-[#C39767]/60' : 'border-[#C39767]/40 hover:border-[#C39767]'} flex items-center justify-center gap-3 transition-all duration-300 group ${cardBg} hover:bg-[#C39767]/5 shadow-sm`}
+                            >
+                                <UserPlus size={20} className="text-[#C39767] group-hover:scale-110 transition-transform" />
+                                <span className={`font-display font-medium text-sm md:text-base text-[#C39767] uppercase tracking-widest`}>
+                                    Añadir Contacto
+                                </span>
+                            </button>
 
-                                return (
-                                    <div key={contact.id} className={`group relative rounded-2xl border ${cardBorder} ${cardBg} backdrop-blur-sm overflow-hidden flex flex-col transition-all duration-300 hover: border-[#C39767]/30 ${isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-[#2A241E]/5'} hover: shadow-[0_0_30px_rgba(195, 151, 103, 0.06)]`}>
+                            {/* Grid de Contactos */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
+                                {filteredContacts.map(contact => {
+                                    const Icon = CATEGORY_ICONS[contact.category] || Users;
+                                    const color = CATEGORY_COLORS[contact.category];
 
-                                        {/* Status glowing line at top */}
-                                        <div className={`absolute top-0 left-0 right-0 h-0.5 transition-all duration-500`}
-                                            style={{ backgroundColor: contact.status === 'activo' ? '#34d399' : contact.status === 'ocupado' ? '#f59e0b' : '#52525b', opacity: 0.8 }} />
+                                    return (
+                                        <div key={contact.id} className={`group relative rounded-2xl border ${cardBorder} ${cardBg} backdrop-blur-sm overflow-hidden flex flex-col transition-all duration-300 hover: border-[#C39767]/30 ${isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-[#2A241E]/5'} hover: shadow-[0_0_30px_rgba(195, 151, 103, 0.06)]`}>
 
-                                        <div className="p-5 pb-4 relative z-10">
-                                            <div className="flex justify-between items-start mb-4">
-                                                {/* Avatar */}
-                                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${contact.avatarColor} p-[1px] shadow-lg`}>
-                                                    <div className={`w-full h-full rounded-[11px] ${isDark ? 'bg-[#0a0a0a]/40' : 'bg-[#F4EFE6]/40'} backdrop-blur-md flex items-center justify-center font-display font-bold ${textClass} tracking-widest text-sm relative overflow-hidden`}>
-                                                        <div className={`absolute inset-0 ${isDark ? 'bg-white/10' : 'bg-[#2A241E]/10'} mix-blend-overlay`} />
-                                                        {contact.name.split(" ").map(n => n[0]).join("").substring(0, 2)}
+                                            {/* Status glowing line at top */}
+                                            <div className={`absolute top-0 left-0 right-0 h-0.5 transition-all duration-500`}
+                                                style={{ backgroundColor: contact.status === 'activo' ? '#34d399' : contact.status === 'ocupado' ? '#f59e0b' : '#52525b', opacity: 0.8 }} />
+
+                                            <div className="p-5 pb-4 relative z-10">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    {/* Avatar */}
+                                                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${contact.avatarColor} p-[1px] shadow-lg`}>
+                                                        <div className={`w-full h-full rounded-[11px] ${isDark ? 'bg-[#0a0a0a]/40' : 'bg-[#F4EFE6]/40'} backdrop-blur-md flex items-center justify-center font-display font-bold ${textClass} tracking-widest text-sm relative overflow-hidden`}>
+                                                            <div className={`absolute inset-0 ${isDark ? 'bg-white/10' : 'bg-[#2A241E]/10'} mix-blend-overlay`} />
+                                                            {contact.name.split(" ").map(n => n[0]).join("").substring(0, 2)}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Role Label */}
+                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded border" style={{ backgroundColor: `${color} 10`, borderColor: `${color} 20` }}>
+                                                        <Icon size={12} style={{ color }} />
+                                                        <span className="font-mono text-[9px] uppercase tracking-widest font-bold truncate max-w-[120px]" style={{ color }}>
+                                                            {contact.category}
+                                                        </span>
                                                     </div>
                                                 </div>
 
-                                                {/* Role Label */}
-                                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded border" style={{ backgroundColor: `${color} 10`, borderColor: `${color} 20` }}>
-                                                    <Icon size={12} style={{ color }} />
-                                                    <span className="font-mono text-[9px] uppercase tracking-widest font-bold truncate max-w-[120px]" style={{ color }}>
-                                                        {contact.category}
-                                                    </span>
+                                                <div>
+                                                    <h3 className={`text-base font-display font-semibold ${textClass} leading-tight mb-1`}>{contact.name}</h3>
+                                                    <p className={`text-xs ${textMuted} `}>{contact.role}</p>
                                                 </div>
                                             </div>
 
-                                            <div>
-                                                <h3 className={`text-base font-display font-semibold ${textClass} leading-tight mb-1`}>{contact.name}</h3>
-                                                <p className={`text-xs ${textMuted} `}>{contact.role}</p>
-                                            </div>
-                                        </div>
+                                            {/* Info & Contact Box */}
+                                            <div className={`px-5 py-3 ${isDark ? 'bg-[#0a0a0a]/50 border-white/[0.04]' : 'bg-[#E8E0D5]/30 border-[#2A241E]/[0.04]'} border-t border-b space-y-2.5`}>
+                                                <div className={`flex items-center gap-2.5 ${textMuted} transition-colors group/tel cursor-pointer`}>
+                                                    <div className={`w-6 h-6 rounded-md ${isDark ? 'bg-white/[0.03] group-hover/tel:bg-white/[0.08] border-white/[0.02]' : 'bg-[#2A241E]/[0.03] group-hover/tel:bg-[#2A241E]/[0.08] border-[#2A241E]/[0.02]'} flex items-center justify-center transition-colors border`}>
+                                                        <Phone size={12} className={textClass} />
+                                                    </div>
+                                                    <span className="font-mono text-xs">{contact.phone}</span>
+                                                </div>
+                                                <div className={`flex items-center gap-2.5 ${textMuted} transition-colors group/mail cursor-pointer`}>
+                                                    <div className={`w-6 h-6 rounded-md ${isDark ? 'bg-white/[0.03] group-hover/mail:bg-white/[0.08] border-white/[0.02]' : 'bg-[#2A241E]/[0.03] group-hover/mail:bg-[#2A241E]/[0.08] border-[#2A241E]/[0.02]'} flex items-center justify-center transition-colors border`}>
+                                                        <Mail size={12} className={textClass} />
+                                                    </div>
+                                                    <span className="font-mono text-xs truncate pr-2">{contact.email}</span>
+                                                </div>
 
-                                        {/* Info & Contact Box */}
-                                        <div className={`px-5 py-3 ${isDark ? 'bg-[#0a0a0a]/50 border-white/[0.04]' : 'bg-[#E8E0D5]/30 border-[#2A241E]/[0.04]'} border-t border-b space-y-2.5`}>
-                                            <div className={`flex items-center gap-2.5 ${textMuted} transition-colors group/tel cursor-pointer`}>
-                                                <div className={`w-6 h-6 rounded-md ${isDark ? 'bg-white/[0.03] group-hover/tel:bg-white/[0.08] border-white/[0.02]' : 'bg-[#2A241E]/[0.03] group-hover/tel:bg-[#2A241E]/[0.08] border-[#2A241E]/[0.02]'} flex items-center justify-center transition-colors border`}>
-                                                    <Phone size={12} className={textClass} />
-                                                </div>
-                                                <span className="font-mono text-xs">{contact.phone}</span>
-                                            </div>
-                                            <div className={`flex items-center gap-2.5 ${textMuted} transition-colors group/mail cursor-pointer`}>
-                                                <div className={`w-6 h-6 rounded-md ${isDark ? 'bg-white/[0.03] group-hover/mail:bg-white/[0.08] border-white/[0.02]' : 'bg-[#2A241E]/[0.03] group-hover/mail:bg-[#2A241E]/[0.08] border-[#2A241E]/[0.02]'} flex items-center justify-center transition-colors border`}>
-                                                    <Mail size={12} className={textClass} />
-                                                </div>
-                                                <span className="font-mono text-xs truncate pr-2">{contact.email}</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Projects Footer */}
-                                        <div className="p-4 mt-auto">
-                                            <div className="flex items-center justify-between mb-2.5">
-                                                <span className={`font-mono text-[10px] ${textFaint} uppercase tracking-widest`}>Obras asignadas</span>
-                                                <div className="flex items-center gap-1">
-                                                    <button
-                                                        onClick={() => {
-                                                            setActiveChat(contact);
-                                                            setTimeout(() => chatInputRef.current?.focus(), 100);
-                                                        }}
-                                                        className={`p-1.5 rounded-md transition-colors ${isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-[#2A241E]/40 hover:text-[#2A241E] hover:bg-[#2A241E]/10'} `}
-                                                        title="Enviar mensaje"
-                                                    >
-                                                        <MessageSquare size={14} />
-                                                    </button>
-                                                    <button className={`${textFaint} hover: opacity-100 transition-colors p-1.5 rounded-md`}>
-                                                        <MoreVertical size={14} className={textClass} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {contact.projects.length > 0 ? (
-                                                    contact.projects.map(p => (
-                                                        <span key={p.name} className={`flex items-center gap-1.5 px-2 py-1 rounded ${isDark ? 'bg-[#111] border-white/[0.06]' : 'bg-[#E8E0D5] border-[#2A241E]/10'} border font-mono text-[10px] leading-none whitespace-nowrap ${textMuted} `}>
-                                                            <MapPin size={10} style={{ color: p.color }} />
-                                                            {p.name}
-                                                        </span>
-                                                    ))
-                                                ) : (
-                                                    <span className={`font-mono text-[10px] ${textFaint} italic`}>Disponible/Sin asignar</span>
+                                                {contact.hasCvv && (
+                                                    <div className={`flex items-center gap-2.5 ${textMuted} transition-colors group/cvv cursor-pointer`}>
+                                                        <div className={`w-6 h-6 rounded-md ${isDark ? 'bg-white/[0.03] group-hover/cvv:bg-white/[0.08] border-white/[0.02]' : 'bg-[#2A241E]/[0.03] group-hover/cvv:bg-[#2A241E]/[0.08] border-[#2A241E]/[0.02]'} flex items-center justify-center transition-colors border`}>
+                                                            <FileText size={12} className={textClass} />
+                                                        </div>
+                                                        <span className="font-mono text-xs">Ver CV (.pdf)</span>
+                                                    </div>
                                                 )}
                                             </div>
+
+                                            {/* Projects Footer */}
+                                            <div className="p-4 mt-auto">
+                                                <div className="flex items-center justify-between mb-2.5">
+                                                    <span className={`font-mono text-[10px] ${textFaint} uppercase tracking-widest`}>Obras asignadas</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <button
+                                                            onClick={() => {
+                                                                setActiveChat(contact);
+                                                                setTimeout(() => chatInputRef.current?.focus(), 100);
+                                                            }}
+                                                            className={`p-1.5 rounded-md transition-colors ${isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-[#2A241E]/40 hover:text-[#2A241E] hover:bg-[#2A241E]/10'} `}
+                                                            title="Enviar mensaje"
+                                                        >
+                                                            <MessageSquare size={14} />
+                                                        </button>
+                                                        <button className={`${textFaint} hover: opacity-100 transition-colors p-1.5 rounded-md`}>
+                                                            <MoreVertical size={14} className={textClass} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {contact.projects.length > 0 ? (
+                                                        contact.projects.map(p => (
+                                                            <span key={p.name} className={`flex items-center gap-1.5 px-2 py-1 rounded ${isDark ? 'bg-[#111] border-white/[0.06]' : 'bg-[#E8E0D5] border-[#2A241E]/10'} border font-mono text-[10px] leading-none whitespace-nowrap ${textMuted} `}>
+                                                                <MapPin size={10} style={{ color: p.color }} />
+                                                                {p.name}
+                                                            </span>
+                                                        ))
+                                                    ) : (
+                                                        <span className={`font-mono text-[10px] ${textFaint} italic`}>Disponible/Sin asignar</span>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
-                    )
-                    }
-                </div >
+                    )}
+                </div>
                 {/* MINI CHAT WIDGET */}
                 {
                     activeChat && (
@@ -460,6 +492,69 @@ export default function ContactosDashboard() {
                         </div>
                     )
                 }
+
+                {/* Añadir Contacto Modal */}
+                {isAddContactModalOpen && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsAddContactModalOpen(false)} />
+
+                        <div className={`relative w-[calc(100%-2rem)] max-w-md ${bgClass} border ${cardBorder} rounded-[2rem] shadow-2xl animate-in fade-in zoom-in-95 flex flex-col overflow-hidden`}>
+
+                            {/* Botón cerrar global */}
+                            <button
+                                onClick={() => setIsAddContactModalOpen(false)}
+                                className={`absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full ${isDark ? 'bg-white/10 hover:bg-white/20' : 'bg-[#2A241E]/5 hover:bg-[#2A241E]/10'} ${textMuted} hover:text-[#C39767] transition-all z-10`}
+                            >
+                                <X size={18} />
+                            </button>
+
+                            {/* Header / Info Area */}
+                            <div className={`pt-10 px-6 sm:px-8 pb-6 relative flex flex-col items-start text-left`}>
+                                <div className={`w-14 h-14 rounded-2xl ${isDark ? 'bg-[#C39767]/20 border border-[#C39767]/30' : 'bg-[#C39767]/10 border border-[#C39767]/20'} flex items-center justify-center mb-5`}>
+                                    <UserPlus size={26} className="text-[#C39767]" />
+                                </div>
+                                <h2 className={`text-2xl font-display font-semibold ${textClass} mb-2`}>
+                                    Añadir Contacto
+                                </h2>
+                                <p className={`text-sm ${textMuted} leading-relaxed`}>
+                                    Ingresa el código único de invitación o el ID del usuario para vincularlo a tu libreta de contactos.
+                                </p>
+                            </div>
+
+                            {/* Input & Actions Area */}
+                            <div className={`px-6 sm:px-8 py-8 ${topBarBg} border-t ${cardBorder} flex flex-col`}>
+                                <label className={`block text-[11px] font-bold ${textMuted} uppercase tracking-widest mb-3`}>Código de Invitación / ID *</label>
+                                <input
+                                    type="text"
+                                    value={newContactCode}
+                                    onChange={e => setNewContactCode(e.target.value)}
+                                    placeholder="Ej. BIT-2026-XYZ"
+                                    className={`w-full ${cardBg} border ${cardBorder} rounded-xl px-5 py-4 ${textClass} font-mono text-base focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all mb-8`}
+                                    autoFocus
+                                />
+
+                                <div className={`flex flex-col-reverse sm:flex-row items-center justify-end gap-3`}>
+                                    <button
+                                        onClick={() => setIsAddContactModalOpen(false)}
+                                        className={`w-full sm:w-auto px-5 py-3 rounded-xl text-sm font-medium ${textMuted} hover:text-[#C39767] hover:${hoverBg} transition-colors`}
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setIsAddContactModalOpen(false);
+                                            setNewContactCode("");
+                                        }}
+                                        disabled={!newContactCode.trim()}
+                                        className={`w-full sm:w-auto px-6 py-3 rounded-xl text-sm font-medium bg-[#C39767] text-white hover:bg-[#d4a878] shadow-lg shadow-[#C39767]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    >
+                                        Vincular Contacto
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
         </>
     );

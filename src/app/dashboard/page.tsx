@@ -163,10 +163,16 @@ export default function DashboardHub() {
         setIsModalOpen(true);
     };
 
-    const handleSaveProject = (projectData: any) => {
+    const handleSaveProject = (projectData: {
+        title: string;
+        subtitle: string;
+        gradient: string;
+        coverImage?: string | null;
+        invitedUsers: { id: number, name: string, role: string }[];
+    }) => {
         if (editingProject) {
             // Edit Mode
-            setProjects(projects.map(p => p.id === editingProject.id ? { ...p, ...projectData } : p));
+            setProjects(projects.map(p => p.id === editingProject.id ? { ...p, ...projectData, coverImage: projectData.coverImage || undefined } : p));
         } else {
             // Create Mode
             const newProject: Project = {
@@ -175,12 +181,12 @@ export default function DashboardHub() {
                 subtitle: projectData.subtitle,
                 role: "Owner",
                 gradient: projectData.gradient,
-                coverImage: projectData.coverImage,
+                coverImage: projectData.coverImage || undefined,
                 ownerInitials: "EM",
                 lastUpdated: "Justo ahora",
                 team: [
                     { initials: "EM", role: "Owner", color: "bg-[#C39767]" },
-                    ...(projectData.invitedUsers || []).map((inv: any, idx: number) => ({
+                    ...(projectData.invitedUsers || []).map((inv, idx: number) => ({
                         initials: inv.name.split(" ")[0].substring(0, 2).toUpperCase(),
                         role: inv.role as Role,
                         color: idx % 2 === 0 ? "bg-blue-500" : "bg-emerald-500"

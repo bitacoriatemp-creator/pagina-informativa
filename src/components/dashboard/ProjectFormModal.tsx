@@ -111,7 +111,7 @@ export default function ProjectFormModal({
                 <div className={`px-5 py-4 border-b ${cardBorder} flex items-center justify-between ${topBarBg}`}>
                     <h2 className={`text-lg font-display font-medium ${textClass} flex items-center gap-2`}>
                         {initialProject ? <Paintbrush size={18} className="text-[#C39767]" /> : <Plus size={18} className="text-[#C39767]" />}
-                        {initialProject ? "Personalizar" : "Crear Nueva Obra"}
+                        {initialProject ? "Personalizar Proyecto" : "Nuevo Proyecto"}
                     </h2>
                     <button onClick={onClose} className={`${textMuted} hover:opacity-100 transition-colors`}><X size={20} /></button>
                 </div>
@@ -175,6 +175,28 @@ export default function ProjectFormModal({
                                             onChange={e => setFormStateLoc(e.target.value)}
                                             placeholder="Ej. Valle de Bravo"
                                             className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-sm`}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className={`block text-[11px] font-bold ${textMuted} uppercase tracking-widest mb-2`}>Inicio</label>
+                                        <input
+                                            type="date"
+                                            value={formStartDate}
+                                            onChange={e => setFormStartDate(e.target.value)}
+                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-sm [color-scheme:dark_light]`}
+                                            style={{ colorScheme: isDark ? 'dark' : 'light' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className={`block text-[11px] font-bold ${textMuted} uppercase tracking-widest mb-2`}>Fin Estimado</label>
+                                        <input
+                                            type="date"
+                                            value={formEndDate}
+                                            onChange={e => setFormEndDate(e.target.value)}
+                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-sm [color-scheme:dark_light]`}
+                                            style={{ colorScheme: isDark ? 'dark' : 'light' }}
                                         />
                                     </div>
                                 </div>
