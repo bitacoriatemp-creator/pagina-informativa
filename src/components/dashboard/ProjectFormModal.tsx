@@ -114,12 +114,12 @@ export default function ProjectFormModal({
     };
 
     return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleClose} />
 
-            <div className={`relative w-full max-w-md ${bgClass} border ${cardBorder} rounded-2xl shadow-2xl flex flex-col max-h-[85dvh] sm:max-h-[90dvh] mx-auto overflow-hidden`}>
+            <div className={`relative w-full max-w-md ${bgClass} border ${cardBorder} rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden`}>
                 {/* Header Modal */}
-                <div className={`shrink-0 px-5 py-4 border-b ${cardBorder} flex items-center justify-between ${topBarBg}`}>
+                <div className={`px-5 py-4 border-b ${cardBorder} flex items-center justify-between ${topBarBg}`}>
                     <h2 className={`text-lg font-display font-medium ${textClass} flex items-center gap-2`}>
                         {initialProject ? <Paintbrush size={18} className="text-[#C39767]" /> : <Plus size={18} className="text-[#C39767]" />}
                         {initialProject ? "Personalizar Proyecto" : "Nuevo Proyecto"}
@@ -128,7 +128,7 @@ export default function ProjectFormModal({
                 </div>
 
                 {/* Tabs Navigation */}
-                <div className={`shrink-0 flex items-center border-b ${cardBorder} ${topBarBg}`}>
+                <div className={`flex items-center border-b ${cardBorder} ${topBarBg}`}>
                     {([
                         { id: "detalles", label: "Detalles", icon: HardHat },
                         { id: "equipo", label: "Equipo", icon: Users },
@@ -162,7 +162,7 @@ export default function ProjectFormModal({
                                         value={formTitle}
                                         onChange={e => setFormTitle(e.target.value)}
                                         placeholder="Ej. Torre Reforma, C.C. Oasis..."
-                                        className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-sm`}
+                                        className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base`}
                                         required
                                         autoFocus
                                     />
@@ -175,7 +175,7 @@ export default function ProjectFormModal({
                                             value={formCity}
                                             onChange={e => setFormCity(e.target.value)}
                                             placeholder="Ej. CDMX"
-                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-sm`}
+                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base`}
                                         />
                                     </div>
                                     <div>
@@ -185,7 +185,7 @@ export default function ProjectFormModal({
                                             value={formStateLoc}
                                             onChange={e => setFormStateLoc(e.target.value)}
                                             placeholder="Ej. Valle de Bravo"
-                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-sm`}
+                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base`}
                                         />
                                     </div>
                                 </div>
@@ -196,7 +196,7 @@ export default function ProjectFormModal({
                                             type="date"
                                             value={formStartDate}
                                             onChange={e => setFormStartDate(e.target.value)}
-                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-sm [color-scheme:dark_light]`}
+                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base [color-scheme:dark_light]`}
                                             style={{ colorScheme: isDark ? 'dark' : 'light' }}
                                         />
                                     </div>
@@ -206,7 +206,7 @@ export default function ProjectFormModal({
                                             type="date"
                                             value={formEndDate}
                                             onChange={e => setFormEndDate(e.target.value)}
-                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-sm [color-scheme:dark_light]`}
+                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base [color-scheme:dark_light]`}
                                             style={{ colorScheme: isDark ? 'dark' : 'light' }}
                                         />
                                     </div>
