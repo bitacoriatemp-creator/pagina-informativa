@@ -58,7 +58,7 @@ export default function SettingsDashboard() {
             <DashboardTopBar activePage="configuracion" pageTitle="Configuración" />
 
             {/* Settings Content - Compactor sin scroll excesivo */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar w-full p-4 lg:p-8 relative z-10 flex flex-col items-center">
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar w-full p-4 lg:p-8 relative z-10 flex flex-col items-center">
                 <div className="w-full max-w-5xl flex flex-col lg:flex-row gap-6 lg:gap-8 pb-32">
 
                     {/* Tab Menu List */}

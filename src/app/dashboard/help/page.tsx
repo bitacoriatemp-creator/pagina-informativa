@@ -55,7 +55,7 @@ export default function HelpCenterDashboard() {
             <DashboardTopBar activePage="ayuda" pageTitle="Soporte" />
 
             {/* Main Scroll Area */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10" data-lenis-prevent>
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar relative z-10" data-lenis-prevent>
 
                 {/* Hero Header Area */}
                 <div className={`relative pt-16 pb-20 px-6 lg:px-10 border-b ${borderColor} bg-gradient-to-b ${isDark ? 'from-white/[0.02]' : 'from-[#2A241E]/[0.02]'} to-transparent transition-colors duration-500`}>

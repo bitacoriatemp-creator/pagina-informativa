@@ -271,7 +271,7 @@ export default function ContactosDashboard() {
             <main className="flex-1 flex flex-col h-full overflow-hidden relative z-10 transition-colors duration-500 w-full">
 
                 {/* Directorio Body */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-6" data-lenis-prevent>
+                <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6" data-lenis-prevent>
                     {filteredContacts.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center">
                             <div className={`w-16 h-16 rounded-2xl ${cardBg} border ${cardBorder} flex items-center justify-center mb-4`}>
@@ -425,7 +425,7 @@ export default function ContactosDashboard() {
                             </div>
 
                             {/* Chat Messages */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-black/40">
+                            <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-black/40">
                                 {chatMessages.length === 0 ? (
                                     <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
                                         <MessageSquare size={32} className="mb-3 opacity-50" />

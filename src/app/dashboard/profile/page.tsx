@@ -141,7 +141,7 @@ export default function ProfileDashboard() {
             <DashboardTopBar activePage="perfil" pageTitle="Mi Perfil" />
 
             {/* Profile Scroll Area */}
-            <main data-lenis-prevent className={`flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-10 relative z-10 ${isDark ? 'dark-content-area' : 'light-content-area'}`}>
+            <main data-lenis-prevent className={`flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6 lg:p-10 relative z-10 ${isDark ? 'dark-content-area' : 'light-content-area'}`}>
                 <div className="max-w-5xl mx-auto space-y-6">
 
                     {/* Tarjeta de Presentación / Banner & Identidad */}

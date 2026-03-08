@@ -45,7 +45,7 @@ export default function PlanManagementModal({ isOpen, onClose }: PlanManagementM
                 </div>
 
                 {/* Content - Scrollable area */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-10 pt-4" data-lenis-prevent>
+                <div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-10 pt-4 min-h-0" data-lenis-prevent>
 
                     {/* Grid wrapper */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
@@ -150,19 +150,21 @@ interface PlanCardProps {
     extraContent?: React.ReactNode;
 }
 
-function PlanCard({ title, subtitle, price, period, imageSrc, buttonText, secondaryButtonText, features, isRecommended, isPurple, extraContent }: PlanCardProps) {
+function PlanCard({ title, subtitle, price, period, imageSrc, buttonText, secondaryButtonText, features, isRecommended, isPurple, extraContent, actualPlan }: PlanCardProps) {
     const borderColor = isRecommended ? "border-[#C39767]/50" : "border-white/10";
     const bgGlow = isRecommended ? "bg-[#3A2B1C]/30" : "bg-[#111111]/80";
     const shadowClass = isRecommended ? "shadow-[0_0_40px_rgba(195,151,103,0.15)]" : "shadow-xl";
 
     return (
-        <div className={`relative w-full rounded-3xl border ${borderColor} ${bgGlow} ${shadowClass} flex flex-col pt-8 pb-6 px-6 overflow-hidden transition-transform duration-300 hover:-translate-y-1`}>
+        <div className={`relative w-full rounded-3xl border ${borderColor} ${bgGlow} ${shadowClass} flex flex-col pt-8 pb-6 px-6 transition-transform duration-300 hover:-translate-y-1`}>
 
-            {/* Imagen de fondo inferior */}
-            <div className="absolute inset-x-0 bottom-0 h-[60%] z-0 overflow-hidden mix-blend-screen opacity-60 pointer-events-none fade-in mask-image-bottom">
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
-                <Image src={imageSrc} alt={title} fill className="object-cover lg:object-contain object-bottom sm:object-right-bottom translate-y-2 sm:translate-y-0" unoptimized />
-                <div className="absolute inset-0 bg-black/40 mix-blend-overlay z-10" />
+            {/* Background Container for Image to prevent corners bleeding */}
+            <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none z-0">
+                <div className="absolute inset-x-0 bottom-0 h-[60%] z-0 overflow-hidden mix-blend-screen opacity-60 pointer-events-none fade-in mask-image-bottom">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
+                    <Image src={imageSrc} alt={title} fill className="object-cover lg:object-contain object-bottom sm:object-right-bottom translate-y-2 sm:translate-y-0" unoptimized />
+                    <div className="absolute inset-0 bg-black/40 mix-blend-overlay z-10" />
+                </div>
             </div>
 
             {/* Pill Recomendado */}
@@ -204,7 +206,12 @@ function PlanCard({ title, subtitle, price, period, imageSrc, buttonText, second
 
             {/* Acción */}
             <div className="relative z-20 flex items-center justify-between gap-3 w-full mt-auto pt-2">
-                {isPurple ? (
+                {actualPlan ? (
+                    <button className="w-full py-4 rounded-xl bg-white/10 border border-white/20 text-white font-semibold flex items-center justify-center gap-2 shadow-inner pointer-events-none">
+                        <Check size={18} />
+                        Plan Actual
+                    </button>
+                ) : isPurple ? (
                     <>
                         <button className="flex-1 py-3.5 rounded-xl bg-purple-600/20 border border-purple-500/50 hover:bg-purple-600/40 text-white text-sm font-medium transition-colors shadow-[0_0_20px_rgba(147,51,234,0.3)]">
                             {buttonText}

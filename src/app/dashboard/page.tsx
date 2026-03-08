@@ -238,7 +238,7 @@ export default function DashboardHub() {
                 }
             />
 
-            <main data-lenis-prevent className={`flex-1 overflow-y-auto p-4 sm:p-8 lg:p-10 custom-scrollbar relative ${isDark ? 'dark-content-area' : 'light-content-area'}`}>
+            <main data-lenis-prevent className={`flex-1 min-h-0 overflow-y-auto p-4 sm:p-8 lg:p-10 custom-scrollbar relative ${isDark ? 'dark-content-area' : 'light-content-area'}`}>
                 {/* Ambient glow top-left */}
                 <div className="fixed top-0 left-64 w-[600px] h-[300px] bg-[#C39767]/[0.03] blur-[100px] pointer-events-none" />
 
