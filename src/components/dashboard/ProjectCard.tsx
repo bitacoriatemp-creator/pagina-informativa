@@ -100,12 +100,6 @@ export default function ProjectCard({
                             ))}
                         </div>
                     </div>
-                    {/* Scroll Indicator (Discreto, se muestra cuando hay más de 3 miembros) */}
-                    {project.team && project.team.length > 3 && (
-                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 pointer-events-none flex justify-center opacity-40 group-hover/teamlist:opacity-100 transition-opacity duration-300">
-                            <ChevronDown size={16} className={`animate-bounce ${textClass}`} />
-                        </div>
-                    )}
                 </div>
 
                 {/* Controles de abajo (Fecha) */}

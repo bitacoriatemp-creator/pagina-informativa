@@ -74,7 +74,7 @@ export default function ProjectFormModal({
         if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
             document.activeElement.blur();
         }
-        setTimeout(onClose, 10);
+        setTimeout(onClose, 100);
     };
 
     const handleGenerateCode = () => {
@@ -114,10 +114,10 @@ export default function ProjectFormModal({
     };
 
     return (
-        <div className="fixed inset-0 z-[200] flex flex-col justify-end sm:justify-center p-0 sm:p-6">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleClose} />
 
-            <div className={`relative w-full max-w-md ${bgClass} border ${cardBorder} rounded-t-[2rem] sm:rounded-2xl shadow-2xl flex flex-col max-h-[85dvh] sm:max-h-[90dvh] mx-auto overflow-hidden`}>
+            <div className={`relative w-full max-w-md ${bgClass} border ${cardBorder} rounded-2xl shadow-2xl flex flex-col max-h-[85dvh] sm:max-h-[90dvh] mx-auto overflow-hidden`}>
                 {/* Header Modal */}
                 <div className={`shrink-0 px-5 py-4 border-b ${cardBorder} flex items-center justify-between ${topBarBg}`}>
                     <h2 className={`text-lg font-display font-medium ${textClass} flex items-center gap-2`}>
