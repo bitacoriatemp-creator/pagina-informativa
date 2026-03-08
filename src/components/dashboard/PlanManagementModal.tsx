@@ -21,7 +21,7 @@ export default function PlanManagementModal({ isOpen, onClose }: PlanManagementM
     if (!mounted || !isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-4 sm:p-6 pb-8 sm:pb-6">
             <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={onClose} />
 
             <div className="relative w-full max-w-[1300px] max-h-[90vh] bg-[#050505] border border-white/5 rounded-[2.5rem] shadow-2xl animate-in fade-in zoom-in-95 flex flex-col overflow-hidden">
@@ -160,10 +160,10 @@ function PlanCard({ title, subtitle, price, period, imageSrc, buttonText, second
 
             {/* Background Container for Image to prevent corners bleeding */}
             <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none z-0">
-                <div className="absolute inset-x-0 bottom-0 h-[60%] z-0 overflow-hidden mix-blend-screen opacity-60 pointer-events-none fade-in mask-image-bottom">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
-                    <Image src={imageSrc} alt={title} fill className="object-cover lg:object-contain object-bottom sm:object-right-bottom translate-y-2 sm:translate-y-0" unoptimized />
-                    <div className="absolute inset-0 bg-black/40 mix-blend-overlay z-10" />
+                <div className="absolute inset-x-0 bottom-0 h-64 lg:h-[60%] z-0 overflow-hidden mix-blend-screen opacity-15 lg:opacity-60 pointer-events-none fade-in mask-image-bottom">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-[#0a0a0a]/80 to-transparent z-10" />
+                    <Image src={imageSrc} alt={title} fill className="object-cover lg:object-contain object-bottom sm:object-right-bottom translate-y-4 sm:translate-y-0" unoptimized />
+                    <div className="absolute inset-0 bg-black/60 mix-blend-overlay z-10" />
                 </div>
             </div>
 
