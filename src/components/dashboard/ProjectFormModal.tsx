@@ -154,7 +154,7 @@ export default function ProjectFormModal({
                     <form id="projectForm" onSubmit={handleSubmit}>
                         {/* ──────── TAB: DETALLES ──────── */}
                         {activeTab === "detalles" && (
-                            <div className="space-y-4">
+                            <div className="space-y-3 sm:space-y-4">
                                 <div>
                                     <label className={`block text-[11px] font-bold ${textMuted} uppercase tracking-widest mb-2`}>Título de la Obra *</label>
                                     <input
@@ -162,12 +162,12 @@ export default function ProjectFormModal({
                                         value={formTitle}
                                         onChange={e => setFormTitle(e.target.value)}
                                         placeholder="Ej. Torre Reforma, C.C. Oasis..."
-                                        className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base`}
+                                        className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-1.5 sm:py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base`}
                                         required
                                         autoFocus
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                     <div>
                                         <label className={`block text-[11px] font-bold ${textMuted} uppercase tracking-widest mb-2`}>Ciudad</label>
                                         <input
@@ -175,7 +175,7 @@ export default function ProjectFormModal({
                                             value={formCity}
                                             onChange={e => setFormCity(e.target.value)}
                                             placeholder="Ej. CDMX"
-                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base`}
+                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-1.5 sm:py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base`}
                                         />
                                     </div>
                                     <div>
@@ -185,18 +185,18 @@ export default function ProjectFormModal({
                                             value={formStateLoc}
                                             onChange={e => setFormStateLoc(e.target.value)}
                                             placeholder="Ej. Valle de Bravo"
-                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base`}
+                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-1.5 sm:py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base`}
                                         />
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-3 sm:gap-4">
                                     <div>
                                         <label className={`block text-[11px] font-bold ${textMuted} uppercase tracking-widest mb-2`}>Inicio</label>
                                         <input
                                             type="date"
                                             value={formStartDate}
                                             onChange={e => setFormStartDate(e.target.value)}
-                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base [color-scheme:dark_light]`}
+                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-1.5 sm:py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base [color-scheme:dark_light]`}
                                             style={{ colorScheme: isDark ? 'dark' : 'light' }}
                                         />
                                     </div>
@@ -206,7 +206,7 @@ export default function ProjectFormModal({
                                             type="date"
                                             value={formEndDate}
                                             onChange={e => setFormEndDate(e.target.value)}
-                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base [color-scheme:dark_light]`}
+                                            className={`w-full ${cardBg} border ${cardBorder} rounded-lg px-3 py-1.5 sm:py-2.5 ${textClass} focus:outline-none focus:border-[#C39767] focus:ring-1 focus:ring-[#C39767] transition-all text-base [color-scheme:dark_light]`}
                                             style={{ colorScheme: isDark ? 'dark' : 'light' }}
                                         />
                                     </div>
