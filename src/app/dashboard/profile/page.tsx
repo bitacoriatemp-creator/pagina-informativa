@@ -29,6 +29,11 @@ import PlanManagementModal from "@/components/dashboard/PlanManagementModal";
 import { useDashboard } from "@/context/DashboardContext";
 import { useThemeVars } from "@/hooks/useThemeVars";
 
+// Helper for basePath support in production
+const getImagePath = (path: string) => {
+    return process.env.NODE_ENV === "production" ? `/plataforma${path}` : path;
+};
+
 export default function ProfileDashboard() {
     const {
         isDark,
@@ -311,13 +316,13 @@ export default function ProfileDashboard() {
                                 >
                                     <div className={`absolute inset-0 bg-gradient-to-t ${isDark ? 'from-[#111111]' : 'from-[#E8E0D5]'} via-transparent to-transparent z-10`} />
 
-                                    <Image src={
+                                    <Image src={getImagePath(
                                         user.subscription.planName.includes("DRAFT") ? "/images/plan_free.webp" :
                                             user.subscription.planName.includes("RESIDENT") ? "/images/plan_theresident.webp" :
                                                 user.subscription.planName.includes("MANAGER") ? "/images/sitemanager.webp" :
                                                     user.subscription.planName.includes("EXECUTIVE") ? "/images/executive_plan.webp" :
                                                         "/images/sitemanager.webp" // Default fallback
-                                    } alt="Plan Actual" fill className="object-cover object-right-bottom scale-[1.2] translate-y-4" unoptimized />
+                                    )} alt="Plan Actual" fill className="object-cover object-right-bottom scale-[1.2] translate-y-4" unoptimized />
                                     <div className="absolute inset-0 bg-black/40 mix-blend-overlay z-10" />
                                 </div>
 

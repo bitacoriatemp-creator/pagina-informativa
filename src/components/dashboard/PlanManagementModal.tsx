@@ -90,7 +90,7 @@ export default function PlanManagementModal({ isOpen, onClose }: PlanManagementM
                             subtitle="El estándar para Constructores y PyMES."
                             price="$3,899"
                             period="MXN / mes"
-                            imageSrc="/images/sitemanager.webp"
+                            imageSrc={getImagePath("/images/sitemanager.webp")}
                             buttonText="Comenzar"
                             isRecommended={true}
                             extraContent={
