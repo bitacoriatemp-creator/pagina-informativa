@@ -294,14 +294,14 @@ export default function ContactosDashboard() {
                         </div>
                     ) : (
                         <div className="flex flex-col gap-4 relative z-10">
-                            {/* Botón Añadir Principal (Dashed Pill) - SOLO MÓVIL */}
+                            {/* Botón Añadir Principal (Solid Premium) - SOLO MÓVIL */}
                             <button
                                 onClick={() => setIsAddContactModalOpen(true)}
-                                className={`w-full md:hidden py-4 rounded-2xl border-2 border-dashed ${isDark ? 'border-[#C39767]/30 hover:border-[#C39767]/60' : 'border-[#C39767]/40 hover:border-[#C39767]'} flex items-center justify-center gap-3 transition-all duration-300 group ${cardBg} hover:bg-[#C39767]/5 shadow-sm`}
+                                className="w-full md:hidden py-3.5 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 group bg-gradient-to-r from-[#C39767] to-[#A87B4C] text-white shadow-[0_8px_30px_rgba(195,151,103,0.3)] hover:shadow-[0_8px_40px_rgba(195,151,103,0.5)] active:scale-[0.98] border border-white/10"
                             >
-                                <UserPlus size={20} className="text-[#C39767] group-hover:scale-110 transition-transform" />
-                                <span className={`font-display font-medium text-sm md:text-base text-[#C39767] uppercase tracking-widest`}>
-                                    Añadir Contacto
+                                <UserPlus size={20} className="group-hover:scale-110 transition-transform" />
+                                <span className="font-display font-semibold text-sm uppercase tracking-widest text-shadow-sm">
+                                    Añadir Nuevo Contacto
                                 </span>
                             </button>
 
