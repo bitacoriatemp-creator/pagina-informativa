@@ -11,7 +11,11 @@ export function useProjects() {
                     const parsed = JSON.parse(saved) as Project[];
                     const hasNames = parsed.every(p => (p.team || []).every(m => m.name));
                     const hasAvatars = parsed.some(p => (p.team || []).some(m => m.avatarUrl));
-                    if (parsed.length > 0 && hasNames && hasAvatars) return parsed;
+                    
+                    // Descartar caché si tiene rutas corruptas o viejas
+                    const isCorrupted = saved.includes("\\.webp") || saved.includes(".png");
+                    
+                    if (!isCorrupted && parsed.length > 0 && hasNames && hasAvatars) return parsed;
                 }
             } catch { /* ignore corrupt data */ }
         }
