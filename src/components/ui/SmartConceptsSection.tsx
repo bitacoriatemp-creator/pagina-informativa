@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import type { ElementType } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { Check, MapPin, Pencil, Home, Building2, Mountain, Layers } from "lucide-react";
@@ -334,39 +334,34 @@ export default function SmartConceptsSection() {
     const [phase, setPhase] = useState<Phase>({ kind: "step", stepIndex: 0, clicking: false });
     const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-    const clearTimers = () => {
+    const clearTimers = useCallback(() => {
         timers.current.forEach(clearTimeout);
         timers.current = [];
-    };
+    }, []);
 
-    const schedule = (fn: () => void, delay: number) => {
+    const schedule = useCallback((fn: () => void, delay: number) => {
         const id = setTimeout(fn, delay);
         timers.current.push(id);
         return id;
-    };
+    }, []);
 
-    const runScenario = (sIdx: number) => {
+    const runScenario = useCallback((sIdx: number) => {
         const scenario = SCENARIOS[sIdx];
         const totalSteps = scenario.steps.length;
 
-        // Advance through each step
         const runStep = (stepIndex: number) => {
             setPhase({ kind: "step", stepIndex, clicking: false });
 
-            // After STEP_READ ms — trigger simulated click
             schedule(() => {
                 setPhase({ kind: "step", stepIndex, clicking: true });
 
-                // After click animation — go to next step or table
                 schedule(() => {
                     if (stepIndex + 1 < totalSteps) {
                         runStep(stepIndex + 1);
                     } else {
-                        // All steps answered — show result table
                         schedule(() => {
                             setPhase({ kind: "table" });
 
-                            // After TABLE_SHOW ms — advance to next scenario
                             schedule(() => {
                                 const nextIdx = (sIdx + 1) % SCENARIOS.length;
                                 setScenarioIndex(nextIdx);
@@ -379,14 +374,13 @@ export default function SmartConceptsSection() {
         };
 
         runStep(0);
-    };
+    }, [schedule]);
 
     useEffect(() => {
         clearTimers();
         runScenario(0);
         return clearTimers;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [clearTimers, runScenario]);
 
     const scenario = SCENARIOS[scenarioIndex];
 

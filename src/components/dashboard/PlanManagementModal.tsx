@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { X, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useThemeVars } from "@/hooks/useThemeVars";
 
 // Helper for basePath support in production
@@ -18,16 +19,31 @@ interface PlanManagementModalProps {
 export default function PlanManagementModal({ isOpen, onClose }: PlanManagementModalProps) {
     const { mounted } = useThemeVars();
 
-    if (!mounted || !isOpen) return null;
+    if (!mounted) return null;
 
     return (
-        <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-4 sm:p-6 pb-8 sm:pb-6">
-            <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={onClose} />
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-4 sm:p-6 pb-8 sm:pb-6">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute inset-0 bg-black/90 backdrop-blur-md"
+                        onClick={onClose}
+                    />
 
-            <div className="relative w-full max-w-[1300px] max-h-[90vh] bg-[#050505] border border-white/5 rounded-[2.5rem] shadow-2xl animate-in fade-in zoom-in-95 flex flex-col overflow-hidden">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                        className="relative w-full max-w-[1300px] max-h-[90vh] bg-[#050505] border border-white/5 rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden"
+                    >
 
-                {/* Header */}
-                <div className="px-8 pt-8 pb-4 flex justify-between items-center relative z-20">
+                        {/* Header */}
+                        <div className="px-8 pt-8 pb-4 flex justify-between items-center relative z-20">
                     <div>
                         <h2 className="text-2xl sm:text-3xl font-display font-medium text-white tracking-wide">
                             Actualizar Suscripción
@@ -129,8 +145,10 @@ export default function PlanManagementModal({ isOpen, onClose }: PlanManagementM
 
                     </div>
                 </div>
-            </div>
-        </div>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
     );
 }
 

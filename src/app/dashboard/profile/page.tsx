@@ -25,9 +25,11 @@ import {
 import Image from "next/image";
 import React, { useState, useRef } from "react";
 import DashboardTopBar from "@/components/dashboard/DashboardTopBar";
-import PlanManagementModal from "@/components/dashboard/PlanManagementModal";
-import { useDashboard } from "@/context/DashboardContext";
+import dynamic from "next/dynamic";
 import { useThemeVars } from "@/hooks/useThemeVars";
+import { useDashboard } from "@/context/DashboardContext";
+
+const PlanManagementModal = dynamic(() => import("@/components/dashboard/PlanManagementModal"), { ssr: false });
 
 // Helper for basePath support in production
 const getImagePath = (path: string) => {
@@ -50,18 +52,20 @@ export default function ProfileDashboard() {
         accentGlow,
     } = useThemeVars();
 
+    const { userProfile, setUserProfile } = useDashboard();
+
     // Mock User Data -> State to allow local edits
     const [user, setUser] = useState({
-        name: "Eduardo Mora",
+        name: userProfile.name,
         email: "eduardo.mora@constructora.com",
         phone: "+52 55 1234 5678",
         role: "Director de Obra",
         company: "Construcciones y Desarrollos EM",
         location: "Ciudad de México, MX",
         joinDate: "Enero 2026",
-        avatarGrad: "from-[#C39767] to-amber-600",
-        customAvatarUrl: null as string | null,
-        customCoverUrl: null as string | null,
+        avatarGrad: userProfile.avatarGrad,
+        customAvatarUrl: userProfile.customAvatarUrl,
+        customCoverUrl: userProfile.customCoverUrl,
         stats: {
             activeProjects: 4,
             completedProjects: 12,
@@ -91,9 +95,21 @@ export default function ProfileDashboard() {
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState(user.name);
     const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+    const [hasChanges, setHasChanges] = useState(false);
 
     const avatarInputRef = useRef<HTMLInputElement>(null);
     const coverInputRef = useRef<HTMLInputElement>(null);
+
+    // Sync state cuando el context carga desde localStorage
+    React.useEffect(() => {
+        setUser(prev => ({
+            ...prev,
+            name: userProfile.name,
+            avatarGrad: userProfile.avatarGrad,
+            customAvatarUrl: userProfile.customAvatarUrl,
+            customCoverUrl: userProfile.customCoverUrl,
+        }));
+    }, [userProfile]);
 
     if (!mounted) return null;
 
@@ -103,6 +119,7 @@ export default function ProfileDashboard() {
         const reader = new FileReader();
         reader.onload = (ev) => {
             setUser({ ...user, customAvatarUrl: ev.target?.result as string });
+            setHasChanges(true);
         };
         reader.readAsDataURL(file);
         e.target.value = '';
@@ -114,6 +131,7 @@ export default function ProfileDashboard() {
         const reader = new FileReader();
         reader.onload = (ev) => {
             setUser({ ...user, customCoverUrl: ev.target?.result as string });
+            setHasChanges(true);
         };
         reader.readAsDataURL(file);
         e.target.value = '';
@@ -122,8 +140,19 @@ export default function ProfileDashboard() {
     const handleSaveName = () => {
         if (tempName.trim()) {
             setUser({ ...user, name: tempName });
+            setHasChanges(true);
         }
         setIsEditingName(false);
+    };
+
+    const handleSaveChanges = () => {
+        setUserProfile(prev => ({
+            ...prev,
+            name: user.name,
+            customAvatarUrl: user.customAvatarUrl,
+            customCoverUrl: user.customCoverUrl
+        }));
+        setHasChanges(false);
     };
 
     return (
@@ -138,7 +167,7 @@ export default function ProfileDashboard() {
                 <div className="max-w-5xl mx-auto space-y-6">
 
                     {/* Tarjeta de Presentación / Banner & Identidad */}
-                    <div className={`rounded-[2rem] border ${cardBorder} ${cardBg} backdrop-blur-md overflow-hidden flex flex-col shadow-2xl mb-8 group/card`}>
+                    <div className={`rounded-[2.5rem] border ${isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-black/[0.08] bg-[#F4EFE6]/70'} backdrop-blur-3xl overflow-hidden flex flex-col shadow-[0_30px_60px_rgba(0,0,0,0.4)] ring-1 ${isDark ? 'ring-white/[0.02]' : 'ring-black/[0.02]'} mb-8 group/card`}>
                         {/* Cover Area */}
                         <div
                             className="h-40 md:h-48 relative overflow-hidden group/cover cursor-pointer"
@@ -169,9 +198,8 @@ export default function ProfileDashboard() {
                         {/* Contenido Centrado (Business Card Print) */}
                         <div className="px-6 pb-10 flex flex-col items-center -mt-20 relative z-10 text-center">
                             {/* Avatar */}
-                            {/* Note: The user explicitly wants a squircle-like shape based on the image provided where corners are very rounded like rounded-[2rem] */}
                             <div
-                                className={`w-36 h-36 md:w-40 md:h-40 rounded-[2rem] bg-gradient-to-br ${user.avatarGrad} p-1.5 shadow-2xl relative group/avatar cursor-pointer z-10 mb-6`}
+                                className={`w-36 h-36 md:w-44 md:h-44 rounded-full bg-gradient-to-br ${user.avatarGrad} p-[3px] shadow-2xl relative group/avatar cursor-pointer z-10 mb-6`}
                                 onClick={() => avatarInputRef.current?.click()}
                             >
                                 <input
@@ -182,15 +210,15 @@ export default function ProfileDashboard() {
                                     onChange={handleAvatarUpload}
                                 />
                                 {user.customAvatarUrl ? (
-                                    <div className="w-full h-full rounded-[1.7rem] overflow-hidden relative bg-[#0a0a0a]">
+                                    <div className="w-full h-full rounded-full overflow-hidden relative bg-[#0a0a0a]">
                                         <Image src={user.customAvatarUrl} alt="Foto de perfil" fill className="object-cover" unoptimized />
                                         <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300">
                                             <Camera size={28} className="text-white mb-1.5" />
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className={`w-full h-full rounded-[1.7rem] ${isDark ? 'bg-[#0a0a0a]' : 'bg-[#E8E0D5]'} flex items-center justify-center font-display font-medium ${textClass} text-5xl relative overflow-hidden transition-all duration-300`}>
-                                        <div className={`absolute inset-0 block`} />
+                                    <div className={`w-full h-full rounded-full ${isDark ? 'bg-[#0a0a0a]' : 'bg-[#E8E0D5]'} flex items-center justify-center font-display font-black tracking-widest ${textClass} text-5xl relative overflow-hidden transition-all duration-300`}>
+                                        <div className={`absolute inset-0 mix-blend-overlay ${isDark ? 'bg-white/10' : 'bg-[#2A241E]/10'}`} />
                                         <span className="group-hover/avatar:opacity-0 transition-opacity duration-300 leading-none">
                                             {user.name.split(" ").map(n => n[0]).join("").substring(0, 2)}
                                         </span>
@@ -230,10 +258,21 @@ export default function ProfileDashboard() {
                                     </h2>
                                 )}
 
-                                <div className={`flex flex-col items-center gap-2 text-[15px] ${textMuted} font-medium mb-8`}>
+                                <div className={`flex flex-col items-center gap-2 text-[15px] ${textMuted} font-medium mb-6`}>
                                     <span className="flex items-center gap-2"><Briefcase size={16} className="text-[#C39767]" /> {user.role}</span>
                                     <span className="flex items-center gap-2"><HardHat size={16} className={textClass} /> {user.company}</span>
                                 </div>
+
+                                {hasChanges && (
+                                    <div className="animate-in fade-in zoom-in duration-300 mb-8">
+                                        <button 
+                                            onClick={handleSaveChanges}
+                                            className="px-8 py-3.5 rounded-[1rem] bg-gradient-to-br from-[#C39767] to-[#A87B4C] text-white font-semibold font-display tracking-wide flex items-center gap-2.5 shadow-xl shadow-[#C39767]/30 hover:scale-105 active:scale-95 transition-all duration-300"
+                                        >
+                                            <CheckCircle2 size={20} strokeWidth={2.5} /> Guardar Cambios
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -245,7 +284,7 @@ export default function ProfileDashboard() {
                         <div className="lg:col-span-1 space-y-6">
 
                             {/* Tarjeta Detalles Personales */}
-                            <div className={`rounded-3xl border ${cardBorder} ${cardBg} backdrop-blur-md p-6`}>
+                            <div className={`rounded-[2rem] border ${isDark ? 'border-white/[0.04] bg-white/[0.01]' : 'border-black/[0.04] bg-[#F4EFE6]/50'} backdrop-blur-2xl p-7 shadow-xl shadow-black/5`}>
                                 <h3 className={`text-sm font-display font-bold ${textClass} opacity-90 uppercase tracking-widest mb-6 flex items-center gap-2`}>
                                     <User size={16} className="text-[#C39767]" /> Información
                                 </h3>
@@ -294,9 +333,9 @@ export default function ProfileDashboard() {
                                     { label: "Obras Finalizadas", value: user.stats.completedProjects, icon: HardHat, color: "#60a5fa" },
                                     { label: "Miembros Equipo", value: user.stats.teamMembers, icon: Users, color: "#a78bfa" }
                                 ].map((stat, i) => (
-                                    <div key={i} className={`rounded-2xl border ${cardBorder} ${cardBg} backdrop-blur-md p-5 flex flex-col items-start gap-3 ${isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-[#2A241E]/5'} transition-colors`}>
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDark ? 'bg-white/5' : 'bg-[#2A241E]/5'} `} style={{ color: stat.color }}>
-                                            <stat.icon size={20} strokeWidth={1.5} />
+                                    <div key={i} className={`rounded-[1.5rem] border ${isDark ? 'border-white/[0.04] bg-white/[0.01]' : 'border-black/[0.04] bg-[#F4EFE6]/50'} backdrop-blur-xl p-5 flex flex-col items-start gap-4 ${isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-white'} hover:-translate-y-1 transition-all shadow-xl shadow-black/5 duration-300`}>
+                                        <div className={`w-12 h-12 rounded-[1rem] flex items-center justify-center ${isDark ? 'bg-white/5' : 'bg-black/5'} `} style={{ color: stat.color }}>
+                                            <stat.icon size={22} strokeWidth={1.5} />
                                         </div>
                                         <div>
                                             <h4 className={`text-2xl font-display font-bold ${textClass} leading-none mb-1`}>{stat.value}</h4>

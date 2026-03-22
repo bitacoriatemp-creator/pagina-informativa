@@ -1,7 +1,7 @@
 "use client";
 
-import { useDashboard } from "@/context/DashboardContext";
 import { useState } from "react";
+
 import {
     Search,
     Users,
@@ -17,10 +17,17 @@ import {
     FolderGit2
 } from "lucide-react";
 import DashboardTopBar from "@/components/dashboard/DashboardTopBar";
+import dynamic from "next/dynamic";
+
+const AIAssistantModal = dynamic(() => import("@/components/dashboard/AIAssistantModal"), { ssr: false });
+const TicketModal = dynamic(() => import("@/components/dashboard/TicketModal"), { ssr: false });
 import { useThemeVars } from "@/hooks/useThemeVars";
 
 export default function HelpCenterDashboard() {
     const [searchQuery, setSearchQuery] = useState("");
+    const [isAIOpen, setIsAIOpen] = useState(false);
+    const [isTicketOpen, setIsTicketOpen] = useState(false);
+    
     const {
         isDark,
         mounted,
@@ -52,7 +59,7 @@ export default function HelpCenterDashboard() {
             {/* Ambient Background Glow */}
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-blue-500/10 to-transparent blur-[120px] rounded-full pointer-events-none transition-opacity duration-500 opacity-60" />
 
-            <DashboardTopBar activePage="ayuda" pageTitle="Soporte" />
+            <DashboardTopBar activePage="ayuda" pageTitle="Ayuda" />
 
             {/* Main Scroll Area */}
             <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar relative z-10" data-lenis-prevent>
@@ -67,15 +74,15 @@ export default function HelpCenterDashboard() {
 
                         {/* Gran Barra de Búsqueda */}
                         <div className="relative max-w-2xl mx-auto">
-                            <Search className={`absolute left-5 top-1/2 -translate-y-1/2 ${textMuted}`} size={24} />
+                            <Search className={`absolute left-5 top-1/2 -translate-y-1/2 ${textMuted}`} size={20} />
                             <input
                                 type="text"
                                 placeholder="Ej. 'Cómo reasignar un residente' o 'Exportar BIM'"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className={`w-full ${cardBg} border ${cardBorder} rounded-2xl py-5 pl-14 pr-6 text-lg ${textClass} placeholder:opacity-50 focus:outline-none focus:border-[#C39767] focus:ring-4 focus:ring-[#C39767]/10 transition-all shadow-xl`}
+                                className={`w-full bg-transparent border ${isDark ? 'border-white/20' : 'border-black/20'} rounded-full py-4 pl-14 pr-24 text-base ${textClass} placeholder:opacity-50 focus:outline-none focus:border-[#C39767] transition-all`}
                             />
-                            <button className={`absolute right-3 top-1/2 -translate-y-1/2 px-4 py-2 ${isDark ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-[#2A241E]/10 hover:bg-[#2A241E]/20 text-[#2A241E]'} rounded-xl font-medium transition-colors text-sm`}>
+                            <button className={`absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2 ${isDark ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-black/10 hover:bg-black/20 text-black'} rounded-full font-medium transition-colors text-sm`}>
                                 Buscar
                             </button>
                         </div>
@@ -88,26 +95,32 @@ export default function HelpCenterDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 -mt-14 relative z-20">
 
                         {/* AI Chat Support */}
-                        <div className={`rounded-3xl border border-[#C39767]/30 ${isDark ? 'bg-gradient-to-br from-[#1c1611] to-[#0a0a0a]' : 'bg-gradient-to-br from-[#E8E0D5] to-[#F4EFE6]'} backdrop-blur-xl p-8 shadow-2xl group cursor-pointer overflow-hidden relative`}>
-                            <div className="absolute right-0 top-0 w-32 h-32 bg-[#C39767]/20 blur-[50px] rounded-full group-hover:bg-[#C39767]/30 transition-colors" />
+                        <div 
+                            onClick={() => setIsAIOpen(true)}
+                            className={`rounded-3xl border border-[#C39767]/30 ${isDark ? 'bg-gradient-to-br from-[#1c1611] to-[#0a0a0a]' : 'bg-gradient-to-br from-[#E8E0D5] to-[#F4EFE6]'} backdrop-blur-xl p-8 shadow-2xl group cursor-pointer overflow-hidden relative`}
+                        >
+                            <div className="absolute right-0 top-0 w-32 h-32 bg-[#C39767]/20 blur-[50px] rounded-full group-hover:bg-[#C39767]/30 transition-colors pointer-events-none" />
                             <div className="w-14 h-14 rounded-2xl bg-[#C39767]/20 border border-[#C39767]/30 flex items-center justify-center mb-6">
                                 <Terminal size={28} className="text-[#C39767]" />
                             </div>
                             <h3 className={`text-2xl font-display font-bold ${textClass} mb-2`}>Asistente BitacorIA</h3>
                             <p className={`${textMuted} text-sm mb-6 max-w-sm`}>Resolución instantánea de problemas o dudas sobre la plataforma impulsada por Inteligencia Artificial especializada en construcción.</p>
-                            <button className="flex items-center gap-2 text-[#C39767] font-semibold group-hover:gap-3 transition-all">
+                            <button className="flex items-center gap-2 text-[#C39767] font-semibold group-hover:gap-3 transition-all pointer-events-none">
                                 Iniciar Chat <ArrowRight size={18} />
                             </button>
                         </div>
 
                         {/* Human Support */}
-                        <div className={`rounded-3xl border ${cardBorder} ${cardBg} backdrop-blur-xl p-8 shadow-2xl group cursor-pointer ${hoverBg} transition-colors relative`}>
+                        <div 
+                            onClick={() => setIsTicketOpen(true)}
+                            className={`rounded-3xl border ${cardBorder} ${cardBg} backdrop-blur-xl p-8 shadow-2xl group cursor-pointer ${hoverBg} transition-colors relative`}
+                        >
                             <div className={`w-14 h-14 rounded-2xl ${isDark ? 'bg-white/5' : 'bg-[#2A241E]/5'} border ${borderColor} flex items-center justify-center mb-6`}>
                                 <MessageSquareText size={28} className={textMuted} />
                             </div>
                             <h3 className={`text-2xl font-display font-bold ${textClass} mb-2`}>Soporte Técnico Especializado</h3>
                             <p className={`${textMuted} text-sm mb-6 max-w-sm`}>Contacta con un ingeniero humano o abre un ticket si tienes problemas críticos con el despliegue del software en obra.</p>
-                            <button className={`flex items-center gap-2 ${textClass} font-semibold group-hover:gap-3 transition-all`}>
+                            <button className="flex items-center gap-2 text-[#C39767] font-semibold group-hover:gap-3 transition-all pointer-events-none">
                                 Crear Ticket <ArrowRight size={18} />
                             </button>
                         </div>
@@ -185,6 +198,16 @@ export default function HelpCenterDashboard() {
 
                 </div>
             </div>
+            
+            <AIAssistantModal 
+                isOpen={isAIOpen} 
+                onClose={() => setIsAIOpen(false)} 
+            />
+            
+            <TicketModal 
+                isOpen={isTicketOpen} 
+                onClose={() => setIsTicketOpen(false)} 
+            />
         </>
     );
 }

@@ -6,6 +6,7 @@ export interface TeamMember {
     role: Role;
     color: string;
     lastActivity?: string;
+    avatarUrl?: string;
 }
 
 export interface Project {

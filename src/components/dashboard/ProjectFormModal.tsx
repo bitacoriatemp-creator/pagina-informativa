@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Plus, X, HardHat, Users, Paintbrush, Palette, CheckCircle2, QrCode, Copy, ChevronRight, ImageIcon } from "lucide-react";
+import { Plus, X, HardHat, Users, Paintbrush, Palette, CheckCircle2, QrCode, Copy, ChevronRight, ImageIcon, MoreVertical, Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useThemeVars } from "@/hooks/useThemeVars";
 import { Project, Role } from "@/types/project";
 import { APPEARANCES, RECENT_ENGINEERS } from "@/utils/mockData";
+import { useDashboard } from "@/context/DashboardContext";
 
 interface ProjectFormModalProps {
     isOpen: boolean;
@@ -15,7 +17,7 @@ interface ProjectFormModalProps {
         subtitle: string;
         gradient: string;
         coverImage?: string | null;
-        invitedUsers: { id: number, name: string, role: string }[];
+        invitedUsers: { id: string | number, name: string, role: string }[];
     }) => void;
     initialProject?: Project | null;
 }
@@ -27,6 +29,7 @@ export default function ProjectFormModal({
     initialProject
 }: ProjectFormModalProps) {
     const { isDark, bgClass, textClass, cardBg, cardBorder, textMuted, textFaint, hoverBg, topBarBg } = useThemeVars();
+    const { addNotification } = useDashboard();
 
     const [activeTab, setActiveTab] = useState<"detalles" | "equipo" | "apariencia">("detalles");
     const [formTitle, setFormTitle] = useState("");
@@ -34,13 +37,14 @@ export default function ProjectFormModal({
     const [formCity, setFormCity] = useState("");
     const [formStartDate, setFormStartDate] = useState("");
     const [formEndDate, setFormEndDate] = useState("");
-    const [invitedUsers, setInvitedUsers] = useState<{ id: number, name: string, role: string }[]>([]);
+    const [invitedUsers, setInvitedUsers] = useState<{ id: string | number, name: string, role: string, initials?: string, avatarUrl?: string, color?: string }[]>([]);
     const [formAppearance, setFormAppearance] = useState(APPEARANCES[0].class);
     const [formCoverImage, setFormCoverImage] = useState<string | null>(null);
     const coverInputRef = useRef<HTMLInputElement>(null);
 
     const [inviteCode, setInviteCode] = useState<string | null>(null);
     const [showContactList, setShowContactList] = useState(false);
+    const [openDropdownIdx, setOpenDropdownIdx] = useState<number | null>(null);
 
     // Inicializar estado cuando se abre el modal
     useEffect(() => {
@@ -52,23 +56,34 @@ export default function ProjectFormModal({
                 setFormStateLoc(parts[1] || "");
                 setFormAppearance(initialProject.gradient);
                 setFormCoverImage(initialProject.coverImage || null);
+                // Popular el equipo actual copiándolo de initialProject
+                if (initialProject.team) {
+                    setInvitedUsers(initialProject.team.map((m: any, i) => ({
+                        id: "ex-" + i, // Fake ID para los que ya estaban
+                        name: m.name || m.initials,
+                        role: m.role,
+                        initials: m.initials || m.name?.substring(0, 2).toUpperCase(),
+                        avatarUrl: m.avatarUrl,
+                        color: m.color
+                    })));
+                } else {
+                    setInvitedUsers([]);
+                }
             } else {
                 setFormTitle("");
                 setFormCity("");
                 setFormStateLoc("");
                 setFormAppearance(APPEARANCES[0].class);
                 setFormCoverImage(null);
+                setInvitedUsers([]);
             }
             setActiveTab("detalles");
             setInviteCode(null);
             setShowContactList(false);
-            setInvitedUsers([]);
             setFormStartDate("");
             setFormEndDate("");
         }
     }, [isOpen, initialProject]);
-
-    if (!isOpen) return null;
 
     const handleClose = () => {
         if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
@@ -82,16 +97,32 @@ export default function ProjectFormModal({
     };
 
     const toggleInvite = (user: typeof RECENT_ENGINEERS[0]) => {
-        const isInvited = invitedUsers.find(inv => inv.id === user.id);
+        const isInvited = invitedUsers.find(inv => inv.name === user.name);
         if (isInvited) {
-            setInvitedUsers(invitedUsers.filter(inv => inv.id !== user.id));
+            setInvitedUsers(invitedUsers.filter(inv => inv.name !== user.name));
         } else {
-            setInvitedUsers([...invitedUsers, { ...user, role: "Editor" }]);
+            setInvitedUsers([...invitedUsers, { ...user, role: "Viewer", initials: user.name.substring(0, 2).toUpperCase() }]);
         }
     };
 
-    const updateRole = (id: number, newRole: string) => {
-        setInvitedUsers(invitedUsers.map(inv => inv.id === id ? { ...inv, role: newRole } : inv));
+    const updateRole = (id: string | number, newRole: string) => {
+        setInvitedUsers(prev => {
+            const next = [...prev];
+            if (newRole === 'Owner') {
+                next.forEach(m => {
+                    if (m.role === 'Owner') m.role = 'Editor';
+                });
+            }
+            const memberRef = next.find(m => m.id === id);
+            if (memberRef) memberRef.role = newRole;
+            return next;
+        });
+        setOpenDropdownIdx(null);
+    };
+
+    const removeUser = (id: string | number) => {
+        setInvitedUsers(prev => prev.filter(m => m.id !== id));
+        setOpenDropdownIdx(null);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -111,13 +142,32 @@ export default function ProjectFormModal({
             coverImage: formCoverImage,
             invitedUsers
         });
+
+        addNotification(
+            "Nuevas anotaciones en bitácora",
+            `Se ha registrado la apertura de la obra ${formTitle} en el sistema.`,
+            "success"
+        );
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleClose} />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                onClick={handleClose}
+            />
 
-            <div className={`relative w-full max-w-md ${bgClass} border ${cardBorder} rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden`}>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className={`relative w-full max-w-md ${bgClass} border ${cardBorder} rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden`}
+            >
                 {/* Header Modal */}
                 <div className={`px-5 py-4 border-b ${cardBorder} flex items-center justify-between ${topBarBg}`}>
                     <h2 className={`text-lg font-display font-medium ${textClass} flex items-center gap-2`}>
@@ -150,7 +200,7 @@ export default function ProjectFormModal({
                 </div>
 
                 {/* Modal Body */}
-                <div data-lenis-prevent className={`p-5 overflow-y-auto flex-1 ${bgClass}`}>
+                <div data-lenis-prevent className={`p-5 overflow-y-auto flex-1 ${bgClass}`} onClick={() => setOpenDropdownIdx(null)}>
                     <form id="projectForm" onSubmit={handleSubmit}>
                         {/* ──────── TAB: DETALLES ──────── */}
                         {activeTab === "detalles" && (
@@ -216,81 +266,149 @@ export default function ProjectFormModal({
 
                         {/* ──────── TAB: EQUIPO ──────── */}
                         {activeTab === "equipo" && (
-                            <div className="space-y-4 min-h-[250px]">
-                                <div className="text-center py-6 border-b border-dashed border-[#C39767]/30 mb-2">
-                                    <div className={`w-12 h-12 rounded-full ${isDark ? 'bg-white/5' : 'bg-[#2A241E]/5'} flex items-center justify-center mx-auto mb-3`}>
-                                        <Users size={20} className="text-[#C39767]" />
-                                    </div>
-                                    <h3 className={`text-sm font-semibold ${textClass} mb-1`}>Crear Enlace de Invitación</h3>
-                                    <p className={`text-[11px] ${textMuted} max-w-[200px] mx-auto mb-4`}>Genera un código seguro para que clientes o contratistas se unan.</p>
+                            <div className="space-y-6">
+                                {/* SECCIÓN: EQUIPO ACTUAL */}
+                                <div>
+                                    <h3 className={`text-[11px] font-bold ${textMuted} uppercase tracking-widest mb-3 px-1 flex items-center justify-between`}>
+                                        Equipo Actual
+                                        <span className={`text-[9px] ${textFaint} font-normal`}>{invitedUsers.length} miembros</span>
+                                    </h3>
+                                    
+                                    <div className="flex flex-col gap-2">
+                                        {invitedUsers.length === 0 ? (
+                                            <p className={`text-xs ${textFaint} text-center py-6 border border-dashed ${cardBorder} rounded-xl`}>No hay integrantes vinculados.</p>
+                                        ) : (
+                                            invitedUsers.map((member, i) => (
+                                                <div key={member.id} className={`flex items-center justify-between p-2.5 rounded-xl border ${cardBorder} ${cardBg} shadow-sm group/teamrow transition-all hover:border-[#C39767]/30`}>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`relative w-9 h-9 rounded-full ${member.role === 'Owner' ? 'bg-[#C39767]' : member.role === 'Editor' ? 'bg-blue-500' : 'bg-emerald-500'} flex items-center justify-center text-white font-bold text-xs ring-2 ${isDark ? 'ring-[#1A1A1A]' : 'ring-white'} shadow-sm overflow-hidden`}>
+                                                            {member.avatarUrl ? (
+                                                                <Image src={member.avatarUrl} alt={member.name} fill className="object-cover" unoptimized />
+                                                            ) : (
+                                                                member.initials || member.name.substring(0, 2).toUpperCase()
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <p className={`text-xs font-semibold ${textClass}`}>{member.name}</p>
+                                                            <p className={`text-[10px] font-bold uppercase tracking-widest leading-none mt-0.5 ${member.role === 'Owner' ? 'text-[#C39767]' : member.role === 'Editor' ? 'text-blue-500' : 'text-emerald-500'}`}>
+                                                                {member.role === 'Owner' && <HardHat size={10} className="inline mr-1 -mt-0.5" />}
+                                                                {member.role}
+                                                            </p>
+                                                        </div>
+                                                    </div>
 
+                                                    {member.role !== 'Owner' && (
+                                                        <div className="relative">
+                                                            <button 
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setOpenDropdownIdx(openDropdownIdx === i ? null : i);
+                                                                }}
+                                                                className={`p-1.5 rounded-lg ${openDropdownIdx === i ? 'bg-[#C39767]/20 text-[#C39767]' : `opacity-0 group-hover/teamrow:opacity-100 ${textMuted} hover:${textClass} ${hoverBg}`} transition-all`}
+                                                            >
+                                                                <MoreVertical size={16} />
+                                                            </button>
+
+                                                            <AnimatePresence>
+                                                                {openDropdownIdx === i && (
+                                                                    <motion.div
+                                                                        initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                                                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                                        exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                                                                        transition={{ duration: 0.15 }}
+                                                                        className={`absolute bottom-full right-0 mb-2 w-40 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.8)] border ${isDark ? 'bg-[#111111] border-white/10' : 'bg-white border-black/10'} overflow-hidden z-[200]`}
+                                                                    >
+                                                                        <div className={`p-1 border-b ${isDark ? 'border-white/[0.05]' : 'border-black/[0.05]'}`}>
+                                                                            <button type="button" onClick={() => updateRole(member.id, 'Owner')} className={`w-full py-2 px-2 text-[10px] font-bold uppercase tracking-widest rounded-lg text-left ${isDark ? 'text-white/70 hover:bg-white/10' : 'text-black/70 hover:bg-black/5'} transition-all`}>Hacer Owner</button>
+                                                                            <button type="button" onClick={() => updateRole(member.id, 'Editor')} className={`w-full py-2 px-2 text-[10px] font-bold uppercase tracking-widest rounded-lg text-left ${member.role === 'Editor' ? 'bg-blue-500 text-white' : isDark ? 'text-white/70 hover:bg-white/10' : 'text-black/70 hover:bg-black/5'} transition-all`}>Hacer Editor</button>
+                                                                            <button type="button" onClick={() => updateRole(member.id, 'Viewer')} className={`w-full py-2 px-2 text-[10px] font-bold uppercase tracking-widest rounded-lg text-left ${member.role === 'Viewer' ? 'bg-emerald-500 text-white' : isDark ? 'text-white/70 hover:bg-white/10' : 'text-black/70 hover:bg-black/5'} transition-all`}>Hacer Viewer</button>
+                                                                        </div>
+                                                                        <div className="p-1">
+                                                                            <button type="button" onClick={() => removeUser(member.id)} className="w-full py-2 px-2 text-[10px] font-bold uppercase tracking-widest rounded-lg text-red-500 hover:bg-red-500/10 flex items-center gap-2 transition-all"><Trash2 size={13}/> Desvincular</button>
+                                                                        </div>
+                                                                    </motion.div>
+                                                                )}
+                                                            </AnimatePresence>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-dashed border-[#C39767]/30" />
+
+                                {/* SECCIÓN: AÑADIR INTEGRANTE */}
+                                <div>
+                                    <h3 className={`text-[11px] font-bold ${textMuted} uppercase tracking-widest mb-3 px-1`}>
+                                        Añadir Integrante
+                                    </h3>
+                                    
+                                    {/* Invite Code Option */}
                                     {!inviteCode ? (
                                         <button
                                             type="button"
                                             onClick={handleGenerateCode}
-                                            className="px-4 py-2 bg-[#C39767]/10 text-[#C39767] font-semibold text-xs uppercase tracking-wider rounded-lg border border-[#C39767]/20 hover:bg-[#C39767]/20 transition-colors"
+                                            className={`w-full mb-3 flex items-center justify-center gap-2 px-4 py-3 bg-[#C39767]/5 text-[#C39767] text-xs font-bold uppercase tracking-wider rounded-xl border border-[#C39767]/20 hover:bg-[#C39767]/10 transition-colors`}
                                         >
-                                            Generar Código
+                                            <QrCode size={16} /> Generar Enlace de Invitación
                                         </button>
                                     ) : (
-                                        <div className={`w-full flex items-center justify-between ${bgClass} border border-[#C39767]/30 rounded-lg p-3 relative z-10`}>
+                                        <div className={`w-full mb-3 flex items-center justify-between ${bgClass} border border-[#C39767]/30 rounded-xl p-3`}>
                                             <div className="flex items-center gap-3">
                                                 <QrCode size={24} className="text-[#C39767]" />
                                                 <div>
-                                                    <p className="text-[10px] text-[#C39767] uppercase tracking-wider font-bold mb-0.5">CÓDIGO ACTIVO</p>
-                                                    <p className={`font-mono text-lg tracking-widest ${textClass} leading-none`}>{inviteCode}</p>
+                                                    <p className="text-[9px] text-[#C39767] uppercase tracking-wider font-bold mb-0.5">CÓDIGO ACTIVO</p>
+                                                    <p className={`font-mono text-base font-semibold tracking-widest ${textClass} leading-none`}>{inviteCode}</p>
                                                 </div>
                                             </div>
-                                            <button type="button" className={`p-2 ${hoverBg} rounded-md ${textMuted} hover:opacity-100 transition-colors`} title="Copiar al portapapeles">
+                                            <button type="button" className={`p-2 ${hoverBg} rounded-md ${textMuted} hover:text-[#C39767] transition-colors`} title="Copiar al portapapeles">
                                                 <Copy size={16} />
                                             </button>
                                         </div>
                                     )}
-                                </div>
 
-                                <div className="relative my-6">
-                                    <div className="absolute inset-0 flex items-center"><span className={`w-full border-t ${cardBorder}`} /></div>
-                                    <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest"><span className={`${bgClass} px-3 ${textFaint}`}>O</span></div>
-                                </div>
-
-                                {/* Lista Expandible */}
-                                <div className={`${cardBg} border ${cardBorder} rounded-xl overflow-hidden`}>
-                                    <button
-                                        type="button"
-                                        className={`w-full flex items-center justify-between p-3.5 ${hoverBg} transition-colors text-sm font-medium ${textClass}`}
-                                        onClick={() => setShowContactList(!showContactList)}
-                                    >
-                                        <span className="flex items-center gap-2"><Users size={16} className={textMuted} /> Invitar contactos recientes</span>
-                                        <ChevronRight size={16} className={`transition-transform duration-200 ${textMuted} ${showContactList ? 'rotate-90' : ''}`} />
-                                    </button>
-
-                                    {showContactList && (
-                                        <div className={`px-3 pb-3 space-y-1 ${cardBg} border-t ${cardBorder} pt-3`}>
-                                            {RECENT_ENGINEERS.map(user => {
-                                                const isInvited = invitedUsers.find(inv => inv.id === user.id);
+                                    {/* Lista de Contactos Sugeridos */}
+                                    <div className={`${cardBg} border ${cardBorder} rounded-xl overflow-hidden`}>
+                                        <div className={`px-4 py-3 border-b ${cardBorder} bg-[#C39767]/5 flex items-center gap-2`}>
+                                            <Users size={14} className="text-[#C39767]"/>
+                                            <p className={`text-[10px] font-bold ${textClass} uppercase tracking-widest`}>Sugerencias Rápidas</p>
+                                        </div>
+                                        <div className="max-h-52 overflow-y-auto custom-scrollbar p-2 space-y-1">
+                                            {RECENT_ENGINEERS.filter(user => !invitedUsers.find(inv => inv.name === user.name)).length === 0 ? (
+                                                <p className={`text-xs ${textFaint} text-center py-6`}>Todos tus contactos están en este proyecto.</p>
+                                            ) : RECENT_ENGINEERS.map(user => {
+                                                const isInvited = invitedUsers.find(inv => inv.name === user.name);
+                                                if (isInvited) return null;
                                                 return (
-                                                    <div key={user.id} className={`flex items-center justify-between p-2 rounded-lg ${hoverBg} transition-colors border border-transparent hover:border-[#333]`}>
-                                                        <div className="flex items-center gap-3 cursor-pointer select-none flex-1" onClick={() => toggleInvite(user)}>
-                                                            <div className={`w-4 h-4 rounded-sm border flex items-center justify-center transition-colors ${isInvited ? 'bg-[#C39767] border-[#C39767]' : cardBorder}`}>
-                                                                {isInvited && <CheckCircle2 size={12} className="text-white" strokeWidth={3} />}
+                                                    <div key={user.id} className={`flex items-center justify-between p-2 rounded-lg ${hoverBg} transition-colors group/suggest`}>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`relative w-8 h-8 rounded-full ${isDark ? 'bg-[#C39767]/10 border-[#C39767]/30' : 'bg-[#C39767]/10 border-[#C39767]/20'} text-[#C39767] flex items-center justify-center font-bold text-xs ring-1 ring-white/5 overflow-hidden`}>
+                                                                {user.avatarUrl ? (
+                                                                    <Image src={user.avatarUrl} alt={user.name} fill className="object-cover" unoptimized />
+                                                                ) : (
+                                                                    user.name.substring(0,2).toUpperCase()
+                                                                )}
                                                             </div>
-                                                            <span className={`text-sm ${isInvited ? textClass : textMuted}`}>{user.name}</span>
+                                                            <div>
+                                                                <p className={`text-xs font-semibold ${textClass}`}>{user.name}</p>
+                                                                <p className={`text-[9px] ${textFaint} uppercase tracking-widest`}>{user.category || user.role}</p>
+                                                            </div>
                                                         </div>
-                                                        {isInvited && (
-                                                            <select
-                                                                className={`${bgClass} border ${cardBorder} ${textClass} text-[11px] rounded px-2 py-1 ml-4 focus:outline-none focus:border-[#C39767]`}
-                                                                value={isInvited.role}
-                                                                onChange={(e) => updateRole(user.id, e.target.value)}
-                                                            >
-                                                                <option value="Editor">Editor</option>
-                                                                <option value="Viewer">Viewer</option>
-                                                            </select>
-                                                        )}
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={(e) => { e.stopPropagation(); toggleInvite(user); }}
+                                                            className={`opacity-0 group-hover/suggest:opacity-100 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#C39767]/10 text-[#C39767] font-bold text-[9px] uppercase tracking-wider hover:bg-[#C39767] hover:text-white transition-all border border-[#C39767]/20 hover:border-transparent`}
+                                                        >
+                                                            <Plus size={10} strokeWidth={3} /> Añadir
+                                                        </button>
                                                     </div>
                                                 );
                                             })}
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -407,7 +525,7 @@ export default function ProjectFormModal({
                         {initialProject ? "Guardar Cambios" : "Crear Obra"}
                     </button>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 }
