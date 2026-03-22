@@ -36,8 +36,8 @@ export const MOCK_CONTACTS: Contact[] = [
         avatarColor: "from-[#C39767] to-amber-600",
         status: "activo",
         projects: [{ name: "Torre Reforma", color: "#C39767" }, { name: "Residencial Pedregal", color: "#60a5fa" }],
-        avatarUrl: "/images/contacts/avatar_diego\.webp",
-        coverUrl: "/images/contacts/cover_diego\.webp"
+        avatarUrl: "/images/contacts/avatar_diego.webp",
+        coverUrl: "/images/contacts/cover_diego.webp"
     },
     {
         id: "c2",
@@ -49,8 +49,8 @@ export const MOCK_CONTACTS: Contact[] = [
         avatarColor: "from-blue-500 to-indigo-600",
         status: "ocupado",
         projects: [{ name: "Torre Reforma", color: "#C39767" }],
-        avatarUrl: "/images/contacts/avatar_valeria\.webp",
-        coverUrl: "/images/contacts/cover_valeria\.webp"
+        avatarUrl: "/images/contacts/avatar_valeria.webp",
+        coverUrl: "/images/contacts/cover_valeria.webp"
     },
     {
         id: "c3",
@@ -62,8 +62,8 @@ export const MOCK_CONTACTS: Contact[] = [
         avatarColor: "from-red-500 to-rose-700",
         status: "activo",
         projects: [{ name: "Torre Reforma", color: "#C39767" }, { name: "Hospital Regional", color: "#34d399" }],
-        avatarUrl: "/images/contacts/avatar_carlos\.webp",
-        coverUrl: "/images/contacts/cover_carlos\.webp"
+        avatarUrl: "/images/contacts/avatar_carlos.webp",
+        coverUrl: "/images/contacts/cover_carlos.webp"
     },
     {
         id: "c4",
@@ -75,8 +75,8 @@ export const MOCK_CONTACTS: Contact[] = [
         avatarColor: "from-emerald-400 to-teal-600",
         status: "activo",
         projects: [{ name: "Residencial Pedregal", color: "#60a5fa" }],
-        avatarUrl: "/images/contacts/avatar_fernanda\.webp",
-        coverUrl: "/images/contacts/cover_fernanda\.webp"
+        avatarUrl: "/images/contacts/avatar_fernanda.webp",
+        coverUrl: "/images/contacts/cover_fernanda.webp"
     },
     {
         id: "c5",
@@ -88,8 +88,8 @@ export const MOCK_CONTACTS: Contact[] = [
         avatarColor: "from-purple-500 to-fuchsia-600",
         status: "inactivo",
         projects: [],
-        avatarUrl: "/images/contacts/avatar_roberto\.webp",
-        coverUrl: "/images/contacts/cover_roberto\.webp"
+        avatarUrl: "/images/contacts/avatar_roberto.webp",
+        coverUrl: "/images/contacts/cover_roberto.webp"
     },
     {
         id: "c6",
@@ -101,8 +101,8 @@ export const MOCK_CONTACTS: Contact[] = [
         avatarColor: "from-amber-400 to-orange-500",
         status: "activo",
         projects: [{ name: "Hospital Regional", color: "#34d399" }],
-        avatarUrl: "/images/contacts/avatar_elena\.webp",
-        coverUrl: "/images/contacts/cover_elena\.webp"
+        avatarUrl: "/images/contacts/avatar_elena.webp",
+        coverUrl: "/images/contacts/cover_elena.webp"
     }
 ];
 
@@ -119,9 +119,9 @@ export const DEFAULT_PROJECTS: Project[] = [
         lastUpdated: "5 Mar, 10:42 AM",
         lastEntry: "5 Mar, 10:38 AM — Colado de losa nivel 8",
         team: [
-            { initials: "DR", name: "Diego Ramírez", role: "Owner", color: "bg-[#C39767]", lastActivity: "5 Mar, 10:42 AM", avatarUrl: "/images/contacts/avatar_diego\.webp" },
-            { initials: "VS", name: "Valeria Santillán", role: "Editor", color: "bg-blue-500", lastActivity: "5 Mar, 09:15 AM", avatarUrl: "/images/contacts/avatar_valeria\.webp" },
-            { initials: "CM", name: "Carlos Medina", role: "Editor", color: "bg-blue-500", lastActivity: "4 Mar, 11:00 AM", avatarUrl: "/images/contacts/avatar_carlos\.webp" }
+            { initials: "DR", name: "Diego Ramírez", role: "Owner", color: "bg-[#C39767]", lastActivity: "5 Mar, 10:42 AM", avatarUrl: "/images/contacts/avatar_diego.webp" },
+            { initials: "VS", name: "Valeria Santillán", role: "Editor", color: "bg-blue-500", lastActivity: "5 Mar, 09:15 AM", avatarUrl: "/images/contacts/avatar_valeria.webp" },
+            { initials: "CM", name: "Carlos Medina", role: "Editor", color: "bg-blue-500", lastActivity: "4 Mar, 11:00 AM", avatarUrl: "/images/contacts/avatar_carlos.webp" }
         ]
     },
     {
@@ -134,9 +134,9 @@ export const DEFAULT_PROJECTS: Project[] = [
         lastUpdated: "4 Mar, 04:15 PM",
         lastEntry: "4 Mar, 03:50 PM — Revisión de fachada",
         team: [
-            { initials: "CM", name: "Carlos Medina", role: "Owner", color: "bg-[#C39767]", lastActivity: "4 Mar, 04:20 PM", avatarUrl: "/images/contacts/avatar_carlos\.webp" },
-            { initials: "ET", name: "Elena Torres", role: "Editor", color: "bg-blue-500", lastActivity: "4 Mar, 04:15 PM", avatarUrl: "/images/contacts/avatar_elena\.webp" },
-            { initials: "FL", name: "Fernanda López", role: "Viewer", color: "bg-emerald-500", lastActivity: "3 Mar, 09:00 AM", avatarUrl: "/images/contacts/avatar_fernanda\.webp" }
+            { initials: "CM", name: "Carlos Medina", role: "Owner", color: "bg-[#C39767]", lastActivity: "4 Mar, 04:20 PM", avatarUrl: "/images/contacts/avatar_carlos.webp" },
+            { initials: "ET", name: "Elena Torres", role: "Editor", color: "bg-blue-500", lastActivity: "4 Mar, 04:15 PM", avatarUrl: "/images/contacts/avatar_elena.webp" },
+            { initials: "FL", name: "Fernanda López", role: "Viewer", color: "bg-emerald-500", lastActivity: "3 Mar, 09:00 AM", avatarUrl: "/images/contacts/avatar_fernanda.webp" }
         ]
     }
 ];
