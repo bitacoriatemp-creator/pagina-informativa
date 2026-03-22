@@ -14,21 +14,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useThemeVars } from "@/hooks/useThemeVars";
-
-/* ══════════════════════════════════════════════════════════════
-   DashboardTopBar — Barra superior compartida del Dashboard
-   ──────────────────────────────────────────────────────────────
-   Componente reutilizable que renderiza:
-   - Logo (con soporte para basePath en producción)
-   - Título de la sección
-   - Smart Island Navigation (con tab activo dinámico)
-   - Acciones (tema, notificaciones, avatar)
-   
-   Props:
-   - activePage: clave del tab activo
-   - pageTitle: texto que aparece al lado del logo
-   - rightActions: elementos adicionales para el lado derecho
-   ══════════════════════════════════════════════════════════════ */
+import { useDashboard, DashboardNotification } from "@/context/DashboardContext";
 
 type PageKey = "inicio" | "contactos" | "perfil" | "configuracion" | "ayuda" | string;
 
@@ -60,12 +46,16 @@ export default function DashboardTopBar({ activePage, pageTitle, rightActions, o
         topBarBg,
         sidebarBg,
         textMuted,
+        textClass,
         hoverBg,
         activeItemBg,
     } = useThemeVars();
 
     const [isMobileExpanded, setIsMobileExpanded] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
     const mobileIslandRef = useRef<HTMLDivElement>(null);
+
+    const { notifications, markAllAsRead, userProfile } = useDashboard();
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -102,42 +92,39 @@ export default function DashboardTopBar({ activePage, pageTitle, rightActions, o
             {/* CENTER: Mobile & Desktop Smart Island Navigation */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-[60]">
                 {/* Desktop Version */}
-                <nav className="hidden lg:flex items-center gap-1 p-1.5 rounded-2xl shadow-sm border transition-colors duration-300"
+                <nav className="hidden lg:flex items-center px-2 py-1.5 rounded-full shadow-2xl transition-colors duration-300 border backdrop-blur-xl"
                     style={{
-                        backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                        borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                        backgroundColor: isDark ? 'rgba(15, 15, 15, 0.75)' : 'rgba(255, 255, 255, 0.85)',
+                        borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                        boxShadow: isDark ? '0 10px 40px -10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)' : '0 10px 40px -10px rgba(0,0,0,0.1)',
                     }}
                 >
                     {NAV_ITEMS.map((item, idx) => {
                         const isActive = item.key === activePage;
                         const Icon = item.icon;
 
-                        // Divider after "contactos"
+                        // Divider only after "contactos"
                         const showDivider = item.key === "contactos";
 
                         return (
                             <React.Fragment key={item.key}>
                                 {isActive ? (
-                                    <button className={`flex items-center h-9 px-3 rounded-xl transition-all duration-300 group/nav ${activeItemBg}`}>
+                                    <button className="flex items-center h-[38px] px-5 rounded-full transition-all duration-300 bg-[#C39767] text-white shadow-[0_0_24px_rgba(195,151,103,0.4)]">
                                         <Icon size={16} strokeWidth={2.5} className="shrink-0" />
-                                        <span className="text-[13px] font-medium whitespace-nowrap overflow-hidden transition-all duration-300 max-w-[100px] ml-2 opacity-100"
-                                            style={{ maxWidth: item.maxWidth }}
-                                        >
+                                        <span className="text-[14px] font-semibold whitespace-nowrap ml-2.5">
                                             {item.label}
                                         </span>
                                     </button>
                                 ) : (
-                                    <Link href={item.href} className={`flex items-center h-9 px-3 rounded-xl transition-all duration-300 group/nav ${textMuted} ${hoverBg}`}>
-                                        <Icon size={16} strokeWidth={1.5} className="shrink-0" />
-                                        <span className="text-[13px] font-medium whitespace-nowrap overflow-hidden transition-all duration-300 max-w-0 opacity-0 group-hover/nav:max-w-[100px] group-hover/nav:ml-2 group-hover/nav:opacity-100"
-                                            style={{ '--max-expand': item.maxWidth } as React.CSSProperties}
-                                        >
+                                    <Link href={item.href} className={`flex items-center h-[38px] px-3.5 rounded-full transition-all duration-300 group/nav ${textMuted} ${isDark ? 'hover:text-white hover:bg-white/10' : 'hover:text-black hover:bg-black/5'}`}>
+                                        <Icon size={18} strokeWidth={2} className="shrink-0" />
+                                        <span className="text-[14px] font-medium whitespace-nowrap overflow-hidden transition-all duration-300 max-w-0 opacity-0 group-hover/nav:max-w-[100px] group-hover/nav:ml-2.5 group-hover/nav:opacity-100">
                                             {item.label}
                                         </span>
                                     </Link>
                                 )}
                                 {showDivider && (
-                                    <div className={`w-px h-4 mx-1 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                                    <div className={`w-px h-5 mx-1 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
                                 )}
                             </React.Fragment>
                         );
@@ -211,13 +198,49 @@ export default function DashboardTopBar({ activePage, pageTitle, rightActions, o
                 </button>
 
                 {/* Notifications */}
-                <button className={`relative p-2 ${textMuted} rounded-full ${hoverBg} transition-colors hidden sm:block`}>
-                    <Bell size={20} />
-                </button>
+                <div className="relative hidden sm:block">
+                    <button 
+                        onClick={() => setShowNotifications(!showNotifications)}
+                        className={`relative p-2 ${textMuted} rounded-full ${hoverBg} transition-colors`}
+                    >
+                        <Bell size={20} />
+                        {notifications.length > 0 && notifications.some(n => !n.read) && (
+                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-black"></span>
+                        )}
+                    </button>
+
+                    {showNotifications && (
+                        <div className={`absolute top-full right-0 mt-3 w-80 sm:w-96 rounded-2xl shadow-2xl border ${borderColor} ${isDark ? 'bg-[#0A0A0A]' : 'bg-[#FAFAFA]'} overflow-hidden animate-fade-in`} style={{ zIndex: 9999 }}>
+                            <div className={`p-4 border-b ${borderColor} flex justify-between items-center bg-black/5 dark:bg-white/5`}>
+                                <h3 className={`font-bold ${textClass}`}>Notificaciones</h3>
+                                <button onClick={markAllAsRead} className="text-[11px] text-[#C39767] hover:underline uppercase tracking-wider font-bold">Marcar leídas</button>
+                            </div>
+                            <div className="max-h-[60vh] overflow-y-auto">
+                                {notifications.length === 0 ? (
+                                    <div className={`p-6 text-center text-sm ${textMuted}`}>No hay notificaciones nuevas</div>
+                                ) : (
+                                    notifications.map((n: DashboardNotification) => (
+                                        <div key={n.id} className={`p-4 border-b ${borderColor} ${!n.read ? (isDark ? 'bg-white/5' : 'bg-black/5') : ''}`}>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <div className={`w-2 h-2 rounded-full ${n.type === 'success' ? 'bg-emerald-500' : n.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'}`} />
+                                                <h4 className={`text-sm font-bold ${textClass}`}>{n.title}</h4>
+                                            </div>
+                                            <p className={`text-xs ${textMuted}`}>{n.message}</p>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* Avatar */}
-                <Link href="/dashboard/profile" className={`w-8 h-8 rounded-full bg-gradient-to-br from-[#C39767] to-amber-600 flex items-center justify-center text-sm font-bold shadow-lg ring-2 ${isDark ? 'ring-white/10 hover:ring-white/30 text-white' : 'ring-[#2A241E]/10 hover:ring-[#2A241E]/30 text-white'} transition-all cursor-pointer`}>
-                    EM
+                <Link href="/dashboard/profile" className={`relative w-8 h-8 rounded-full bg-gradient-to-br ${userProfile.avatarGrad} flex items-center justify-center text-sm font-bold shadow-lg ring-2 ${isDark ? 'ring-white/10 hover:ring-white/30 text-white' : 'ring-[#2A241E]/10 hover:ring-[#2A241E]/30 text-white'} transition-all cursor-pointer overflow-hidden`}>
+                    {userProfile.customAvatarUrl ? (
+                         <Image src={userProfile.customAvatarUrl} alt="Avatar" fill className="object-cover" unoptimized />
+                    ) : (
+                         userProfile.name.split(" ").map(n => n[0]).join("").substring(0, 2)
+                    )}
                 </Link>
             </div>
         </header>
