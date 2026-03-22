@@ -41,7 +41,7 @@ const DashboardContext = React.createContext<DashboardContextType>({
     notifications: [],
     addNotification: () => {},
     markAllAsRead: () => {},
-    userProfile: { name: "Eduardo Mora", customAvatarUrl: "/images/profile/avatar_eduardo.png", customCoverUrl: "/images/profile/cover_eduardo.png", avatarGrad: "from-[#C39767] to-amber-600" },
+    userProfile: { name: "Eduardo Mora", customAvatarUrl: "/images/profile/avatar_eduardo\.webp", customCoverUrl: "/images/profile/cover_eduardo\.webp", avatarGrad: "from-[#C39767] to-amber-600" },
     setUserProfile: () => {},
 });
 
@@ -67,8 +67,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         avatarGrad: string;
     }>({
         name: "Eduardo Mora",
-        customAvatarUrl: "/images/profile/avatar_eduardo.png",
-        customCoverUrl: "/images/profile/cover_eduardo.png",
+        customAvatarUrl: "/images/profile/avatar_eduardo\.webp",
+        customCoverUrl: "/images/profile/cover_eduardo\.webp",
         avatarGrad: "from-[#C39767] to-amber-600",
     });
 
