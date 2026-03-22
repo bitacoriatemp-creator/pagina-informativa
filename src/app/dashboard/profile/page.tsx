@@ -28,6 +28,7 @@ import DashboardTopBar from "@/components/dashboard/DashboardTopBar";
 import dynamic from "next/dynamic";
 import { useThemeVars } from "@/hooks/useThemeVars";
 import { useDashboard } from "@/context/DashboardContext";
+import { assetPath } from "@/lib/assetPath";
 
 const PlanManagementModal = dynamic(() => import("@/components/dashboard/PlanManagementModal"), { ssr: false });
 
@@ -181,7 +182,7 @@ export default function ProfileDashboard() {
                                 onChange={handleCoverUpload}
                             />
                             {user.customCoverUrl ? (
-                                <Image src={user.customCoverUrl} alt="Portada" fill className="object-cover" unoptimized />
+                                <Image src={assetPath(user.customCoverUrl)} alt="Portada" fill className="object-cover" unoptimized />
                             ) : (
                                 <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a1a] via-[#2a241e] to-[#C39767]/20">
                                     <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px)" }} />
@@ -211,7 +212,7 @@ export default function ProfileDashboard() {
                                 />
                                 {user.customAvatarUrl ? (
                                     <div className="w-full h-full rounded-full overflow-hidden relative bg-[#0a0a0a]">
-                                        <Image src={user.customAvatarUrl} alt="Foto de perfil" fill className="object-cover" unoptimized />
+                                        <Image src={assetPath(user.customAvatarUrl)} alt="Foto de perfil" fill className="object-cover" unoptimized />
                                         <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300">
                                             <Camera size={28} className="text-white mb-1.5" />
                                         </div>

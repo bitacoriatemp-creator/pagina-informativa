@@ -8,6 +8,7 @@ import { useThemeVars } from "@/hooks/useThemeVars";
 import { Project, Role } from "@/types/project";
 import { APPEARANCES, RECENT_ENGINEERS } from "@/utils/mockData";
 import { useDashboard } from "@/context/DashboardContext";
+import { assetPath } from "@/lib/assetPath";
 
 interface ProjectFormModalProps {
     isOpen: boolean;
@@ -283,7 +284,7 @@ export default function ProjectFormModal({
                                                     <div className="flex items-center gap-3">
                                                         <div className={`relative w-9 h-9 rounded-full ${member.role === 'Owner' ? 'bg-[#C39767]' : member.role === 'Editor' ? 'bg-blue-500' : 'bg-emerald-500'} flex items-center justify-center text-white font-bold text-xs ring-2 ${isDark ? 'ring-[#1A1A1A]' : 'ring-white'} shadow-sm overflow-hidden`}>
                                                             {member.avatarUrl ? (
-                                                                <Image src={member.avatarUrl} alt={member.name} fill className="object-cover" unoptimized />
+                                                                <Image src={assetPath(member.avatarUrl)} alt={member.name} fill className="object-cover" unoptimized />
                                                             ) : (
                                                                 member.initials || member.name.substring(0, 2).toUpperCase()
                                                             )}
@@ -387,7 +388,7 @@ export default function ProjectFormModal({
                                                         <div className="flex items-center gap-3">
                                                             <div className={`relative w-8 h-8 rounded-full ${isDark ? 'bg-[#C39767]/10 border-[#C39767]/30' : 'bg-[#C39767]/10 border-[#C39767]/20'} text-[#C39767] flex items-center justify-center font-bold text-xs ring-1 ring-white/5 overflow-hidden`}>
                                                                 {user.avatarUrl ? (
-                                                                    <Image src={user.avatarUrl} alt={user.name} fill className="object-cover" unoptimized />
+                                                                    <Image src={assetPath(user.avatarUrl)} alt={user.name} fill className="object-cover" unoptimized />
                                                                 ) : (
                                                                     user.name.substring(0,2).toUpperCase()
                                                                 )}
@@ -480,7 +481,7 @@ export default function ProjectFormModal({
                                         />
                                         {formCoverImage ? (
                                             <>
-                                                <Image src={formCoverImage} alt="Portada" fill className="absolute inset-0 object-cover" unoptimized />
+                                                <Image src={assetPath(formCoverImage)} alt="Portada" fill className="absolute inset-0 object-cover" unoptimized />
                                                 <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                                                     <button
                                                         type="button"

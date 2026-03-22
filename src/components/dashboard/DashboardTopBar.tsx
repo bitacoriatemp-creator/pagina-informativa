@@ -15,6 +15,7 @@ import {
 import Image from "next/image";
 import { useThemeVars } from "@/hooks/useThemeVars";
 import { useDashboard, DashboardNotification } from "@/context/DashboardContext";
+import { assetPath } from "@/lib/assetPath";
 
 type PageKey = "inicio" | "contactos" | "perfil" | "configuracion" | "ayuda" | string;
 
@@ -237,7 +238,7 @@ export default function DashboardTopBar({ activePage, pageTitle, rightActions, o
                 {/* Avatar */}
                 <Link href="/dashboard/profile" className={`relative w-8 h-8 rounded-full bg-gradient-to-br ${userProfile.avatarGrad} flex items-center justify-center text-sm font-bold shadow-lg ring-2 ${isDark ? 'ring-white/10 hover:ring-white/30 text-white' : 'ring-[#2A241E]/10 hover:ring-[#2A241E]/30 text-white'} transition-all cursor-pointer overflow-hidden`}>
                     {userProfile.customAvatarUrl ? (
-                         <Image src={userProfile.customAvatarUrl} alt="Avatar" fill className="object-cover" unoptimized />
+                         <Image src={assetPath(userProfile.customAvatarUrl)} alt="Avatar" fill className="object-cover" unoptimized />
                     ) : (
                          userProfile.name.split(" ").map(n => n[0]).join("").substring(0, 2)
                     )}

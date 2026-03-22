@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Project } from "@/types/project";
 import { useThemeVars } from "@/hooks/useThemeVars";
+import { assetPath } from "@/lib/assetPath";
 
 // Props required for the component
 interface ProjectCardProps {
@@ -67,7 +68,7 @@ export default React.memo(function ProjectCard({
             {/* Header: proyecto gradient o solid color (o foto de portada) */}
             <div className={`h-[110px] rounded-t-[15px] ${!project.coverImage && !project.gradient.startsWith('#') ? 'bg-gradient-to-br ' + project.gradient : ''} p-4 flex flex-col justify-between relative overflow-hidden`}
                 style={project.coverImage
-                    ? { backgroundImage: `url(${project.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                    ? { backgroundImage: `url(${assetPath(project.coverImage)})`, backgroundSize: 'cover', backgroundPosition: 'center' }
                     : project.gradient.startsWith('#') ? { backgroundColor: project.gradient } : undefined}>
                 {/* Overlay when cover photo is used */}
                 {project.coverImage && <div className="absolute inset-0 bg-black/40" />}
@@ -120,7 +121,7 @@ export default React.memo(function ProjectCard({
                                             <div className="relative shrink-0 w-8 h-8">
                                                 <div className={`w-full h-full rounded-lg ${isDark ? 'bg-black/60' : 'bg-[#F8F6F0]'} backdrop-blur-md border ${cardBorder} flex items-center justify-center text-[10px] font-bold ${textClass} shadow-sm overflow-hidden relative`}>
                                                     {member.avatarUrl ? (
-                                                        <Image src={member.avatarUrl} alt={member.name || member.initials} fill className="object-cover" unoptimized />
+                                                        <Image src={assetPath(member.avatarUrl)} alt={member.name || member.initials} fill className="object-cover" unoptimized />
                                                     ) : (
                                                         member.initials
                                                     )}

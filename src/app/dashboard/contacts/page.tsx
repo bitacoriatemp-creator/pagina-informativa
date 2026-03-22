@@ -25,6 +25,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useThemeVars } from "@/hooks/useThemeVars";
+import { assetPath } from "@/lib/assetPath";
 import DashboardTopBar from "@/components/dashboard/DashboardTopBar";
 import { MOCK_CONTACTS, Contact, Category } from "@/utils/mockData";
 
@@ -207,7 +208,7 @@ export default function ContactosDashboard() {
                                             {/* Portada (Cover) */}
                                             {contact.coverUrl && (
                                                 <div className="h-28 w-full relative overflow-hidden bg-black/10">
-                                                    <Image src={contact.coverUrl} alt="Cover" fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
+                                                    <Image src={assetPath(contact.coverUrl)} alt="Cover" fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                                                 </div>
                                             )}
@@ -220,7 +221,7 @@ export default function ContactosDashboard() {
                                                         <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br ${contact.avatarColor} p-[3px] shadow-xl`}>
                                                             <div className={`w-full h-full rounded-full ${isDark ? 'bg-[#0a0a0a]' : 'bg-[#F4EFE6]'} flex items-center justify-center font-display font-black ${textClass} tracking-widest text-lg relative overflow-hidden`}>
                                                                 {contact.avatarUrl ? (
-                                                                     <Image src={contact.avatarUrl} alt={contact.name} fill className="object-cover" unoptimized />
+                                                                     <Image src={assetPath(contact.avatarUrl)} alt={contact.name} fill className="object-cover" unoptimized />
                                                                 ) : (
                                                                      <>
                                                                          <div className={`absolute inset-0 ${isDark ? 'bg-white/10' : 'bg-[#2A241E]/10'} mix-blend-overlay`} />
@@ -322,7 +323,7 @@ export default function ContactosDashboard() {
                                         <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${activeChat.avatarColor} p-[2px] shadow-lg`}>
                                             <div className={`w-full h-full rounded-full ${isDark ? 'bg-[#0a0a0a]' : 'bg-[#F4EFE6]'} flex items-center justify-center font-display font-black ${textClass} tracking-widest text-sm relative overflow-hidden`}>
                                                 {activeChat.avatarUrl ? (
-                                                    <Image src={activeChat.avatarUrl} alt={activeChat.name} fill className="object-cover" unoptimized />
+                                                    <Image src={assetPath(activeChat.avatarUrl)} alt={activeChat.name} fill className="object-cover" unoptimized />
                                                 ) : (
                                                     <>
                                                         <div className={`absolute inset-0 ${isDark ? 'bg-white/10' : 'bg-[#2A241E]/10'} mix-blend-overlay`} />

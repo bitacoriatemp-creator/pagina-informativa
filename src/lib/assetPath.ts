@@ -10,6 +10,9 @@
 const BASE_PATH = process.env.NODE_ENV === 'production' ? '/plataforma' : '';
 
 export function assetPath(path: string): string {
+    if (path.startsWith('data:') || path.startsWith('http://') || path.startsWith('https://')) {
+        return path;
+    }
     return `${BASE_PATH}${path}`;
 }
 
