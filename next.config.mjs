@@ -9,6 +9,8 @@ const nextConfig = {
         unoptimized: true,
     },
     async redirects() {
+        // Solo redirigir en producción (Vercel) donde basePath = '/plataforma'
+        if (process.env.NODE_ENV !== 'production') return [];
         return [
             {
                 source: '/',

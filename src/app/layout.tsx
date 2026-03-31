@@ -56,10 +56,10 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`dark scroll-smooth ${kumbhSans.variable} ${orbitron.variable} ${teko.variable} ${robotoMono.variable}`}
+      className={`dark scroll-smooth overflow-x-hidden ${kumbhSans.variable} ${orbitron.variable} ${teko.variable} ${robotoMono.variable}`}
       suppressHydrationWarning
     >
-      <body className="font-sans antialiased" suppressHydrationWarning>
+      <body className="font-sans antialiased overflow-x-hidden" suppressHydrationWarning>
         <ThemeProvider>
           <LenisProvider>{children}</LenisProvider>
         </ThemeProvider>

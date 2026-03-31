@@ -1,0 +1,13 @@
+import { useRef, useState, useEffect } from "react";
+import { motion, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
+import HeroHybrid from "@/components/ui/HeroHybrid";
+import ProblemChaos from "@/components/ui/ProblemChaos";
+import SmartIslandShowcase from "@/components/ui/SmartIslandShowcase";
+import SmartIsland, { type IslandState } from "@/components/ui/SmartIsland";
+import SmartConceptsSection from "@/components/ui/SmartConceptsSection";
+import BitacoraSection from "@/components/ui/BitacoraSection";
+import CronogramaSection from "@/components/ui/CronogramaSection";
+import SmartBimSyncSection from "@/components/ui/SmartBimSyncSection";
+import PlanesSection from "@/components/ui/PlanesSection";
+import FooterSection from "@/components/ui/FooterSection";
+import QuienesSomosModal from "@/components/ui/QuienesSomosModal";

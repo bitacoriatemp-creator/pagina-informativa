@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup, useAnimationFrame, useSpring, useMotionValue } from "framer-motion";
 import {
     TableProperties,
     Book,
@@ -137,15 +137,35 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
 
     // ── ANIMATION VARIANTS ──
     // x: "-50%" is owned by Framer, NOT Tailwind, to prevent transform clobbering.
+    // ── TRACKING DINÁMICO DEL ANCLA ──
+    // Permite que la isla siga perfectamente su placeholder en el DOM sin importar cómo reacomode el texto la pantalla.
+    const rawTop = useMotionValue(400); // number, se ajustará en el primer frame
+    const dynamicTop = useSpring(rawTop, { stiffness: 400, damping: 40 });
+
+    useAnimationFrame(() => {
+        if (typeof window === "undefined" || typeof document === "undefined") return;
+
+        if (islandState === "center") {
+            const anchor = document.getElementById("island-anchor");
+            if (anchor) {
+                const rect = anchor.getBoundingClientRect();
+                // Posicionar de manera que el y="-50%" de la variante logre encajar la isla
+                // exactamente en el centro (vertical) de nuestro placeholder en pantalla.
+                rawTop.set(rect.top + rect.height / 2);
+            }
+        } else if (islandState === "top") {
+            rawTop.set(24); // top: 1.5rem (24px)
+        }
+        // En "hidden", se deja en su última posición mientras fade-out sucede
+    });
+
     const variants = {
         hidden: {
             opacity: 0,
             left: "50%",
             x: "-50%",
-            y: 50,
+            y: "-50%",
             scale: 0.8,
-            top: "auto",
-            bottom: "2rem",
             pointerEvents: "none" as const,
         },
         center: {
@@ -153,9 +173,7 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
             left: "50%",
             x: "-50%",
             y: "-50%",
-            scale: 1.25,
-            top: "35%",
-            bottom: "auto",
+            scale: 1,
             pointerEvents: "auto" as const,
             zIndex: 60,
         },
@@ -163,10 +181,8 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
             opacity: 1,
             left: "50%",
             x: "-50%",
-            y: "0%",
+            y: "0", // como dynamicTop bajará a 24px, no restamos 50%
             scale: 1,
-            top: "1.5rem",
-            bottom: "auto",
             pointerEvents: "auto" as const,
             zIndex: 50,
         },
@@ -184,6 +200,7 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
     return (
         <motion.div
             className="fixed font-sans will-change-transform z-[100]"
+            style={{ top: dynamicTop }}
             initial="hidden"
             animate={hideIsland ? hiddenByFooter : effectiveState}
             variants={variants}
@@ -235,17 +252,12 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
                             boxShadow: isBimSectionActive
                                 ? "0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(168,85,247,0.12)"
                                 : "0 8px 32px rgba(0,0,0,0.4)",
-                            // Morphing css-only
-                            width: (isMobile && !isExpanded && !forceExpand) ? "56px" : undefined,
-                            height: (isMobile && !isExpanded && !forceExpand) ? "56px" : undefined,
+                            // Morphing css-only removido para mantener isla extendida en móvil
+                            width: undefined,
+                            height: undefined,
                             transition: "width 1000ms cubic-bezier(0.34,1.56,0.64,1), height 1000ms cubic-bezier(0.34,1.56,0.64,1), border-radius 600ms ease, box-shadow 300ms ease",
                         }}
-                        className="relative inline-flex items-center gap-1.5 rounded-full px-2 py-2 overflow-hidden font-sans cursor-pointer pointer-events-auto"
-                        onClick={() => {
-                            // Usar window.innerWidth como fallback si isMobile aún es false (primer render)
-                            const onMobile = isMobile || (typeof window !== "undefined" && window.innerWidth < 768);
-                            if (onMobile && !isExpanded && !forceExpand) setIsExpanded(true);
-                        }}
+                        className="relative inline-flex items-center justify-center gap-1.5 rounded-full px-2 py-2 overflow-hidden font-sans cursor-pointer"
                     >
                         {/* ── HALO COMETA ──
                          * Ahora está DENTRO del nav con overflow-hidden.
@@ -253,7 +265,7 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
                          * -z-10 lo pone detrás del fondo semisólido del nav.
                          */}
                         {(() => {
-                            const collapsed = isMobile && !isExpanded && !forceExpand;
+                            const collapsed = false;
                             const haloColor = activeMod.color;
                             return (
                                 <motion.div
@@ -270,42 +282,12 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
                             );
                         })()}
 
-                        {/* ══ ESCUDO INVISIBLE ══
-                         * En móvil colapsado: cubre toda la superficie de la pelota.
-                         * Intercepta el primer tap → solo expande, NUNCA navega.
-                         * Al expandir → se oculta (hidden), dejando los botones reales accesibles.
-                         * md:hidden garantiza que en desktop no interfiere jamás.
-                         */}
-                        <div
-                            className={`absolute inset-0 z-[60] rounded-full md:hidden ${(!isExpanded && !forceExpand) ? "block cursor-pointer" : "hidden"
-                                }`}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setIsExpanded(true);
-                            }}
-                        />
-
-                        {/* Interior negro (cubre el halo cometa cuando colapsado) + ícono activo */}
-                        {(isMobile && !isExpanded && !forceExpand) && (
-                            <div
-                                className="absolute inset-[1.5px] rounded-full bg-[#0a0a0a] z-20 pointer-events-none flex items-center justify-center"
-                            >
-                                {/* Ícono dinámico de la sección activa — tamaño fijo, sin deformar */}
-                                <activeMod.Icon
-                                    className="shrink-0"
-                                    style={{ width: 24, height: 24, color: activeMod.color }}
-                                    strokeWidth={2}
-                                />
-                            </div>
-                        )}
-
                         {modules.map((mod, index) => {
                             const isHovered = hoveredId === mod.id;
                             const lastPop = popKey[mod.id] ?? 0;
-                            // TODOS los íconos se animan — incluyendo index 0.
-                            // index 0 quedaba "congelado" porque solo index > 0 se escondía.
-                            const collapsed = isMobile && !isExpanded && !forceExpand;
-                            const hideOnCollapse = collapsed; // ← aplica a todos sin excepción
+                            // Siempre en modo pastilla expansiva
+                            const collapsed = false;
+                            const hideOnCollapse = false;
 
                             return (
                                 <div
@@ -371,7 +353,7 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
                                             }}
                                         />
                                         <AnimatePresence mode="popLayout">
-                                            {isHovered && (
+                                            {(isHovered && !collapsed) && (
                                                 <motion.span
                                                     initial={{ opacity: 0, width: 0 }}
                                                     animate={{ opacity: 1, width: "auto" }}

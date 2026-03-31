@@ -1,0 +1,16 @@
+﻿08e774e HEAD@{0}: reset: moving to 08e774e
+f34b399 HEAD@{1}: commit: feat: reinstate video carousel in hero section mapped to LaserTrail
+7990ab7 HEAD@{2}: commit: fix: restore modern landing page with HeroHybrid
+beca6cd HEAD@{3}: commit: feat: restaurar landing page y routing principal
+9db4e10 HEAD@{4}: commit: chore: trigger vercel deploy
+d87df3d HEAD@{5}: commit: Fix eslint dependency in lockfile
+08e774e HEAD@{6}: pull origin main --rebase (finish): returning to refs/heads/main
+08e774e HEAD@{7}: pull origin main --rebase (start): checkout 08e774e04fa9397d7ee402df5e7d98a2fb5882af
+649d47b HEAD@{8}: commit: fix: resolve eslint-config-next version conflict
+5795546 HEAD@{9}: commit: chore(deploy): Prepare NextJS Standalone build, env.example, and Docker configuration for Expotrabajo MVP
+f73fe7a HEAD@{10}: commit: feat(ui): redise├▒o premium y anclaje f├¡sico de Smart Island en m├│vil
+15151aa HEAD@{11}: commit: security: upgrade next.js 14.2.35 - fix SSRF and Cache Poisoning vulnerabilities
+20ac920 HEAD@{12}: commit: fix: remove duplicate /plataforma route - basePath already handles it
+03f1fbc HEAD@{13}: commit: chore: trigger Vercel deploy
+dcbd6a0 HEAD@{14}: Branch: renamed refs/heads/master to refs/heads/main
+dcbd6a0 HEAD@{16}: commit (initial): feat: MVP landing page + dashboard gerencial BitacorIA con rutas /plataforma y /dashboard

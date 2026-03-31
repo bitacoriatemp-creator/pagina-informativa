@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
@@ -126,7 +126,7 @@ const PLANS = [
 ] as const;
 
 /* ── PLAN CARD ── */
-function PlanCard({ plan, index }: { plan: typeof PLANS[number]; index: number }) {
+const PlanCard = React.memo(function PlanCard({ plan, index }: { plan: typeof PLANS[number]; index: number }) {
     const [hovered, setHovered] = useState(false);
 
     return (
@@ -302,7 +302,7 @@ function PlanCard({ plan, index }: { plan: typeof PLANS[number]; index: number }
             </motion.div>
         </div>
     );
-}
+});
 
 /* ── MAIN SECTION ── */
 export default function PlanesSection() {

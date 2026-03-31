@@ -69,7 +69,8 @@ const GROUP_DOCS: DebrisType[] = [
 
 const DEBRIS_TYPES = [...GROUP_MONEY, ...GROUP_TIME, ...GROUP_DOCS];
 
-const TOTAL_BODIES = 140;   // Increased slightly for more density
+const TOTAL_BODIES_DESKTOP = 140;
+const TOTAL_BODIES_MOBILE = 40;
 const BODY_RADIUS = 14;     // Small physics body
 const VISUAL_SIZE = 28;     // Reduced visual size (User request: w-7)
 const SPAWN_INTERVAL = 25;  // Very fast spawn
@@ -104,6 +105,8 @@ const gridBg = [
 
 export default function ProblemChaos() {
     const sectionRef = useRef<HTMLElement>(null);
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+    const TOTAL_BODIES = isMobile ? TOTAL_BODIES_MOBILE : TOTAL_BODIES_DESKTOP;
     const containerRef = useRef<HTMLDivElement>(null);
     const engineRef = useRef<Matter.Engine | null>(null);
     const runnerRef = useRef<Matter.Runner | null>(null);
@@ -269,7 +272,7 @@ export default function ProblemChaos() {
             spawned++;
         }, SPAWN_INTERVAL);
 
-    }, [isInView, syncDOM]);
+    }, [isInView, syncDOM, TOTAL_BODIES]);
 
     /* ── Cleanup ── */
     useEffect(() => {

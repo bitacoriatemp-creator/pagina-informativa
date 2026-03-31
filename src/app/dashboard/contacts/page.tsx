@@ -91,7 +91,7 @@ export default function ContactosDashboard() {
             const matchProj = filterProject === "Todas las Obras" || c.projects.some(p => p.name === filterProject);
             return matchSearch && matchCat && matchProj;
         });
-    }, [searchQuery, filterCategory, filterProject]);
+    }, [contactsList, searchQuery, filterCategory, filterProject]);
 
 
     if (!mounted) return null;

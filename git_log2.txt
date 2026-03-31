@@ -1,0 +1,35 @@
+f34b399 feat: reinstate video carousel in hero section mapped to LaserTrail
+7990ab7 fix: restore modern landing page with HeroHybrid
+beca6cd feat: restaurar landing page y routing principal
+9db4e10 chore: trigger vercel deploy
+d87df3d Fix eslint dependency in lockfile
+08e774e  Perf: Extreme WebP compression on Landing Page assets for CRO
+1c056f5  Fix: Clear cached local storage if it contains obsolete image paths
+6e6fb88  Fix: Remove accidental backslash in mockData image extensions
+c51fac1  Fix: Global assetPath wrap for all images to support base64 uploads and fix relative pathing
+c29460a perf(assets): rename contact & profile images from .png to .webp and update all references
+df94f07 feat(dashboard): full dashboard sync — modals, projects, contacts, profile, settings, theme optimizations & assets
+5de9f26 fix(dashboard): sync DashboardContext with notifications, userProfile & DashboardNotification export
+da0d3df feat(dashboard): premium Smart Island navbar, notifications panel, dynamic avatar & light-mode hover fix
+31bb7fa  fix: Add getImagePath wrapper to sitemanager.webp and profile card images for Vercel basePath compatibility
+b70bb36  style: Upgrade Mobile Add Contact button to premium solid gradient
+33ace8e  style: Refactor Add Contact button to premium TopBar action on PC
+8ec07db  fix: Replace native date pickers with text inputs to bypass mobile scaling bugs
+e24ce1a  style: Reduce vertical padding of inputs on mobile to prevent modal overflow
+7b5c031  fix: ProjectFormModal vertical date stack remove internal scroll and global iOS viewport zoom lock
+87a4329  fix: Revert ProjectFormModal to strict local centering and inject 16px iOS anti-zoom font lock
+fc55302  fix: Strict modal centering chevron overlap in cards and 100ms ios scroll blur timeout
+f749427  fix: Project Modal overflow layout squishing and iOS scroll block on close
+3afa586 fix: Project Modal keyboard occlusion on mobile and Plan modal image overlap
+de210b6 style: Remove CV, Call button, and fix Mobile Project Modal padding/z-index
+50c13bf fix: Mobile infinite scrolling freeze and plan modal Recommend label clipping
+04159f9 fix: Plan Management modal image paths and object-fit for PC
+b5e8399 fix: Rules of hooks violation in Profile page
+a6ed2c0 feat: Refactorización Móvil, Limpieza de Código y Modal de Planes
+b897330 refactor(dashboard): UI optimizations (Sprint 1-7)
+c306902 fix: explicitly inject /plataforma basePath into raw img tag based on NODE_ENV to bypass next/image unoptimized bug
+d51f647 fix: migrate logo to next/image to support basePath in production
+c57c0bf fix: use explicitly uploaded logo_horizontal-removebg-preview.png
+28078d5 fix: use stable webp logo image across all dashboard pages
+7fcc99e fix: enable mouse scroll on contacts and help pages (data-lenis-prevent)
+1b195d7 assets: add logo images for dashboard header

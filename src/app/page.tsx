@@ -1,237 +1,146 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { motion, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
+import { useInView } from "framer-motion";
 import HeroHybrid from "@/components/ui/HeroHybrid";
 import ProblemChaos from "@/components/ui/ProblemChaos";
 import SmartIslandShowcase from "@/components/ui/SmartIslandShowcase";
-import SmartIsland, { type IslandState } from "@/components/ui/SmartIsland";
 import SmartConceptsSection from "@/components/ui/SmartConceptsSection";
-import BitacoraSection from "@/components/ui/BitacoraSection";
-import CronogramaSection from "@/components/ui/CronogramaSection";
 import SmartBimSyncSection from "@/components/ui/SmartBimSyncSection";
+import CronogramaSection from "@/components/ui/CronogramaSection";
+import BitacoraSection from "@/components/ui/BitacoraSection";
 import PlanesSection from "@/components/ui/PlanesSection";
 import FooterSection from "@/components/ui/FooterSection";
-import QuienesSomosModal from "@/components/ui/QuienesSomosModal";
+import SmartIsland from "@/components/ui/SmartIsland";
+import type { IslandState } from "@/components/ui/SmartIsland";
+import LaserTrail from "@/components/ui/LaserTrail";
 
-/* ════════════════════════════════════════════════════════════
-   ONE-PAGE APPLICATION ORCHESTRATOR
-   ────────────────────────────────────────────────────────────
-   Implementation of SCROLL-DRIVEN STATE MACHINE for Island.
-   
-   State Logic:
-   0. Hero/Chaos -> "hidden"
-   1. Showcase InView -> "center"
-   2. Past Showcase -> "top"
-   ════════════════════════════════════════════════════════════ */
+export default function LandingPage() {
+    const [isQuienesSomosOpen, setIsQuienesSomosOpen] = useState(false);
 
-export default function Home() {
-  const [globalPopTrigger, setGlobalPopTrigger] = useState<string | null>(null);
-  const [islandState, setIslandState] = useState<IslandState>("hidden");
-  const [isBimSectionActive, setIsBimSectionActive] = useState(false);
-  const [isQuienesSomosOpen, setIsQuienesSomosOpen] = useState(false);
-  // Bug fix 1: footer visibility is decoupled from the state machine
-  // to avoid race conditions with planesObserver.
-  const [isFooterVisible, setIsFooterVisible] = useState(false);
-  // Bug fix 2: counter that increments every time showcase enters view.
-  // SmartIsland watches it to reset activeTabId, independently of rootMargin timing.
-  const [showcaseResetCount, setShowcaseResetCount] = useState(0);
+    /* ── SENSORES DE SCROLL ── */
+    // Sección 3: Showcase → isla se REVELA centrada
+    const showcaseRef = useRef<HTMLDivElement>(null);
+    const showcaseInView = useInView(showcaseRef, { margin: "0px 0px -95% 0px" });
 
-  // ── REFS FOR STATE TRIGGERS ──
-  const heroRef = useRef<HTMLDivElement>(null);
-  const chaosRef = useRef<HTMLDivElement>(null);
-  const showcaseRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const bimRef = useRef<HTMLDivElement>(null);
-  const planesRef = useRef<HTMLDivElement>(null);
-  const footerRef = useRef<HTMLDivElement>(null);
-  // tracks whether island was hidden on behalf of Plans section
-  const wasHiddenForPlanes = useRef(false);
-  // tracks whether island was hidden on behalf of Footer section
-  const wasHiddenForFooter = useRef(false);
+    // Sección 4: Smart Concepts
+    const conceptsRef = useRef<HTMLDivElement>(null);
+    const conceptsInView = useInView(conceptsRef, { amount: 0.1 });
 
-  // ── HERO SCROLL LOCK ──
-  const lockRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: lockRef,
-    offset: ["start start", "end start"],
-  });
-  const overlayOpacity = useTransform(scrollYProgress, [0.3, 0.85], [0, 1]);
+    // Sección 5: Bitácoras
+    const bitacoraRef = useRef<HTMLDivElement>(null);
+    const bitacoraInView = useInView(bitacoraRef, { amount: 0.1 });
 
-  // ── SCROLL OBSERVER FOR STATE MACHINE ──
-  // Using IntersectionObserver is cleaner than raw scrollY calculation
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            // Determine state based on which section is primary in view
-            if (entry.target.id === "showcase-section") {
-              setIslandState("center");
-              // Increment counter every time showcase enters view.
-              // SmartIsland will reset activeTabId on each increment.
-              setShowcaseResetCount((c) => c + 1);
-            } else if (entry.target.id === "content-start") {
-              setIslandState("top");
-            } else if (entry.target.id === "hero-or-chaos" || entry.target.id === "problem-chaos") {
-              setIslandState("hidden");
-            }
-          }
-        });
-      },
-      {
-        root: null,
-        // rootMargin shrinks detection zone: only fires when the target
-        // crosses the center 30% of the viewport, not the edges.
-        // This prevents the island from appearing while still in ProblemChaos.
-        rootMargin: "-35% 0px -35% 0px",
-        threshold: [0.01, 0.1],
-      }
+    // Sección 6: Smart Calendar
+    const calendarRef = useRef<HTMLDivElement>(null);
+    const calendarInView = useInView(calendarRef, { amount: 0.1 });
+
+    // Sección 7: Smart BIM Sync
+    const bimRef = useRef<HTMLDivElement>(null);
+    const bimInView = useInView(bimRef, { amount: 0.1 });
+
+    /* ── MÁQUINA DE ESTADOS ──
+       hidden  → Hero + ProblemChaos (secciones 1-2)
+       center  → Showcase (sección 3) — isla se revela grande, centrada
+       top     → Concepts + Bitácoras + Calendar + BIM (secciones 4-7)
+       hidden  → Planes + Footer (sección 8+) — desaparece
+    */
+    const isInContentSections = conceptsInView || bitacoraInView || calendarInView || bimInView;
+
+    let islandState: IslandState = "hidden";
+    if (isInContentSections) {
+        islandState = "top";
+    } else if (showcaseInView) {
+        islandState = "center";
+    }
+
+    return (
+        <main className="bg-[#0c0604] min-h-screen text-white relative">
+            {/* ── RASTRO LÁSER GLOBAL ── */}
+                <LaserTrail />
+
+                {/* ── ISLA FLOTANTE ÚNICA ── */}
+                <SmartIsland
+                    islandState={islandState}
+                    hideIsland={false}
+                    isBimSectionActive={bimInView}
+                    forceExpand={showcaseInView}
+                    triggerPop={null}
+                />
+
+                {/* Sección 1: Hero */}
+                <HeroHybrid onOpenQuienesSomos={() => setIsQuienesSomosOpen(true)} />
+
+                {/* Sección 2: El Problema */}
+                <ProblemChaos />
+
+                {/* Sección 3: Showcase — isla se revela aquí (imán de scroll) */}
+                <div ref={showcaseRef}>
+                    <SmartIslandShowcase />
+                </div>
+
+                {/* Sección 4: Smart Concepts */}
+                <div ref={conceptsRef} id="smart-concepts">
+                    <SmartConceptsSection />
+                </div>
+
+                {/* Sección 5: Bitácoras */}
+                <div ref={bitacoraRef} id="bitacora">
+                    <BitacoraSection />
+                </div>
+
+                {/* Sección 6: Smart Calendar */}
+                <div ref={calendarRef} id="smart-calendar">
+                    <CronogramaSection />
+                </div>
+
+                {/* Sección 7: Smart BIM Sync — isla desaparece después */}
+                <div ref={bimRef} id="bim-sync">
+                    <SmartBimSyncSection />
+                </div>
+
+                {/* Sección 8+: Sin isla */}
+                <div id="soluciones">
+                    <PlanesSection />
+                </div>
+
+                <div id="contacto">
+                    <FooterSection />
+                </div>
+
+                {/* Modal Quiénes Somos */}
+                {isQuienesSomosOpen && (
+                    <div 
+                        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" 
+                        onClick={() => setIsQuienesSomosOpen(false)}
+                        data-lenis-prevent
+                    >
+                        <div 
+                            className="relative w-full max-w-3xl rounded-2xl border border-amber-900/50 bg-zinc-950 p-8 md:p-12 shadow-[0_0_50px_rgba(120,53,15,0.2)]" 
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <button 
+                                onClick={() => setIsQuienesSomosOpen(false)} 
+                                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-zinc-800 text-zinc-500 hover:border-amber-700/50 hover:text-amber-500 transition-colors"
+                            >
+                                ×
+                            </button>
+                            <h2 className="mb-8 text-3xl font-display font-bold uppercase text-white/90 tracking-tight">Quiénes Somos</h2>
+                            
+                            <div className="space-y-6 text-zinc-400 text-sm leading-relaxed">
+                                <p>
+                                    Somos <strong className="text-amber-500">BitacorIA</strong>, creadores del primer ERP Invisible impulsado por Inteligencia Artificial para la industria de la construcción en América Latina.
+                                </p>
+                                <p>
+                                    Nuestra misión es erradicar el sobrecosto producido por la desconexión entre la oficina central y el residente en campo. Reemplazamos la captura manual, las bitácoras de papel y los reportes burocráticos por un ecosistema que aprende de tus catálogos constructivos en tiempo récord.
+                                </p>
+                                <p>
+                                    Fundada por arquitectos, ingenieros civiles y desarrolladores, BitacorIA fue construida desde la trinchera para proteger el prestigio de tu constructora mediante auditoría automatizada y firmas electrónicas regidas por la NOM-151.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </main>
     );
-
-    if (showcaseRef.current) observer.observe(showcaseRef.current);
-    if (contentRef.current) observer.observe(contentRef.current);
-    if (heroRef.current) observer.observe(heroRef.current);
-    if (chaosRef.current) observer.observe(chaosRef.current);
-
-    // BIM section LED trigger
-    const bimObserver = new IntersectionObserver(
-      (entries) => entries.forEach((e) => setIsBimSectionActive(e.isIntersecting)),
-      { root: null, threshold: 0.3 }
-    );
-    if (bimRef.current) bimObserver.observe(bimRef.current);
-
-    // Plans section: hide dock on enter, restore on exit (scroll back up)
-    const planesObserver = new IntersectionObserver(
-      (entries) => entries.forEach((e) => {
-        if (e.isIntersecting) {
-          wasHiddenForPlanes.current = true;
-          setIslandState("hidden");
-        } else if (wasHiddenForPlanes.current) {
-          // Only restore if WE hid it (not some other observer)
-          wasHiddenForPlanes.current = false;
-          setIslandState("top");
-        }
-      }),
-      { root: null, threshold: 0.04 }
-    );
-    if (planesRef.current) planesObserver.observe(planesRef.current);
-
-    // Footer/Contacto section: independent boolean, NOT setIslandState.
-    // rootMargin "0px 0px 200px 0px" extends detection 200px below viewport:
-    // prevents the iOS overscroll bounce from firing isIntersecting=false
-    // when the footer momentarily leaves the viewport during rubber-band.
-    const footerObserver = new IntersectionObserver(
-      (entries) => entries.forEach((e) => {
-        if (e.isIntersecting) setIsFooterVisible(true);
-        // Only hide if scroll is clearly NOT at the bottom (prevents bounce flicker)
-        else {
-          const notAtBottom =
-            window.scrollY + window.innerHeight <
-            document.documentElement.scrollHeight - 80;
-          if (notAtBottom) setIsFooterVisible(false);
-        }
-      }),
-      { root: null, threshold: 0.04, rootMargin: "0px 0px 200px 0px" }
-    );
-    if (footerRef.current) footerObserver.observe(footerRef.current);
-
-    // Scroll fallback: incorruptible bottom-of-page detection.
-    // Fires when the user is within 80px of the absolute bottom,
-    // ensuring the island stays hidden even through overscroll bounce.
-    const handleScroll = () => {
-      const atBottom =
-        window.scrollY + window.innerHeight >=
-        document.documentElement.scrollHeight - 80;
-      if (atBottom) setIsFooterVisible(true);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => {
-      observer.disconnect();
-      bimObserver.disconnect();
-      planesObserver.disconnect();
-      footerObserver.disconnect();
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  return (
-    <main
-      className="relative min-h-screen overflow-x-clip selection:bg-[#c39767] selection:text-black font-sans snap-y snap-proximity md:snap-none"
-      style={{ backgroundColor: "#0c0604" }}
-    >
-      {/* ── GLOBAL PERSISTENT DOCK ── */}
-      <SmartIsland
-        islandState={islandState}
-        triggerPop={globalPopTrigger}
-        isBimSectionActive={isBimSectionActive}
-        forceExpand={islandState === "center"}
-        hideIsland={isFooterVisible}
-        showcaseResetCount={showcaseResetCount}
-      />
-
-      {/* ── GLOBAL MODAL ── */}
-      <QuienesSomosModal
-        isOpen={isQuienesSomosOpen}
-        onClose={() => setIsQuienesSomosOpen(false)}
-      />
-
-      {/* ── 1. HERO LOCK + CHAOS (Hidden Zone) ── */}
-      <div id="hero-or-chaos" ref={heroRef} className="relative z-0">
-        <div ref={lockRef} className="relative z-0" style={{ height: "250vh" }}>
-          <div className="sticky top-0 h-screen overflow-hidden">
-            <HeroHybrid onOpenQuienesSomos={() => setIsQuienesSomosOpen(true)} />
-            <motion.div
-              className="pointer-events-none absolute inset-0 z-40"
-              style={{ opacity: overlayOpacity, backgroundColor: "#0c0604" }}
-            />
-          </div>
-        </div>
-
-        {/* ── 2. PROBLEM CHAOS ── */}
-        <div id="problem-chaos" ref={chaosRef} className="relative z-10" style={{ backgroundColor: "#0c0604" }}>
-          <ProblemChaos />
-        </div>
-      </div>
-
-      {/* ── 3. SMART ISLAND SHOWCASE (Center Zone) ── */}
-      <div
-        id="showcase-section"
-        ref={showcaseRef}
-        className="relative z-20 snap-center"
-        style={{ backgroundColor: "#0c0604" }}
-      >
-        <SmartIslandShowcase onTriggerPop={setGlobalPopTrigger} />
-      </div>
-
-      {/* ── 4. FEATURE SECTIONS (Top Zone) ── */}
-      <div id="content-start" ref={contentRef} className="relative z-30">
-
-        {/* SECTION A: SMART CONCEPTS */}
-        <SmartConceptsSection />
-
-        {/* SECTION B: BITÁCORA */}
-        <BitacoraSection />
-
-        {/* SECTION C: SMART CALENDAR */}
-        <CronogramaSection />
-
-        {/* SECTION D: BIM SYNC */}
-        <div ref={bimRef}>
-          <SmartBimSyncSection />
-        </div>
-
-        {/* SECTION E: PLANES */}
-        <div ref={planesRef}>
-          <PlanesSection />
-        </div>
-
-        {/* SECTION F: FOOTER / CONTACTO */}
-        <div ref={footerRef}>
-          <FooterSection />
-        </div>
-      </div>
-    </main>
-  );
 }

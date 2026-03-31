@@ -1,11 +1,14 @@
 "use client";
 
-import { useRef, useCallback, useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
 import { assetPath } from "@/lib/assetPath";
 import { ArrowRight } from "lucide-react";
 
+/* ── Lazy-loaded video carousel (Sprint 4.1) ── */
+const HeroVideoCarousel = dynamic(() => import("./HeroVideoCarousel"), { ssr: false });
 
 /* ══════════════════════════════════════════════════════════════
    HeroHybrid — Self-contained Hero Section
@@ -13,19 +16,15 @@ import { ArrowRight } from "lucide-react";
    Background layers:
      0  Solid dark base (#0c0604)
      1  Subtle golden grid (CSS repeating gradients)
-     2  Building image area (with cursor flashlight)
+     2  Video area (5 videos in sequential loop with crossfade)
      4  Bottom fade
      5  Vignette
+     5.5 Mobile text contrast overlay
    Foreground:
      Content (tagline, headline, CTAs)
      Scroll indicator
      Frosted-glass navbar
    ══════════════════════════════════════════════════════════════ */
-
-const FILTER_BASE =
-    "invert(1) sepia(1) hue-rotate(-15deg) brightness(0.7) saturate(2)";
-const FILTER_LIT =
-    "invert(1) sepia(1) hue-rotate(-15deg) brightness(1.5) saturate(4) contrast(1.2)";
 
 const NAV_LINKS = [
     { label: "Quiénes Somos", href: "#quienes" },
@@ -33,6 +32,8 @@ const NAV_LINKS = [
     { label: "Planes de Pago", href: "#soluciones" },
     { label: "Contacto", href: "#contacto" },
 ];
+
+
 
 /* ── Animation helpers ── */
 const fadeUp = {
@@ -49,46 +50,8 @@ const stagger = {
 };
 
 export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos: () => void }) {
-    const buildingRef = useRef<HTMLDivElement>(null);
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-    const [isHovering, setIsHovering] = useState(false);
     const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    
-    // --- Video Carousel State ---
-    const VIDEOS = [
-        "/plataforma/videos/hero_video_1.mp4",
-        "/plataforma/videos/hero_video_2.mp4",
-        "/plataforma/videos/hero_video_3.mp4"
-    ];
-    const [activeVideo, setActiveVideo] = useState(0);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setActiveVideo((v) => (v + 1) % VIDEOS.length);
-        }, 8000); // 8 seconds per video loop
-        return () => clearInterval(interval);
-    }, []);
-    // ── Glow effect state (whole section) ──
-    const [pointer, setPointer] = useState({ x: 0, y: 0, active: false });
-
-    const handlePointerMove = useCallback((e: React.PointerEvent<HTMLElement>) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        setPointer({ x: e.clientX - rect.left, y: e.clientY - rect.top, active: true });
-    }, []);
-
-    const handleMouseMove = useCallback(
-        (e: React.MouseEvent<HTMLDivElement>) => {
-            const el = buildingRef.current;
-            if (!el) return;
-            const rect = el.getBoundingClientRect();
-            setMousePos({
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top,
-            });
-        },
-        [],
-    );
 
     /* ── Grid CSS ── */
     const gridBg = [
@@ -97,20 +60,7 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
     ].join(", ");
 
     return (
-        <section
-            className="relative min-h-screen overflow-hidden"
-            onPointerMove={handlePointerMove}
-            onPointerLeave={() => setPointer(p => ({ ...p, active: false }))}
-        >
-            {/* ── SECCIÓN GLOW — sigue al puntero / dedo en toda la sección ── */}
-            <div
-                className="absolute inset-0 pointer-events-none z-[3] transition-opacity duration-500"
-                style={{
-                    opacity: pointer.active ? 1 : 0,
-                    background: `radial-gradient(circle 280px at ${pointer.x}px ${pointer.y}px, rgba(196,167,125,0.13), transparent 80%)`,
-                }}
-            />
-
+        <section className="relative min-h-screen overflow-hidden">
             {/* ══════════════════════════════════════════════
                 BACKGROUND LAYERS
                 ══════════════════════════════════════════════ */}
@@ -131,77 +81,8 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                     transition={{ duration: 2, delay: 0.5 }}
                 />
 
-                {/* ── BUILDING AREA — mouse tracking lives here ── */}
-                <div
-                    ref={buildingRef}
-                    className="absolute top-0 right-0 z-[2] h-full w-full md:w-2/3"
-                    onMouseMove={handleMouseMove}
-                    onMouseEnter={() => setIsHovering(true)}
-                    onMouseLeave={() => setIsHovering(false)}
-                >
-                    {/* Base image — bronze ghost */}
-                    <motion.div
-                        className="absolute inset-0"
-                        style={{
-                            WebkitMaskImage:
-                                "linear-gradient(to left, black 60%, transparent 100%)",
-                            maskImage:
-                                "linear-gradient(to left, black 60%, transparent 100%)",
-                        }}
-                        initial={{ opacity: 0, x: 40 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{
-                            duration: 1.6,
-                            ease: [0.25, 0.4, 0.25, 1] as const,
-                            delay: 0.3,
-                        }}
-                    >
-                        {VIDEOS.map((src, i) => (
-                            <video
-                                key={`base-${src}`}
-                                src={assetPath(src.replace('/plataforma', ''))}
-                                autoPlay
-                                loop
-                                muted
-                                playsInline
-                                className="absolute inset-0 object-cover object-center w-full h-full transition-opacity duration-1000"
-                                style={{
-                                    filter: FILTER_BASE,
-                                    mixBlendMode: "screen",
-                                    opacity: i === activeVideo ? 0.5 : 0,
-                                }}
-                            />
-                        ))}
-                    </motion.div>
-
-                    {/* Lit image — cursor flashlight (building only) */}
-                    <div
-                        className="absolute inset-0"
-                        style={{
-                            WebkitMaskImage: `radial-gradient(circle 180px at ${mousePos.x}px ${mousePos.y}px, black 20%, transparent 80%)`,
-                            maskImage: `radial-gradient(circle 180px at ${mousePos.x}px ${mousePos.y}px, black 20%, transparent 80%)`,
-                            opacity: isHovering ? 1 : 0,
-                            transition: "opacity 0.3s ease",
-                        }}
-                    >
-                        {VIDEOS.map((src, i) => (
-                            <video
-                                key={`lit-${src}`}
-                                src={assetPath(src.replace('/plataforma', ''))}
-                                autoPlay
-                                loop
-                                muted
-                                playsInline
-                                className="absolute inset-0 object-cover object-center w-full h-full transition-opacity duration-1000"
-                                style={{
-                                    filter: FILTER_LIT,
-                                    mixBlendMode: "screen",
-                                    opacity: i === activeVideo ? 1 : 0,
-                                }}
-                            />
-                        ))}
-                    </div>
-                </div>
+                {/* ── VIDEO AREA — lazy-loaded carousel (Sprint 4.1) ── */}
+                <HeroVideoCarousel />
 
                 {/* ── LAYER 4: Bottom fade ── */}
                 <div
@@ -220,6 +101,11 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                         background:
                             "radial-gradient(ellipse 70% 60% at 30% 50%, transparent 0%, rgba(12,6,4,0.4) 100%)",
                     }}
+                />
+
+                {/* ── LAYER 5.5: Mobile Text Contrast ── */}
+                <div 
+                    className="absolute inset-0 z-[6] pointer-events-none md:hidden bg-gradient-to-r from-[#0c0604]/90 via-[#0c0604]/70 to-transparent" 
                 />
             </div>
 
@@ -552,6 +438,7 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                 </div>
             )}
 
-        </section>
+    </section>
     );
 }
+
