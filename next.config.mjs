@@ -8,6 +8,16 @@ const nextConfig = {
     images: {
         unoptimized: true,
     },
+    async redirects() {
+        return [
+            {
+                source: '/',
+                destination: '/plataforma',
+                basePath: false,
+                permanent: false,
+            },
+        ];
+    },
 };
 
 export default nextConfig;
