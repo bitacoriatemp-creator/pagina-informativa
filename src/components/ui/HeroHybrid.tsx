@@ -54,6 +54,21 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
     const [isHovering, setIsHovering] = useState(false);
     const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    
+    // --- Video Carousel State ---
+    const VIDEOS = [
+        "/plataforma/videos/hero_video_1.mp4",
+        "/plataforma/videos/hero_video_2.mp4",
+        "/plataforma/videos/hero_video_3.mp4"
+    ];
+    const [activeVideo, setActiveVideo] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setActiveVideo((v) => (v + 1) % VIDEOS.length);
+        }, 8000); // 8 seconds per video loop
+        return () => clearInterval(interval);
+    }, []);
     // ── Glow effect state (whole section) ──
     const [pointer, setPointer] = useState({ x: 0, y: 0, active: false });
 
@@ -141,18 +156,22 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                             delay: 0.3,
                         }}
                     >
-                        <Image
-                            src={assetPath("/images/render3d.webp")}
-                            alt="Estructura arquitectónica — base"
-                            fill
-                            priority
-                            className="object-cover object-center"
-                            style={{
-                                filter: FILTER_BASE,
-                                mixBlendMode: "screen",
-                                opacity: 0.5,
-                            }}
-                        />
+                        {VIDEOS.map((src, i) => (
+                            <video
+                                key={`base-${src}`}
+                                src={assetPath(src.replace('/plataforma', ''))}
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                className="absolute inset-0 object-cover object-center w-full h-full transition-opacity duration-1000"
+                                style={{
+                                    filter: FILTER_BASE,
+                                    mixBlendMode: "screen",
+                                    opacity: i === activeVideo ? 0.5 : 0,
+                                }}
+                            />
+                        ))}
                     </motion.div>
 
                     {/* Lit image — cursor flashlight (building only) */}
@@ -165,17 +184,22 @@ export default function HeroHybrid({ onOpenQuienesSomos }: { onOpenQuienesSomos:
                             transition: "opacity 0.3s ease",
                         }}
                     >
-                        <Image
-                            src={assetPath("/images/render3d.webp")}
-                            alt="Estructura arquitectónica — iluminada"
-                            fill
-                            priority={false}
-                            className="object-cover object-center"
-                            style={{
-                                filter: FILTER_LIT,
-                                mixBlendMode: "screen",
-                            }}
-                        />
+                        {VIDEOS.map((src, i) => (
+                            <video
+                                key={`lit-${src}`}
+                                src={assetPath(src.replace('/plataforma', ''))}
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                className="absolute inset-0 object-cover object-center w-full h-full transition-opacity duration-1000"
+                                style={{
+                                    filter: FILTER_LIT,
+                                    mixBlendMode: "screen",
+                                    opacity: i === activeVideo ? 1 : 0,
+                                }}
+                            />
+                        ))}
                     </div>
                 </div>
 
