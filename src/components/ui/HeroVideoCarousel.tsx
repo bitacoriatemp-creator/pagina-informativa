@@ -6,11 +6,11 @@ import { assetPath } from "@/lib/assetPath";
 
 /* ── Video sources ── */
 const HERO_VIDEOS = [
-    assetPath("/videos/hero_video_1.mp4"),
-    assetPath("/videos/hero_video_2.mp4"),
-    assetPath("/videos/hero_video_3.mp4"),
-    assetPath("/videos/hero_video_4.mp4"),
-    assetPath("/videos/hero_video_5.mp4"),
+    assetPath("/videos/hero_video_1_v3.mp4"),
+    assetPath("/videos/hero_video_2_v3.mp4"),
+    assetPath("/videos/hero_video_3_v3.mp4"),
+    assetPath("/videos/hero_video_4_v3.mp4"),
+    assetPath("/videos/hero_video_5_v3.mp4"),
 ];
 
 /**
