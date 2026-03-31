@@ -30,6 +30,12 @@ export default function Home() {
   const [islandState, setIslandState] = useState<IslandState>("hidden");
   const [isBimSectionActive, setIsBimSectionActive] = useState(false);
   const [isQuienesSomosOpen, setIsQuienesSomosOpen] = useState(false);
+  // Bug fix 1: footer visibility is decoupled from the state machine
+  // to avoid race conditions with planesObserver.
+  const [isFooterVisible, setIsFooterVisible] = useState(false);
+  // Bug fix 2: counter that increments every time showcase enters view.
+  // SmartIsland watches it to reset activeTabId, independently of rootMargin timing.
+  const [showcaseResetCount, setShowcaseResetCount] = useState(0);
 
   // ── REFS FOR STATE TRIGGERS ──
   const heroRef = useRef<HTMLDivElement>(null);
@@ -38,8 +44,11 @@ export default function Home() {
   const contentRef = useRef<HTMLDivElement>(null);
   const bimRef = useRef<HTMLDivElement>(null);
   const planesRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
   // tracks whether island was hidden on behalf of Plans section
   const wasHiddenForPlanes = useRef(false);
+  // tracks whether island was hidden on behalf of Footer section
+  const wasHiddenForFooter = useRef(false);
 
   // ── HERO SCROLL LOCK ──
   const lockRef = useRef<HTMLDivElement>(null);
@@ -59,6 +68,9 @@ export default function Home() {
             // Determine state based on which section is primary in view
             if (entry.target.id === "showcase-section") {
               setIslandState("center");
+              // Increment counter every time showcase enters view.
+              // SmartIsland will reset activeTabId on each increment.
+              setShowcaseResetCount((c) => c + 1);
             } else if (entry.target.id === "content-start") {
               setIslandState("top");
             } else if (entry.target.id === "hero-or-chaos" || entry.target.id === "problem-chaos") {
@@ -105,12 +117,48 @@ export default function Home() {
     );
     if (planesRef.current) planesObserver.observe(planesRef.current);
 
-    return () => { observer.disconnect(); bimObserver.disconnect(); planesObserver.disconnect(); };
+    // Footer/Contacto section: independent boolean, NOT setIslandState.
+    // rootMargin "0px 0px 200px 0px" extends detection 200px below viewport:
+    // prevents the iOS overscroll bounce from firing isIntersecting=false
+    // when the footer momentarily leaves the viewport during rubber-band.
+    const footerObserver = new IntersectionObserver(
+      (entries) => entries.forEach((e) => {
+        if (e.isIntersecting) setIsFooterVisible(true);
+        // Only hide if scroll is clearly NOT at the bottom (prevents bounce flicker)
+        else {
+          const notAtBottom =
+            window.scrollY + window.innerHeight <
+            document.documentElement.scrollHeight - 80;
+          if (notAtBottom) setIsFooterVisible(false);
+        }
+      }),
+      { root: null, threshold: 0.04, rootMargin: "0px 0px 200px 0px" }
+    );
+    if (footerRef.current) footerObserver.observe(footerRef.current);
+
+    // Scroll fallback: incorruptible bottom-of-page detection.
+    // Fires when the user is within 80px of the absolute bottom,
+    // ensuring the island stays hidden even through overscroll bounce.
+    const handleScroll = () => {
+      const atBottom =
+        window.scrollY + window.innerHeight >=
+        document.documentElement.scrollHeight - 80;
+      if (atBottom) setIsFooterVisible(true);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      bimObserver.disconnect();
+      planesObserver.disconnect();
+      footerObserver.disconnect();
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   return (
     <main
-      className="relative min-h-screen selection:bg-[#c39767] selection:text-black font-sans"
+      className="relative min-h-screen overflow-x-clip selection:bg-[#c39767] selection:text-black font-sans snap-y snap-proximity md:snap-none"
       style={{ backgroundColor: "#0c0604" }}
     >
       {/* ── GLOBAL PERSISTENT DOCK ── */}
@@ -118,6 +166,9 @@ export default function Home() {
         islandState={islandState}
         triggerPop={globalPopTrigger}
         isBimSectionActive={isBimSectionActive}
+        forceExpand={islandState === "center"}
+        hideIsland={isFooterVisible}
+        showcaseResetCount={showcaseResetCount}
       />
 
       {/* ── GLOBAL MODAL ── */}
@@ -148,7 +199,7 @@ export default function Home() {
       <div
         id="showcase-section"
         ref={showcaseRef}
-        className="relative z-20"
+        className="relative z-20 snap-center"
         style={{ backgroundColor: "#0c0604" }}
       >
         <SmartIslandShowcase onTriggerPop={setGlobalPopTrigger} />
@@ -177,7 +228,9 @@ export default function Home() {
         </div>
 
         {/* SECTION F: FOOTER / CONTACTO */}
-        <FooterSection />
+        <div ref={footerRef}>
+          <FooterSection />
+        </div>
       </div>
     </main>
   );
