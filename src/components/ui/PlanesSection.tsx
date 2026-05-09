@@ -3,7 +3,11 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { 
+    Building2, Layers, Users, FileText, 
+    CalendarDays, Table, Box, ShieldCheck,
+    PenTool, Headset, Palette
+} from "lucide-react";
 import { assetPath } from "@/lib/assetPath";
 
 /* ══════════════════════════════════════════════════════════════
@@ -29,19 +33,27 @@ const PLANS = [
         id: "draft",
         title: "DRAFT",
         subtitle: "Para Estudiantes y Pruebas.",
-        price: "$0",
+        priceMonthly: "0",
+        priceAnnual: "0",
+        annualTotal: "0",
         priceSuffix: "MXN",
         accentColor: "rgba(255,255,255,0.22)",
         glowColor: "rgba(255,255,255,0.06)",
-        checkColor: "rgba(255,255,255,0.40)",
+        checkColor: "rgba(255,255,255,0.6)",
         featured: false,
         image: assetPath("/images/plan_free.webp"),
         features: [
-            { title: "Licencia de Aprendizaje", desc: "Ideal para estudiantes y primeros pasos en la metodología BIM." },
-            { title: "1 Bitácora Activa", desc: "Un slot único para gestionar tu proyecto de prueba." },
-            { title: "Protocolo de Reinicio", desc: "Borra el historial completo para iniciar un proyecto nuevo cuando lo necesites." },
-            { title: "Marca de Agua", desc: "Exportaciones en PDF con el branding oficial de BitacorIA." },
-            { title: "Single User", desc: "Experiencia individual para dominar la plataforma sin distracciones." },
+            { icon: Building2, title: "OBRAS ACTIVAS", desc: "1 proyecto de prueba", included: true },
+            { icon: Layers, title: "ESTRUCTURA", desc: "Frente único", included: true },
+            { icon: Users, title: "USUARIOS", desc: "Licencia individual", included: true },
+            { icon: FileText, title: "SMART LOG", desc: "Bitácora inteligente", included: true },
+            { icon: CalendarDays, title: "SMART CALENDAR", desc: "Cronograma predictivo", included: false },
+            { icon: Table, title: "SMART CONCEPTS", desc: "Catálogo con IA", included: false },
+            { icon: Box, title: "SMART BIM SYNC", desc: "Ecosistema conectado", included: false },
+            { icon: PenTool, title: "FIRMAS DIGITALES", desc: "Aprobación automatizada", included: false },
+            { icon: Headset, title: "SOPORTE PRO", desc: "Canal prioritario", included: false },
+            { icon: Palette, title: "WHITE LABEL", desc: "Sin marcas de agua", included: false },
+            { icon: ShieldCheck, title: "AUDIT READY", desc: "Trazabilidad inmutable", included: false },
         ],
         cta: "Empezar Gratis",
         note: null,
@@ -53,7 +65,9 @@ const PLANS = [
         id: "resident",
         title: "THE RESIDENT",
         subtitle: "Para Arquitectos e Ingenieros Independientes.",
-        price: "$2,499",
+        priceMonthly: "2,499",
+        priceAnnual: "1,999",
+        annualTotal: "23,988",
         priceSuffix: "MXN / mes",
         accentColor: `${BRONZE}70`,
         glowColor: `${BRONZE}14`,
@@ -61,11 +75,17 @@ const PLANS = [
         featured: false,
         image: assetPath("/images/plan_theresident.webp"),
         features: [
-            { title: "2 Bitácoras Activas", desc: "Gestiona dos obras de forma simultánea con control total." },
-            { title: "Múltiples Frentes", desc: "Organiza tu obra por zonas, niveles o etapas constructivas." },
-            { title: "Single User Pro", desc: "Acceso exclusivo y centralizado para el ingeniero residente." },
-            { title: "Smart Calendar & Concepts", desc: "Desbloquea la IA predictiva para cronogramas y catálogos de conceptos." },
-            { title: "Reportes Profesionales", desc: "Exportación de PDFs limpios, listos para firmar, sin marcas de agua." },
+            { icon: Building2, title: "OBRAS ACTIVAS", desc: "3 obras simultáneas", included: true },
+            { icon: Layers, title: "ESTRUCTURA", desc: "Múltiples frentes y zonas", included: true },
+            { icon: Users, title: "USUARIOS", desc: "Licencia individual", included: true },
+            { icon: FileText, title: "SMART LOG", desc: "Bitácora inteligente", included: true },
+            { icon: CalendarDays, title: "SMART CALENDAR", desc: "Cronograma predictivo", included: true },
+            { icon: Table, title: "SMART CONCEPTS", desc: "Catálogo con IA", included: true },
+            { icon: Box, title: "SMART BIM SYNC", desc: "Ecosistema conectado", included: true },
+            { icon: PenTool, title: "FIRMAS DIGITALES", desc: "Aprobación automatizada", included: true },
+            { icon: Headset, title: "SOPORTE PRO", desc: "Canal prioritario", included: false },
+            { icon: Palette, title: "WHITE LABEL", desc: "Sin marcas de agua", included: false },
+            { icon: ShieldCheck, title: "AUDIT READY", desc: "Trazabilidad inmutable", included: false },
         ],
         cta: "Comenzar",
         note: null,
@@ -77,7 +97,9 @@ const PLANS = [
         id: "site-manager",
         title: "THE SITE MANAGER",
         subtitle: "El estándar para Constructores y PyMES.",
-        price: "$3,899",
+        priceMonthly: "3,899",
+        priceAnnual: "3,199",
+        annualTotal: "38,388",
         priceSuffix: "MXN / mes",
         accentColor: `${GOLD}55`,   // low-opacity border — elegant, not neon
         glowColor: `rgba(197,168,128,0.14)`,
@@ -85,17 +107,23 @@ const PLANS = [
         featured: true,
         image: assetPath("/images/sitemanager.webp"),
         features: [
-            { title: "5 Bitácoras Activas", desc: "Capacidad robusta diseñada para constructoras y PyMES." },
-            { title: "Team Work (3 Usuarios)", desc: "Colaboración en tiempo real entre residente, supervisor y director." },
-            { title: "Smart BIM Sync", desc: "Conecta tu modelo 3D con la realidad física, tiempo y costos de la obra." },
-            { title: "Módulo Predictivo Completo", desc: "Smart Calendar y Smart Concepts trabajando en conjunto." },
-            { title: "Soporte Prioritario", desc: "Canal directo de atención para resolver dudas técnicas de tu equipo en obra." },
+            { icon: Building2, title: "OBRAS ACTIVAS", desc: "5 obras simultáneas", included: true },
+            { icon: Layers, title: "ESTRUCTURA", desc: "Múltiples frentes y zonas", included: true },
+            { icon: Users, title: "USUARIOS", desc: "3 base (+$299/extra)", included: true },
+            { icon: FileText, title: "SMART LOG", desc: "Bitácora inteligente", included: true },
+            { icon: CalendarDays, title: "SMART CALENDAR", desc: "Cronograma predictivo", included: true },
+            { icon: Table, title: "SMART CONCEPTS", desc: "Catálogo con IA", included: true },
+            { icon: Box, title: "SMART BIM SYNC", desc: "Ecosistema conectado", included: true },
+            { icon: PenTool, title: "FIRMAS DIGITALES", desc: "Aprobación automatizada", included: true },
+            { icon: Headset, title: "SOPORTE PRO", desc: "Canal prioritario", included: true },
+            { icon: Palette, title: "WHITE LABEL", desc: "Sin marcas de agua", included: true },
+            { icon: ShieldCheck, title: "AUDIT READY", desc: "Trazabilidad inmutable", included: false },
         ],
         cta: "Comenzar",
         note: {
             label: "¿Pago por obra?",
             pill: "LICENCIA ÚNICA DE PROYECTO",
-            detail: "$8,999 MXN · Pago único · 12 meses · 1 obra.",
+            detail: "$10,999 MXN · Pago único · 12 meses · 1 obra.",
         },
         dualCta: false,
     },
@@ -105,7 +133,9 @@ const PLANS = [
         id: "executive",
         title: "EXECUTIVE PLAN",
         subtitle: "Control total y escala ilimitada.",
-        price: "$12,999",
+        priceMonthly: "12,999",
+        priceAnnual: "10,399",
+        annualTotal: "124,788",
         priceSuffix: "MXN / mes",
         accentColor: `${PURPLE}90`,
         glowColor: `${PURPLE}14`,
@@ -113,11 +143,17 @@ const PLANS = [
         featured: false,
         image: assetPath("/images/executive_plan.webp"),
         features: [
-            { title: "Volumen Corporativo", desc: "Despliegues desde 10 bitácoras con capacidad de escalar a nivel Enterprise." },
-            { title: "Frentes Ilimitados", desc: "Controla megaproyectos y desarrollos complejos sin restricciones." },
-            { title: "Colaboración Masiva", desc: "Cuentas centralizadas para toda tu plantilla administrativa y de campo." },
-            { title: "Marca Blanca (White Label)", desc: "Personaliza la plataforma y los reportes con el logo y colores de tu empresa." },
-            { title: "Audit Ready", desc: "Preparación automática para auditorías con trazabilidad inmutable y BIM Sync total." },
+            { icon: Building2, title: "OBRAS ACTIVAS", desc: "Panel Multi-Empresa Global", included: true },
+            { icon: Layers, title: "ESTRUCTURA", desc: "Gobernanza y Permisos", included: true },
+            { icon: Users, title: "USUARIOS", desc: "Single Sign-On (SSO)", included: true },
+            { icon: FileText, title: "SMART LOG", desc: "Bitácora inteligente", included: true },
+            { icon: CalendarDays, title: "SMART CALENDAR", desc: "Cronograma predictivo", included: true },
+            { icon: Table, title: "SMART CONCEPTS", desc: "Catálogo con IA", included: true },
+            { icon: Box, title: "SMART BIM SYNC", desc: "Ecosistema conectado", included: true },
+            { icon: PenTool, title: "FIRMAS DIGITALES", desc: "Aprobación automatizada", included: true },
+            { icon: Headset, title: "SOPORTE PRO", desc: "Atención dedicada", included: true },
+            { icon: Palette, title: "WHITE LABEL", desc: "Colores de tu empresa", included: true },
+            { icon: ShieldCheck, title: "AUDIT READY", desc: "Trazabilidad inmutable", included: true },
         ],
         cta: "Contactar",
         note: null,
@@ -126,7 +162,7 @@ const PLANS = [
 ] as const;
 
 /* ── PLAN CARD ── */
-const PlanCard = React.memo(function PlanCard({ plan, index }: { plan: typeof PLANS[number]; index: number }) {
+const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan: typeof PLANS[number]; index: number; isAnnual: boolean }) {
     const [hovered, setHovered] = useState(false);
 
     return (
@@ -153,7 +189,7 @@ const PlanCard = React.memo(function PlanCard({ plan, index }: { plan: typeof PL
                 viewport={{ once: true, amount: 0.1 }}
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
-                className="relative overflow-hidden flex flex-col rounded-2xl p-5 min-h-[520px]"
+                className="relative flex flex-col rounded-2xl p-5 min-h-[520px]"
                 style={{
                     backgroundColor: plan.featured ? "#121008" : "#0f0f0f",
                     border: (hovered || plan.featured)
@@ -171,7 +207,7 @@ const PlanCard = React.memo(function PlanCard({ plan, index }: { plan: typeof PL
                 {/* Background artwork */}
                 <div
                     aria-hidden="true"
-                    className="absolute bottom-0 right-0 w-full max-h-[70%] h-48 z-0 pointer-events-none"
+                    className="absolute bottom-0 right-0 w-full max-h-[70%] h-48 z-0 pointer-events-none overflow-hidden rounded-b-2xl"
                     style={{
                         maskImage: "linear-gradient(to top, white 40%, transparent 100%)",
                         WebkitMaskImage: "linear-gradient(to top, white 40%, transparent 100%)",
@@ -195,41 +231,40 @@ const PlanCard = React.memo(function PlanCard({ plan, index }: { plan: typeof PL
 
                     {/* Price */}
                     <div
-                        className="mb-4 border-b pb-4"
+                        className="mb-4 border-b pb-4 relative"
                         style={{ borderColor: "rgba(255,255,255,0.05)" }}
                     >
+                        {/* Old Price Strike-through */}
+                        {isAnnual && plan.id !== "draft" && (
+                            <div className="absolute top-[-14px] left-0 text-[11px] font-bold tracking-wider text-white/20 line-through decoration-red-500/50 decoration-2">
+                                ${plan.priceMonthly}
+                            </div>
+                        )}
                         <span
-                            className="font-display text-2xl font-extrabold tracking-tight"
+                            className="font-display text-2xl font-extrabold tracking-tight transition-all duration-300"
                             style={{ color: "rgba(255,255,255,0.92)" }}
                         >
-                            {plan.price}
+                            ${isAnnual ? plan.priceAnnual : plan.priceMonthly}
                         </span>
                         <span className="ml-1 text-[10px] text-white/28">{plan.priceSuffix}</span>
+                        
+                        {/* Subtexto Anual */}
+                        <div className="h-4 mt-1">
+                            {isAnnual && plan.id !== "draft" ? (
+                                <p className="text-[9.5px] font-medium text-white/30 tracking-wide">
+                                    Facturado <span className="text-white/60">${plan.annualTotal}</span> al año
+                                </p>
+                            ) : null}
+                        </div>
                     </div>
 
-                    {/* Features */}
-                    <ul className="mb-4 flex flex-col gap-0 space-y-4">
-                        {plan.features.map((f) => (
-                            <li key={f.title} className="flex items-start gap-2.5">
-                                <Check
-                                    size={12}
-                                    strokeWidth={2.5}
-                                    className="mt-[2px] shrink-0"
-                                    style={{ color: plan.checkColor }}
-                                />
-                                <div>
-                                    <p className="text-[11.5px] font-semibold leading-snug text-white/80">{f.title}</p>
-                                    <p className="mt-0.5 text-[10px] leading-snug text-white/35">{f.desc}</p>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-
-                    <div className="flex-1" />
-
-                    {/* Bottom-anchored wrapper */}
-                    <div className="mt-auto">
-
+                    {/* STICKY CTA WRAPPER */}
+                    <div 
+                        className="sticky top-4 z-30 pb-6 pt-4 -mx-2 px-2"
+                        style={{ 
+                            background: plan.featured ? "linear-gradient(to bottom, #121008 85%, transparent)" : "linear-gradient(to bottom, #0f0f0f 85%, transparent)",
+                        }}
+                    >
                         {/* Licencia Única note — Site Manager only */}
                         {plan.note && (
                             <div
@@ -296,8 +331,30 @@ const PlanCard = React.memo(function PlanCard({ plan, index }: { plan: typeof PL
                                 {plan.cta}
                             </button>
                         )}
-
                     </div>
+
+                    {/* Features (Apple Comparison Style) */}
+                    <ul className="mb-8 flex flex-col gap-6 pt-2">
+                        {plan.features.map((f, idx) => (
+                            <li key={idx} className="flex flex-col items-center text-center">
+                                <f.icon
+                                    size={28}
+                                    strokeWidth={1.2}
+                                    className="mb-2"
+                                    style={{ 
+                                        color: f.included ? plan.checkColor : "rgba(255,255,255,0.15)",
+                                        filter: f.included ? "none" : "grayscale(100%) brightness(0.5)"
+                                    }}
+                                />
+                                <p className={`text-[11px] font-bold tracking-wide uppercase leading-tight ${f.included ? "text-white/90" : "text-white/20"}`}>
+                                    {f.title}
+                                </p>
+                                <p className={`mt-0.5 text-[10px] leading-snug max-w-[160px] ${f.included ? "text-white/40" : "text-white/10"}`}>
+                                    {f.desc}
+                                </p>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             </motion.div>
         </div>
@@ -306,10 +363,12 @@ const PlanCard = React.memo(function PlanCard({ plan, index }: { plan: typeof PL
 
 /* ── MAIN SECTION ── */
 export default function PlanesSection() {
+    const [isAnnual, setIsAnnual] = useState(true); // Default to Annual for the psychological hook
+
     return (
         <section
             id="soluciones"
-            className="w-full min-h-screen flex flex-col justify-center md:snap-center md:snap-always shrink-0 relative overflow-hidden scroll-mt-24"
+            className="w-full min-h-screen flex flex-col justify-center md:snap-center md:snap-always shrink-0 relative overflow-x-clip scroll-mt-24"
             style={{
                 backgroundColor: "#080808",
                 borderTop: "1px solid rgba(255,255,255,0.05)",
@@ -335,7 +394,7 @@ export default function PlanesSection() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: 0.55, ease: [0.25, 0.4, 0.25, 1] as const }}
-                    className="mb-12 text-center"
+                    className="mb-10 text-center"
                 >
                     <div className="mb-4 inline-flex items-center gap-2.5">
                         <span className="h-px w-8" style={{ background: `linear-gradient(to right, transparent, ${BRONZE}50)` }} />
@@ -360,10 +419,65 @@ export default function PlanesSection() {
                     </p>
                 </motion.div>
 
+                {/* Toggle Switch */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="mb-14 flex justify-center"
+                >
+                    <div 
+                        className="relative flex items-center p-1 rounded-full border border-white/10"
+                        style={{ background: "rgba(10,10,10,0.8)" }}
+                    >
+                        {/* Fondo Deslizante */}
+                        <motion.div
+                            className="absolute inset-1 rounded-full z-0"
+                            style={{ 
+                                background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
+                                border: "1px solid rgba(255,255,255,0.08)",
+                                width: isAnnual ? "14rem" : "8rem",
+                            }}
+                            initial={false}
+                            animate={{
+                                x: isAnnual ? "8rem" : "0", 
+                            }}
+                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        />
+
+                        {/* Botón Mensual */}
+                        <button
+                            onClick={() => setIsAnnual(false)}
+                            className={`relative z-10 w-32 py-2.5 text-xs font-bold uppercase tracking-wider rounded-full transition-colors duration-300 ${!isAnnual ? "text-white" : "text-white/40 hover:text-white/70"}`}
+                        >
+                            Mensual
+                        </button>
+
+                        {/* Botón Anual */}
+                        <button
+                            onClick={() => setIsAnnual(true)}
+                            className={`relative z-10 w-56 py-2.5 text-xs font-bold uppercase tracking-wider rounded-full flex items-center justify-center gap-2 transition-colors duration-300 ${isAnnual ? "text-white" : "text-white/40 hover:text-white/70"}`}
+                        >
+                            Anual 
+                            <span 
+                                className="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-extrabold tracking-widest" 
+                                style={{ 
+                                    background: isAnnual ? `${GOLD}20` : "transparent", 
+                                    color: isAnnual ? GOLD : "rgba(255,255,255,0.3)",
+                                    border: isAnnual ? `1px solid ${GOLD}40` : "1px solid transparent",
+                                    transition: "all 0.3s ease"
+                                }}
+                            >
+                                2 MESES GRATIS
+                            </span>
+                        </button>
+                    </div>
+                </motion.div>
+
                 {/* 4-column card grid */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {PLANS.map((plan, i) => (
-                        <PlanCard key={plan.id} plan={plan} index={i} />
+                        <PlanCard key={plan.id} plan={plan} index={i} isAnnual={isAnnual} />
                     ))}
                 </div>
 
