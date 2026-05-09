@@ -289,8 +289,9 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                         {plan.dualCta ? (
                             /* Dual buttons — Executive Plan */
                             <div className="flex gap-2">
-                                <button
-                                    className="relative flex-1 py-3 rounded-lg font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95"
+                                <a
+                                    href="/dashboard"
+                                    className="relative flex-1 py-3 rounded-lg font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95 flex items-center justify-center text-center"
                                     style={{
                                         background: "linear-gradient(180deg, #442485 0%, #201140 100%)",
                                         border: `1px solid ${PURPLE}90`,
@@ -299,9 +300,10 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                     }}
                                 >
                                     Comenzar
-                                </button>
-                                <button
-                                    className="relative flex-1 py-3 rounded-lg font-semibold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-125 active:scale-95"
+                                </a>
+                                <a
+                                    href="#contacto"
+                                    className="relative flex-1 py-3 rounded-lg font-semibold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-125 active:scale-95 flex items-center justify-center text-center"
                                     style={{
                                         background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
                                         border: "1px solid rgba(255,255,255,0.15)",
@@ -310,12 +312,13 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                     }}
                                 >
                                     Contactar
-                                </button>
+                                </a>
                             </div>
                         ) : (
                             /* Single CTA */
-                            <button
-                                className="relative w-full py-3 rounded-lg font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95"
+                            <a
+                                href={plan.cta === "Contactar" ? "#contacto" : "/dashboard"}
+                                className="relative w-full py-3 rounded-lg font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95 flex items-center justify-center text-center"
                                 style={plan.featured ? {
                                     background: "linear-gradient(180deg, #322511 0%, #181208 100%)",
                                     border: `1px solid ${GOLD}90`,
@@ -329,7 +332,7 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                 }}
                             >
                                 {plan.cta}
-                            </button>
+                            </a>
                         )}
                     </div>
 
