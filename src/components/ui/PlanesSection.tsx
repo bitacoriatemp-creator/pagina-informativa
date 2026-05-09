@@ -317,7 +317,7 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                         ) : (
                             /* Single CTA */
                             <a
-                                href={plan.cta === "Contactar" ? "#contacto" : "/dashboard"}
+                                href="/dashboard"
                                 className="relative w-full py-3 rounded-lg font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95 flex items-center justify-center text-center"
                                 style={plan.featured ? {
                                     background: "linear-gradient(180deg, #322511 0%, #181208 100%)",
