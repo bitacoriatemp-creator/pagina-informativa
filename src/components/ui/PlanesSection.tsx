@@ -321,25 +321,6 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                             )}
                         </div>
 
-                        {/* Licencia Única note — Site Manager only */}
-                        {plan.note && (
-                            <div
-                                className="mt-4 rounded-lg p-3"
-                                style={{
-                                    background: `${GOLD}08`,
-                                    border: `1px solid ${GOLD}22`,
-                                }}
-                            >
-                                <p className="mb-0.5 text-[9px] text-white/25">{plan.note.label}</p>
-                                <p
-                                    className="mb-0.5 text-[9.5px] font-bold uppercase tracking-widest"
-                                    style={{ color: `${GOLD}BB` }}
-                                >
-                                    {plan.note.pill}
-                                </p>
-                                <p className="text-[9.5px] leading-snug text-white/32">{plan.note.detail}</p>
-                            </div>
-                        )}
                     </div>
 
                     {/* Features (Apple Comparison Style) */}
@@ -364,6 +345,27 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                             </li>
                         ))}
                     </ul>
+
+                    {/* Licencia Única note — Site Manager only (Moved to bottom) */}
+                    {plan.note && (
+                        <div
+                            className="mt-auto mb-4 rounded-lg p-4 relative z-20"
+                            style={{
+                                background: "rgba(197,168,128,0.05)",
+                                border: "1px solid rgba(197,168,128,0.15)",
+                                boxShadow: "0 4px 15px rgba(0,0,0,0.2)"
+                            }}
+                        >
+                            <p className="mb-1 text-[9px] text-white/25 uppercase tracking-wider">{plan.note.label}</p>
+                            <p
+                                className="mb-1 text-[11px] font-bold uppercase tracking-widest"
+                                style={{ color: `${GOLD}DD` }}
+                            >
+                                {plan.note.pill}
+                            </p>
+                            <p className="text-[10px] leading-relaxed text-white/40">{plan.note.detail}</p>
+                        </div>
+                    )}
                 </div>
             </motion.div>
         </div>
