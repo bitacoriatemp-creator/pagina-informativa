@@ -221,54 +221,110 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                 {/* All content above image */}
                 <div className="relative z-10 flex flex-col h-full">
 
-                    {/* Title */}
-                    <h3 className="mb-0.5 font-display text-base font-extrabold uppercase leading-tight tracking-tight text-white/90">
-                        {plan.title}
-                    </h3>
-
-                    {/* Subtitle */}
-                    <p className="mb-4 text-[10.5px] leading-snug text-white/32">{plan.subtitle}</p>
-
-                    {/* Price */}
-                    <div
-                        className="mb-4 border-b pb-4 relative"
-                        style={{ borderColor: "rgba(255,255,255,0.05)" }}
-                    >
-                        {/* Old Price Strike-through */}
-                        {isAnnual && plan.id !== "draft" && (
-                            <div className="absolute top-[-14px] left-0 text-[11px] font-bold tracking-wider text-white/20 line-through decoration-red-500/50 decoration-2">
-                                ${plan.priceMonthly}
-                            </div>
-                        )}
-                        <span
-                            className="font-display text-2xl font-extrabold tracking-tight transition-all duration-300"
-                            style={{ color: "rgba(255,255,255,0.92)" }}
-                        >
-                            ${isAnnual ? plan.priceAnnual : plan.priceMonthly}
-                        </span>
-                        <span className="ml-1 text-[10px] text-white/28">{plan.priceSuffix}</span>
-                        
-                        {/* Subtexto Anual */}
-                        <div className="h-4 mt-1">
-                            {isAnnual && plan.id !== "draft" ? (
-                                <p className="text-[9.5px] font-medium text-white/30 tracking-wide">
-                                    Facturado <span className="text-white/60">${plan.annualTotal}</span> al año
-                                </p>
-                            ) : null}
-                        </div>
-                    </div>
-
-                    {/* STICKY CTA WRAPPER */}
+                    {/* STICKY HEADER (Title, Price, CTA) */}
                     <div 
-                        className="sticky top-4 z-30 pb-6 pt-4 -mx-2 px-2"
+                        className="sticky top-0 z-30 pt-5 pb-5 -mx-5 px-5 -mt-5"
                         style={{ 
-                            background: plan.featured ? "linear-gradient(to bottom, #121008 85%, transparent)" : "linear-gradient(to bottom, #0f0f0f 85%, transparent)",
+                            backgroundColor: plan.featured ? "#121008" : "#0f0f0f",
+                            borderBottom: "1px solid rgba(255,255,255,0.05)",
+                            boxShadow: "0 10px 20px -10px rgba(0,0,0,0.6)"
                         }}
                     >
+                        {/* Title & Price Container (Fixed Height for Alignment) */}
+                        <div className="h-[120px] flex flex-col">
+                            {/* Title */}
+                            <h3 className="mb-0.5 font-display text-base font-extrabold uppercase leading-tight tracking-tight text-white/90">
+                                {plan.title}
+                            </h3>
+
+                            {/* Subtitle */}
+                            <p className="mb-3 text-[10.5px] leading-snug text-white/32 line-clamp-2">
+                                {plan.subtitle}
+                            </p>
+
+                            {/* Price */}
+                            <div className="relative mt-auto">
+                                {/* Old Price Strike-through */}
+                                {isAnnual && plan.id !== "draft" && (
+                                    <div className="absolute top-[-14px] left-0 text-[11px] font-bold tracking-wider text-white/20 line-through decoration-red-500/50 decoration-2">
+                                        ${plan.priceMonthly}
+                                    </div>
+                                )}
+                                <span
+                                    className="font-display text-2xl font-extrabold tracking-tight transition-all duration-300"
+                                    style={{ color: "rgba(255,255,255,0.92)" }}
+                                >
+                                    ${isAnnual ? plan.priceAnnual : plan.priceMonthly}
+                                </span>
+                                <span className="ml-1 text-[10px] text-white/28">{plan.priceSuffix}</span>
+                                
+                                {/* Subtexto Anual */}
+                                <div className="h-4 mt-0.5">
+                                    {isAnnual && plan.id !== "draft" ? (
+                                        <p className="text-[9.5px] font-medium text-white/30 tracking-wide">
+                                            Facturado <span className="text-white/60">${plan.annualTotal}</span> al año
+                                        </p>
+                                    ) : null}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* CTA */}
+                        <div className="mt-4">
+                            {plan.dualCta ? (
+                                /* Dual buttons — Executive Plan */
+                                <div className="flex gap-2">
+                                    <a
+                                        href="https://www.bitacoria.com/"
+                                        className="relative flex-1 py-3 rounded-lg font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95 flex items-center justify-center text-center"
+                                        style={{
+                                            background: "linear-gradient(180deg, #442485 0%, #201140 100%)",
+                                            border: `1px solid ${PURPLE}90`,
+                                            color: "#f3e8ff",
+                                            boxShadow: `inset 0 1px 1px rgba(255,255,255,0.2), 0 6px 15px rgba(168,85,247,0.25)`,
+                                        }}
+                                    >
+                                        Comenzar
+                                    </a>
+                                    <a
+                                        href="#contacto"
+                                        className="relative flex-1 py-3 rounded-lg font-semibold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-125 active:scale-95 flex items-center justify-center text-center"
+                                        style={{
+                                            background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
+                                            border: "1px solid rgba(255,255,255,0.15)",
+                                            color: "rgba(255,255,255,0.85)",
+                                            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.05), 0 6px 15px rgba(0,0,0,0.5)",
+                                        }}
+                                    >
+                                        Contactar
+                                    </a>
+                                </div>
+                            ) : (
+                                /* Single CTA */
+                                <a
+                                    href="https://www.bitacoria.com/"
+                                    className="relative w-full py-3 rounded-lg font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95 flex items-center justify-center text-center"
+                                    style={plan.featured ? {
+                                        background: "linear-gradient(180deg, #322511 0%, #181208 100%)",
+                                        border: `1px solid ${GOLD}90`,
+                                        color: GOLD,
+                                        boxShadow: `inset 0 1px 1px rgba(255,255,255,0.15), 0 6px 20px rgba(197,168,128,0.25)`,
+                                    } : {
+                                        background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
+                                        border: "1px solid rgba(255,255,255,0.15)",
+                                        color: "rgba(255,255,255,0.85)",
+                                        boxShadow: "inset 0 1px 1px rgba(255,255,255,0.05), 0 6px 15px rgba(0,0,0,0.6)",
+                                    }}
+                                >
+                                    {plan.cta}
+                                </a>
+                            )}
+                        </div>
+
                         {/* Licencia Única note — Site Manager only */}
                         {plan.note && (
                             <div
-                                className="mb-4 rounded-lg p-3"
+                                className="mt-4 rounded-lg p-3"
                                 style={{
                                     background: `${GOLD}08`,
                                     border: `1px solid ${GOLD}22`,
@@ -283,56 +339,6 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                 </p>
                                 <p className="text-[9.5px] leading-snug text-white/32">{plan.note.detail}</p>
                             </div>
-                        )}
-
-                        {/* CTA */}
-                        {plan.dualCta ? (
-                            /* Dual buttons — Executive Plan */
-                            <div className="flex gap-2">
-                                <a
-                                    href="/dashboard"
-                                    className="relative flex-1 py-3 rounded-lg font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95 flex items-center justify-center text-center"
-                                    style={{
-                                        background: "linear-gradient(180deg, #442485 0%, #201140 100%)",
-                                        border: `1px solid ${PURPLE}90`,
-                                        color: "#f3e8ff",
-                                        boxShadow: `inset 0 1px 1px rgba(255,255,255,0.2), 0 6px 15px rgba(168,85,247,0.25)`,
-                                    }}
-                                >
-                                    Comenzar
-                                </a>
-                                <a
-                                    href="#contacto"
-                                    className="relative flex-1 py-3 rounded-lg font-semibold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-125 active:scale-95 flex items-center justify-center text-center"
-                                    style={{
-                                        background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
-                                        border: "1px solid rgba(255,255,255,0.15)",
-                                        color: "rgba(255,255,255,0.85)",
-                                        boxShadow: "inset 0 1px 1px rgba(255,255,255,0.05), 0 6px 15px rgba(0,0,0,0.5)",
-                                    }}
-                                >
-                                    Contactar
-                                </a>
-                            </div>
-                        ) : (
-                            /* Single CTA */
-                            <a
-                                href="/dashboard"
-                                className="relative w-full py-3 rounded-lg font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95 flex items-center justify-center text-center"
-                                style={plan.featured ? {
-                                    background: "linear-gradient(180deg, #322511 0%, #181208 100%)",
-                                    border: `1px solid ${GOLD}90`,
-                                    color: GOLD,
-                                    boxShadow: `inset 0 1px 1px rgba(255,255,255,0.15), 0 6px 20px rgba(197,168,128,0.25)`,
-                                } : {
-                                    background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
-                                    border: "1px solid rgba(255,255,255,0.15)",
-                                    color: "rgba(255,255,255,0.85)",
-                                    boxShadow: "inset 0 1px 1px rgba(255,255,255,0.05), 0 6px 15px rgba(0,0,0,0.6)",
-                                }}
-                            >
-                                {plan.cta}
-                            </a>
                         )}
                     </div>
 
