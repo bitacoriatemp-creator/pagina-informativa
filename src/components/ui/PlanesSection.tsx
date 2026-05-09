@@ -44,7 +44,7 @@ const PLANS = [
         image: assetPath("/images/plan_free.webp"),
         features: [
             { icon: Building2, title: "OBRAS ACTIVAS", desc: "1 proyecto de prueba", included: true },
-            { icon: Layers, title: "ESTRUCTURA", desc: "Frente único", included: true },
+            { icon: Layers, title: "FRENTES", desc: "Frente único", included: true },
             { icon: Users, title: "USUARIOS", desc: "Licencia individual", included: true },
             { icon: FileText, title: "SMART LOG", desc: "Bitácora inteligente", included: true },
             { icon: CalendarDays, title: "SMART CALENDAR", desc: "Cronograma predictivo", included: false },
@@ -76,7 +76,7 @@ const PLANS = [
         image: assetPath("/images/plan_theresident.webp"),
         features: [
             { icon: Building2, title: "OBRAS ACTIVAS", desc: "3 obras simultáneas", included: true },
-            { icon: Layers, title: "ESTRUCTURA", desc: "Múltiples frentes y zonas", included: true },
+            { icon: Layers, title: "FRENTES", desc: "Múltiples frentes y zonas", included: true },
             { icon: Users, title: "USUARIOS", desc: "Licencia individual", included: true },
             { icon: FileText, title: "SMART LOG", desc: "Bitácora inteligente", included: true },
             { icon: CalendarDays, title: "SMART CALENDAR", desc: "Cronograma predictivo", included: true },
@@ -108,7 +108,7 @@ const PLANS = [
         image: assetPath("/images/sitemanager.webp"),
         features: [
             { icon: Building2, title: "OBRAS ACTIVAS", desc: "5 obras simultáneas", included: true },
-            { icon: Layers, title: "ESTRUCTURA", desc: "Múltiples frentes y zonas", included: true },
+            { icon: Layers, title: "FRENTES", desc: "Múltiples frentes y zonas", included: true },
             { icon: Users, title: "USUARIOS", desc: "3 base (+$299/extra)", included: true },
             { icon: FileText, title: "SMART LOG", desc: "Bitácora inteligente", included: true },
             { icon: CalendarDays, title: "SMART CALENDAR", desc: "Cronograma predictivo", included: true },
@@ -144,7 +144,7 @@ const PLANS = [
         image: assetPath("/images/executive_plan.webp"),
         features: [
             { icon: Building2, title: "OBRAS ACTIVAS", desc: "Panel Multi-Empresa Global", included: true },
-            { icon: Layers, title: "ESTRUCTURA", desc: "Gobernanza y Permisos", included: true },
+            { icon: Layers, title: "FRENTES", desc: "Gobernanza y Permisos", included: true },
             { icon: Users, title: "USUARIOS", desc: "Single Sign-On (SSO)", included: true },
             { icon: FileText, title: "SMART LOG", desc: "Bitácora inteligente", included: true },
             { icon: CalendarDays, title: "SMART CALENDAR", desc: "Cronograma predictivo", included: true },
@@ -160,6 +160,20 @@ const PLANS = [
         dualCta: true,  // shows "Comprar" + "Contactar"
     },
 ] as const;
+
+const FEATURE_EXPLANATIONS: Record<string, string> = {
+    "OBRAS ACTIVAS": "Proyectos en ejecución simultánea.",
+    "FRENTES": "Subdivisiones por nivel o zona de obra.",
+    "USUARIOS": "Miembros bajo la misma licencia.",
+    "SMART LOG": "Interfaz central de bitácoras y registros.",
+    "SMART CALENDAR": "Diagramas de Gantt impulsados por IA.",
+    "SMART CONCEPTS": "Catálogo inteligente de construcción.",
+    "SMART BIM SYNC": "Conexión en tiempo real de tus datos.",
+    "FIRMAS DIGITALES": "Aprobación de documentos con un clic.",
+    "SOPORTE PRO": "Atención técnica y soporte prioritario.",
+    "WHITE LABEL": "Personalización con logo de tu constructora.",
+    "AUDIT READY": "Respaldo y recuperación de emergencia."
+};
 
 /* ── PLAN CARD ── */
 const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan: typeof PLANS[number]; index: number; isAnnual: boolean }) {
@@ -339,7 +353,14 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                 <p className={`text-[11px] font-bold tracking-wide uppercase leading-tight ${f.included ? "text-white/90" : "text-white/20"}`}>
                                     {f.title}
                                 </p>
-                                <p className={`mt-0.5 text-[10px] leading-snug max-w-[160px] ${f.included ? "text-white/40" : "text-white/10"}`}>
+                                {/* Explanation */}
+                                <p
+                                    className="text-[9px] mt-0.5 mb-1.5 max-w-[90%] leading-tight"
+                                    style={{ color: f.included ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.2)" }}
+                                >
+                                    {FEATURE_EXPLANATIONS[f.title]}
+                                </p>
+                                <p className={`mt-0.5 text-[10px] leading-snug max-w-[160px] font-medium ${f.included ? "text-white/60" : "text-white/10"}`}>
                                     {f.desc}
                                 </p>
                             </li>
