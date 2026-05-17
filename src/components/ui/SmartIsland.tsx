@@ -154,7 +154,10 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
                 rawTop.set(rect.top + rect.height / 2);
             }
         } else if (islandState === "top") {
-            rawTop.set(24); // top: 1.5rem (24px)
+            // Antes 24px. Subido a 80px para dar clearance a la slim navbar global
+            // (~56-64px de altura) que aparece después del scroll en sections 4-7.
+            // Resultado: site nav arriba, module nav (esta isla) debajo, jerarquía clara.
+            rawTop.set(80);
         }
         // En "hidden", se deja en su última posición mientras fade-out sucede
     });

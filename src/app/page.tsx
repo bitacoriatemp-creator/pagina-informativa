@@ -3,10 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { useInView } from "framer-motion";
 import HeroHybrid from "@/components/ui/HeroHybrid";
+import GlobalNavbar from "@/components/ui/GlobalNavbar";
 import ProblemChaos from "@/components/ui/ProblemChaos";
 import SmartIslandShowcase from "@/components/ui/SmartIslandShowcase";
 import SmartConceptsSection from "@/components/ui/SmartConceptsSection";
 import SmartBimSyncSection from "@/components/ui/SmartBimSyncSection";
+import WorldAdaptiveSection from "@/components/ui/WorldAdaptiveSection";
 import CronogramaSection from "@/components/ui/CronogramaSection";
 import BitacoraSection from "@/components/ui/BitacoraSection";
 import PlanesSection from "@/components/ui/PlanesSection";
@@ -59,6 +61,9 @@ export default function LandingPage() {
             {/* ── RASTRO LÁSER GLOBAL ── */}
                 <LaserTrail />
 
+                {/* ── NAVBAR GLOBAL (fixed, persiste en todo el scroll) ── */}
+                <GlobalNavbar onOpenQuienesSomos={() => setIsQuienesSomosOpen(true)} />
+
                 {/* ── ISLA FLOTANTE ÚNICA ── */}
                 <SmartIsland
                     islandState={islandState}
@@ -69,7 +74,7 @@ export default function LandingPage() {
                 />
 
                 {/* Sección 1: Hero */}
-                <HeroHybrid onOpenQuienesSomos={() => setIsQuienesSomosOpen(true)} />
+                <HeroHybrid />
 
                 {/* Sección 2: El Problema */}
                 <ProblemChaos />
@@ -98,6 +103,9 @@ export default function LandingPage() {
                 <div ref={bimRef} id="bim-sync">
                     <SmartBimSyncSection />
                 </div>
+
+                {/* Sección 7.5: Alcance Global — globe spinning con 8 países activos */}
+                <WorldAdaptiveSection />
 
                 {/* Sección 8+: Sin isla */}
                 <div id="soluciones">
