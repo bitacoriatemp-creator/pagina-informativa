@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { assetPath } from "@/lib/assetPath";
 
 /* ══════════════════════════════════════════════════════════════
    WorldAdaptiveSection — Alcance Global
@@ -155,8 +156,11 @@ export default function WorldAdaptiveSection() {
     /* ── Fetch + decode TopoJSON ── */
     useEffect(() => {
         let cancelled = false;
-        fetch("/world-borders.json")
-            .then((res) => res.json())
+        fetch(assetPath("/world-borders.json"))
+            .then((res) => {
+                if (!res.ok) throw new Error(`HTTP ${res.status} fetching world-borders.json`);
+                return res.json();
+            })
             .then((topo: TopoJSON) => {
                 if (cancelled) return;
                 setWorldData(decodeTopo(topo));
