@@ -322,6 +322,13 @@
     background-image: linear-gradient(135deg, #c39767 0%, #e8c9a4 50%, #c39767 100%);
   }
 
+  .text-gradient-bronze {
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(135deg, #f4d4a0 0%, #c39767 50%, #8b5c3b 100%);
+  }
+
   .preserve-3d {
     transform-style: preserve-3d;
   }
