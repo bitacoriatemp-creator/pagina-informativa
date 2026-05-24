@@ -1465,7 +1465,7 @@ function Tentativo({ onReconsider }: { onReconsider: () => void }) {
                     No apartamos asiento ni merch para no quitarle el lugar a alguien que sí va a ir.
                     <br /><br />
                     <span className="text-stone-600">
-                        Si después decides asistir, vuelve a este link y elige <strong className="text-amber-900">"Sí, asistiré seguro"</strong> en el paso 5 — todavía habrá asientos disponibles.
+                        Si después decides asistir, vuelve a este link y elige <strong className="text-amber-900">&ldquo;Sí, asistiré seguro&rdquo;</strong> en el paso 5 — todavía habrá asientos disponibles.
                     </span>
                 </motion.p>
 
