@@ -36,6 +36,46 @@ function buzz(pattern: number | number[]) {
     }
 }
 
+/* ── Persistencia local de registros por dispositivo ──
+   Guardamos un array minimal con los registros del dispositivo (sin PII
+   más allá del nombre + asiento + sesión). Max 1 por device.
+   Bypaseable con incógnito / limpieza de browser data — es solo soft fence
+   suficiente para el escenario real (un usuario = un dispositivo = un lugar). */
+const LOCAL_KEY = "bitacoria_esia_registrations";
+const MAX_PER_DEVICE = 1;
+
+interface LocalReg {
+    nombre: string;
+    email: string;
+    sesion: Sesion;
+    modalidad: "asiento" | "de_pie";
+    numero_asiento: number | null;
+    merch: MerchSel;
+    talla: Talla | null;
+    fecha: string;   // ISO timestamp
+}
+
+function readLocalRegs(): LocalReg[] {
+    if (typeof window === "undefined") return [];
+    try {
+        const raw = window.localStorage.getItem(LOCAL_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+        return [];
+    }
+}
+
+function appendLocalReg(reg: LocalReg) {
+    if (typeof window === "undefined") return;
+    try {
+        const arr = readLocalRegs();
+        arr.push(reg);
+        window.localStorage.setItem(LOCAL_KEY, JSON.stringify(arr));
+    } catch (_) { /* quota / blocked → no-op */ }
+}
+
 /* ── Fetch resiliente para redes lentas/intermitentes (ESIA WiFi) ──
    - AbortController con timeout
    - Retry con backoff exponencial (500/1500/3000ms)
@@ -78,7 +118,7 @@ async function fetchWithRetry(
     throw lastErr ?? new Error("network_failed");
 }
 
-type Step = "intro" | "type" | "identity" | "session" | "gender" | "asistencia" | "merch" | "submitting" | "confirmed" | "tentativo" | "error";
+type Step = "intro" | "type" | "identity" | "session" | "gender" | "asistencia" | "merch" | "submitting" | "confirmed" | "tentativo" | "device_limit" | "error";
 type Asistencia = "si" | "no_seguro";
 type Tipo = "alumno" | "profesor" | "externo";
 type Sesion = "matutino" | "vespertino";
@@ -89,6 +129,9 @@ type Talla = "CH" | "M" | "G" | "XG";
 interface Inventario {
     asientos_matutino_libres: number;
     asientos_vespertino_libres: number;
+    /* playeras_libres = (10 - count) donde 4 ya están "claimed" por staff.
+       Por eso el público ve "6/10" al inicio. Sin sub-cuota por género —
+       pool compartido first-come-first-served. */
     playeras_libres: number;
     lapiceros_libres: number;
 }
@@ -115,7 +158,19 @@ export default function EsiaRegistro() {
     const [result, setResult] = useState<Result | null>(null);
     const [errorMsg, setErrorMsg] = useState<string>("");
     const [isOnline, setIsOnline] = useState<boolean>(true);
+    const [localRegs, setLocalRegs] = useState<LocalReg[]>([]);
     const reducedMotion = useReducedMotion();
+
+    /* Cargar registros locales al montar (solo client).
+       Si ya existe un registro guardado → saltar directo a device_limit para
+       mostrarle su info y bloquear nuevo registro. */
+    useEffect(() => {
+        const regs = readLocalRegs();
+        setLocalRegs(regs);
+        if (regs.length >= MAX_PER_DEVICE) {
+            setStep("device_limit");
+        }
+    }, []);
 
     /* Detección online/offline — banner visible si no hay red */
     useEffect(() => {
@@ -174,6 +229,22 @@ export default function EsiaRegistro() {
             }
             const data = (await res.json()) as Result & { ok: boolean };
             setResult(data);
+
+            /* Persistir en localStorage → previene re-registro desde este dispositivo
+               y permite que el usuario vea su info al regresar al link después. */
+            const reg: LocalReg = {
+                nombre: nombre.trim(),
+                email: email.trim().toLowerCase(),
+                sesion: sesion as Sesion,
+                modalidad: data.modalidad,
+                numero_asiento: data.numero_asiento,
+                merch: data.merch,
+                talla: data.talla,
+                fecha: new Date().toISOString(),
+            };
+            appendLocalReg(reg);
+            setLocalRegs((prev) => [...prev, reg]);
+
             buzz([20, 60, 30]);
             setStep("confirmed");
         } catch (e) {
@@ -309,8 +380,9 @@ export default function EsiaRegistro() {
                     }} onBack={() => setStep("gender")} />}
                     {step === "merch"      && <StepMerch key="merch" inventario={inventario} merchSel={merchSel} setMerchSel={setMerchSel} talla={talla} setTalla={setTalla} onSubmit={() => submit()} onBack={() => setStep("asistencia")} totalSteps={totalSteps} />}
                     {step === "submitting" && <Submitting key="submitting" />}
-                    {step === "confirmed"  && result && <Confirmed key="confirmed" result={result} nombre={nombre} />}
+                    {step === "confirmed"  && result && <Confirmed key="confirmed" result={result} nombre={nombre} email={email} />}
                     {step === "tentativo"  && <Tentativo key="tentativo" onReconsider={() => { setAsistencia(null); setStep("asistencia"); }} />}
+                    {step === "device_limit" && <DeviceLimit key="device_limit" regs={localRegs} />}
                     {step === "error"      && <ErrorScreen key="error" msg={errorMsg} onRetry={() => setStep("intro")} />}
                 </AnimatePresence>
             </main>
@@ -1042,6 +1114,9 @@ function StepMerch({
     onBack: () => void;
     totalSteps: number;
 }) {
+    /* Pool compartido de playeras — 10 totales con 4 pre-claimed por staff
+       (rows en DB con email @bitacoria.internal). El público ve "{6 - cliams}/10".
+       Sin sub-cuota por género: first-come-first-served. */
     const playerasOff = (inventario?.playeras_libres ?? 1) <= 0;
     const lapicerosOff = (inventario?.lapiceros_libres ?? 1) <= 0;
     const allOff = playerasOff && lapicerosOff;
@@ -1052,7 +1127,17 @@ function StepMerch({
         <StepWrapper>
             <StepHeader idx={6} total={totalSteps} title="Llévate algo" subtitle="Cortesía BitacorIA. Hay poco, decide rápido." onBack={onBack} />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 md:mt-10">
+            {/* Disclaimer de diseño */}
+            <div className="mt-6 md:mt-8 mx-auto max-w-2xl">
+                <div className="flex items-start gap-2.5 rounded-xl border border-amber-700/25 bg-amber-50/60 px-4 py-3 backdrop-blur-sm">
+                    <Sparkles className="w-4 h-4 text-amber-700 mt-0.5 shrink-0" aria-hidden="true" />
+                    <p className="text-xs md:text-sm text-stone-700 leading-relaxed text-left">
+                        <strong className="text-amber-900">El diseño final puede variar.</strong> — Esto es solo para apartar tu lugar en la entrega.
+                    </p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 md:mt-8">
                 <MerchCard
                     icon={Shirt}
                     label="Playera"
@@ -1261,7 +1346,7 @@ function Submitting() {
 /* ══════════════════════════════════════════════════════════════════════
    Confirmed — slot machine seat reveal
    ══════════════════════════════════════════════════════════════════════ */
-function Confirmed({ result, nombre }: { result: Result; nombre: string }) {
+function Confirmed({ result, nombre, email }: { result: Result; nombre: string; email: string }) {
     const sesionLabel = result.sesion === "matutino" ? "Matutino · 11:30" : "Vespertino · 15:00";
 
     return (
@@ -1340,14 +1425,26 @@ function Confirmed({ result, nombre }: { result: Result; nombre: string }) {
                     />
                 </motion.div>
 
+                {/* ── Ticket de entrada — info para mostrar al staff en la puerta ── */}
+                <EntranceTicket
+                    nombre={nombre}
+                    email={email}
+                    sesion={result.sesion}
+                    modalidad={result.modalidad}
+                    numero_asiento={result.numero_asiento}
+                    merch={result.merch}
+                    talla={result.talla}
+                    delay={1.5}
+                />
+
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 1.6, duration: 0.6 }}
-                    className="mt-12 max-w-md text-sm text-stone-600 leading-relaxed"
+                    transition={{ delay: 2.0, duration: 0.6 }}
+                    className="mt-8 max-w-md text-xs md:text-sm text-stone-600 leading-relaxed"
                 >
-                    Te mandamos un correo de confirmación. Muéstralo en la entrada el
-                    día del evento. Si eres del IPN, trae tu tarjetón.
+                    También te mandamos este resumen por correo. Si eres del IPN, no
+                    olvides traer tu tarjetón.
                 </motion.div>
 
                 {/* ── Secondary CTA: explorar la plataforma ── */}
@@ -1360,6 +1457,185 @@ function Confirmed({ result, nombre }: { result: Result; nombre: string }) {
                     <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-stone-500 mb-3">
                         Mientras esperas al evento
                     </div>
+                    <LandingLink style="secondary" />
+                </motion.div>
+            </div>
+        </StepWrapper>
+    );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   EntranceTicket — tarjeta de resumen para mostrar en la puerta
+   Usado en Confirmed (fresh registration) y DeviceLimit (returning visit)
+   ══════════════════════════════════════════════════════════════════════ */
+function EntranceTicket({
+    nombre, email, sesion, modalidad, numero_asiento, merch, talla, delay = 0,
+}: {
+    nombre: string;
+    email?: string;
+    sesion: Sesion;
+    modalidad: "asiento" | "de_pie";
+    numero_asiento: number | null;
+    merch: MerchSel;
+    talla: Talla | null;
+    delay?: number;
+}) {
+    const sesionLabel = sesion === "matutino" ? "Matutino · 11:30 – 13:00" : "Vespertino · 15:00 – 16:30";
+    const asientoTxt =
+        modalidad === "asiento" && numero_asiento !== null
+            ? `#${String(numero_asiento).padStart(3, "0")}`
+            : "De pie";
+    const merchTxt =
+        merch === "playera"  ? `Playera · talla ${talla ?? "?"}` :
+        merch === "lapicero" ? "Lapicero BitacorIA" :
+        "Sin merch";
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay, duration: 0.6, ease: EXPO_OUT }}
+            className="w-full max-w-md mt-10 md:mt-14 mx-auto"
+        >
+            <div
+                className="relative rounded-2xl border-2 border-amber-700/40 bg-white/80 backdrop-blur-md overflow-hidden"
+                style={{ boxShadow: "0 12px 40px rgba(139, 92, 59, 0.18), inset 0 1px 0 rgba(255,255,255,0.8)" }}
+            >
+                {/* Header del ticket — banda bronce */}
+                <div
+                    className="px-5 py-3 flex items-center justify-between"
+                    style={{ background: "linear-gradient(90deg, #c39767, #8b5c3b)" }}
+                >
+                    <div className="flex items-center gap-2 text-amber-50 font-mono text-[10px] uppercase tracking-[0.3em]">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Enseña esto al entrar</span>
+                    </div>
+                    <div className="font-mono text-[10px] uppercase tracking-widest text-amber-100/80">
+                        ESIA · 02·06·26
+                    </div>
+                </div>
+
+                {/* Body del ticket */}
+                <div className="px-5 md:px-6 py-5 md:py-6 text-left">
+                    <div className="grid gap-3 md:gap-4">
+                        <TicketRow label="Nombre"  value={nombre} bold />
+                        <TicketRow label="Asiento" value={asientoTxt} bold mono accent />
+                        <TicketRow label="Sesión"  value={sesionLabel} />
+                        <TicketRow label="Recibes" value={merchTxt} bold />
+                        {email && <TicketRow label="Correo"  value={email} mono small />}
+                    </div>
+
+                    <div className="mt-5 pt-4 border-t border-amber-700/15 text-xs md:text-sm text-stone-700 leading-relaxed">
+                        Muestra esta pantalla al <strong className="text-amber-900">staff en la puerta</strong> el día del evento.
+                        Ellos te entregarán tu <strong className="text-amber-900">{merchTxt.toLowerCase()}</strong> y te llevarán a tu asiento.
+                    </div>
+                </div>
+
+                {/* Decoración: dots laterales tipo ticket physical */}
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full" style={{ background: "#f6efe1" }} />
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full" style={{ background: "#f6efe1" }} />
+            </div>
+        </motion.div>
+    );
+}
+
+function TicketRow({
+    label, value, bold, mono, small, accent,
+}: {
+    label: string;
+    value: string;
+    bold?: boolean;
+    mono?: boolean;
+    small?: boolean;
+    accent?: boolean;
+}) {
+    return (
+        <div className="flex items-baseline gap-3">
+            <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-500 shrink-0 w-16 md:w-20">
+                {label}
+            </span>
+            <span
+                className={`flex-1 ${small ? "text-xs" : "text-sm md:text-base"} ${mono ? "font-mono" : ""} ${bold ? "font-bold" : ""} ${accent ? "text-amber-900 text-lg md:text-xl" : "text-stone-900"} break-words`}
+            >
+                {value}
+            </span>
+        </div>
+    );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   DeviceLimit — pantalla al regresar al link tras haber registrado
+   ══════════════════════════════════════════════════════════════════════ */
+function DeviceLimit({ regs }: { regs: LocalReg[] }) {
+    const reg = regs[0];
+    if (!reg) {
+        // Edge case: array vacío (no debería pasar pero defensivo)
+        return (
+            <StepWrapper>
+                <div className="text-center py-20 text-stone-700">
+                    Sin registros guardados en este dispositivo.
+                </div>
+            </StepWrapper>
+        );
+    }
+
+    return (
+        <StepWrapper>
+            <div className="flex flex-col items-center text-center py-6 md:py-10">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.7, ease: EXPO_OUT }}
+                    className="lq-glass-chip mb-6 inline-flex items-center gap-2 rounded-full px-5 py-2"
+                >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                    <span className="font-mono text-[10px] uppercase tracking-[0.35em] text-emerald-800">
+                        Ya estás registrado
+                    </span>
+                </motion.div>
+
+                <motion.h1
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.15, ease: EXPO_OUT }}
+                    className="font-display text-3xl md:text-5xl font-extrabold uppercase tracking-tight text-stone-900 leading-tight"
+                >
+                    Hola de nuevo,
+                    <br />
+                    <span className="text-gradient-bronze">{reg.nombre.split(" ")[0] || reg.nombre}.</span>
+                </motion.h1>
+
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 0.35 }}
+                    className="mt-5 md:mt-6 max-w-lg text-sm md:text-base text-stone-700 leading-relaxed"
+                >
+                    Detectamos que ya hay un registro guardado en este dispositivo.
+                    <br />
+                    <span className="text-stone-600">
+                        Solo permitimos un registro por celular para evitar que se acapare merch o asientos.
+                    </span>
+                </motion.p>
+
+                {/* Ticket con la info guardada */}
+                <EntranceTicket
+                    nombre={reg.nombre}
+                    email={reg.email}
+                    sesion={reg.sesion}
+                    modalidad={reg.modalidad}
+                    numero_asiento={reg.numero_asiento}
+                    merch={reg.merch}
+                    talla={reg.talla}
+                    delay={0.55}
+                />
+
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.55, delay: 1.0, ease: EXPO_OUT }}
+                    className="mt-8 w-full max-w-md"
+                >
                     <LandingLink style="secondary" />
                 </motion.div>
             </div>
