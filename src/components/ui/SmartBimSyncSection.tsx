@@ -266,7 +266,7 @@ export default function SmartBimSyncSection() {
     return (
         <section
             id="bim-sync"
-            className="relative w-full border-t border-white/5"
+            className="relative w-full max-w-full overflow-x-clip border-t border-white/5"
             style={{ backgroundColor: "#050505", minHeight: "150dvh", height: "auto" }}
         >
             {/* ── STICKY WRAPPER ── */}

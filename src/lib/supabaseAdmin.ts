@@ -45,3 +45,18 @@ export interface Participante {
     interes_compra: string | null;
     created_at: string | null;
 }
+
+/** Fila de la tabla `esia_registros`. */
+export interface EsiaRegistro {
+    id: number;
+    tipo: "alumno" | "profesor" | "externo";
+    nombre: string;
+    email: string;
+    sesion: "matutino" | "vespertino";
+    modalidad: "asiento" | "de_pie";
+    numero_asiento: number | null;
+    merch: "playera" | "lapicero" | "ninguno";
+    talla: "CH" | "M" | "G" | "XG" | null;
+    genero: "hombre" | "mujer" | "no_especifica";
+    created_at: string;
+}

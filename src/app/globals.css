@@ -10,13 +10,17 @@
 /* ── Base ─────────────────────────────────────── */
 @layer base {
   html {
-    scroll-behavior: smooth;
+    /* auto (no smooth): Lenis controla el suavizado en desktop y el scroll
+       nativo en móvil. 'smooth' aquí competía con Lenis → el "scroll raro". */
+    scroll-behavior: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
   }
 
   body {
-    overflow-x: hidden;
+    overflow-x: clip;
+    max-width: 100vw;
     color: #ECEBE9;
     background-color: #0a0503;
   }
@@ -31,6 +35,33 @@
   h3 {
     font-family: var(--font-orbitron), "Orbitron", system-ui, sans-serif;
   }
+}
+
+/* ── PERFORMANCE & ACCESIBILIDAD MÓVIL ───────────────────────────
+   1) Respeta "Reducir movimiento" del sistema: neutraliza animaciones
+      infinitas y transiciones que saturan el hilo principal.
+   2) En móvil desactiva backdrop-filter (blur), de las propiedades más
+      caras de repintar durante el scroll; se compensa con fondo opaco. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Universal: garantiza CERO backdrop-filter en móvil (incluye estilos inline),
+     que es la propiedad más cara de repintar durante el scroll. */
+  *, *::before, *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  /* Compensar la pérdida del blur con fondo más opaco donde importa. */
+  .chocolate-glass { background: rgba(35, 20, 12, 0.92); }
+  .lq-glass-chip,
+  .lq-glass-chip-success { background: rgba(255, 250, 240, 0.92); }
 }
 
 /* ── BACKGROUND: Dark Stage + Engineering Grid ── */

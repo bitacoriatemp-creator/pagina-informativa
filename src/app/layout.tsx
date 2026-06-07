@@ -44,8 +44,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  minimumScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export default function RootLayout({
@@ -56,10 +57,10 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`dark scroll-smooth overflow-x-hidden ${kumbhSans.variable} ${orbitron.variable} ${teko.variable} ${robotoMono.variable}`}
+      className={`dark overflow-x-clip ${kumbhSans.variable} ${orbitron.variable} ${teko.variable} ${robotoMono.variable}`}
       suppressHydrationWarning
     >
-      <body className="font-sans antialiased overflow-x-hidden" suppressHydrationWarning>
+      <body className="font-sans antialiased overflow-x-clip" suppressHydrationWarning>
         <ThemeProvider>
           <LenisProvider>{children}</LenisProvider>
         </ThemeProvider>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useInView } from "framer-motion";
+import { useInView, MotionConfig } from "framer-motion";
 import HeroHybrid from "@/components/ui/HeroHybrid";
 import GlobalNavbar from "@/components/ui/GlobalNavbar";
 import ProblemChaos from "@/components/ui/ProblemChaos";
@@ -16,6 +16,7 @@ import FooterSection from "@/components/ui/FooterSection";
 import SmartIsland from "@/components/ui/SmartIsland";
 import type { IslandState } from "@/components/ui/SmartIsland";
 import LaserTrail from "@/components/ui/LaserTrail";
+import { RegistroModalProvider } from "@/components/ui/RegistroModal";
 
 export default function LandingPage() {
     const [isQuienesSomosOpen, setIsQuienesSomosOpen] = useState(false);
@@ -57,6 +58,8 @@ export default function LandingPage() {
     }
 
     return (
+        <MotionConfig reducedMotion="user">
+        <RegistroModalProvider>
         <main className="bg-[#0c0604] min-h-screen text-white relative">
             {/* ── RASTRO LÁSER GLOBAL ── */}
                 <LaserTrail />
@@ -150,5 +153,7 @@ export default function LandingPage() {
                     </div>
                 )}
             </main>
+        </RegistroModalProvider>
+        </MotionConfig>
     );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, LayoutGroup, useAnimationFrame, useSpring, useMotionValue } from "framer-motion";
+import { useLenis } from "./LenisProvider";
 import {
     TableProperties,
     Book,
@@ -130,9 +131,15 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
     // controls all visibility transitions. No secondary scroll guard needed.
     const effectiveState = islandState;
 
+    const lenisRef = useLenis();
     const handleScroll = (id: string) => {
-        const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: "smooth" });
+        const lenis = lenisRef.current;
+        if (lenis) {
+            lenis.scrollTo(`#${id}`); // desktop: respeta el motor de scroll de Lenis
+        } else {
+            // móvil/touch: scroll nativo (la opción 'smooth' funciona aunque html sea 'auto')
+            document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+        }
     };
 
     // ── ANIMATION VARIANTS ──
@@ -144,6 +151,11 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
 
     useAnimationFrame(() => {
         if (typeof window === "undefined" || typeof document === "undefined") return;
+        // Móvil: la posición se setea por estado en el useEffect de abajo (sin
+        // getBoundingClientRect por frame). Esto elimina el reflow síncrono 60fps
+        // que producía el jiggle/micro-jank al hacer scroll en el showcase.
+        if (isMobile) return;
+        if (islandState === "hidden") return; // nada que actualizar durante el fade-out
 
         if (islandState === "center") {
             const anchor = document.getElementById("island-anchor");
@@ -154,13 +166,18 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
                 rawTop.set(rect.top + rect.height / 2);
             }
         } else if (islandState === "top") {
-            // Antes 24px. Subido a 80px para dar clearance a la slim navbar global
-            // (~56-64px de altura) que aparece después del scroll en sections 4-7.
-            // Resultado: site nav arriba, module nav (esta isla) debajo, jerarquía clara.
+            // 80px da clearance a la slim navbar global tras el scroll.
             rawTop.set(80);
         }
-        // En "hidden", se deja en su última posición mientras fade-out sucede
     });
+
+    // Móvil: posiciona la isla por estado (cero lectura de layout por frame).
+    // En 'center' la subimos a ~40% del viewport (antes 50%) para que no quede
+    // encima del texto descriptivo de la sección.
+    useEffect(() => {
+        if (!isMobile || typeof window === "undefined") return;
+        rawTop.set(islandState === "top" ? 80 : window.innerHeight * 0.40);
+    }, [isMobile, islandState, rawTop]);
 
     const variants = {
         hidden: {
@@ -202,7 +219,7 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
 
     return (
         <motion.div
-            className="fixed font-sans will-change-transform z-[100]"
+            className="fixed font-sans z-[100]"
             style={{ top: dynamicTop }}
             initial="hidden"
             animate={hideIsland ? hiddenByFooter : effectiveState}

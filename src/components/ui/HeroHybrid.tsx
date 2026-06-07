@@ -145,7 +145,7 @@ export default function HeroHybrid() {
                         {/* CTAs — Liquid Glass Bronze */}
                         <motion.div custom={3} variants={fadeUp} className="flex flex-wrap gap-4">
                             <a
-                                href="#contacto"
+                                href="/registro"
                                 className="group relative inline-flex items-center gap-2 rounded-full px-7 py-3 font-ui text-xs font-medium uppercase tracking-widest text-white/90 transition-all duration-300"
                                 style={{
                                     background: "rgba(195, 151, 103, 0.08)",

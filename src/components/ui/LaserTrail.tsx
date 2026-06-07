@@ -17,6 +17,14 @@ export default function LaserTrail() {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
+        // En móvil/touch no hay cursor: el canvas está oculto (hidden md:block)
+        // pero el RAF + listeners de mousemove seguían corriendo 60fps inútilmente
+        // y compitiendo con el scroll. Cortar de raíz en touch / reduced-motion.
+        const noTrail = window.matchMedia(
+            "(hover: none), (pointer: coarse), (max-width: 767px), (prefers-reduced-motion: reduce)"
+        ).matches;
+        if (noTrail) return;
+
         let points: { x: number; y: number; life: number }[] = [];
         let animationFrame: number;
         

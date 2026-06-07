@@ -387,7 +387,7 @@ export default function SmartConceptsSection() {
     return (
         <section
             id="smart-concepts"
-            className="relative w-full border-t border-white/5 bg-[#050505]"
+            className="relative w-full max-w-full overflow-x-clip border-t border-white/5 bg-[#050505]"
             style={{ minHeight: "130dvh", height: "auto" }}
         >
             {/* ── STICKY WRAPPER ── */}
@@ -603,7 +603,7 @@ export default function SmartConceptsSection() {
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true, amount: 0.2 }}
-                        className="flex flex-col gap-6"
+                        className="flex min-w-0 flex-col gap-6"
                     >
                         {/* Module label */}
                         <div className="inline-flex items-center gap-2.5">
@@ -660,7 +660,7 @@ export default function SmartConceptsSection() {
                                         >
                                             <Icon size={12} style={{ color: ACCENT }} strokeWidth={2.5} />
                                         </span>
-                                        <div>
+                                        <div className="min-w-0">
                                             <p className="text-[13px] font-semibold text-white/80">{f.title}</p>
                                             <p className="mt-0.5 text-[12px] leading-relaxed text-white/35">{f.body}</p>
                                         </div>

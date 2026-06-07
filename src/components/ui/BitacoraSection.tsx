@@ -128,7 +128,7 @@ export default function BitacoraSection() {
     return (
         <section
             id="bitacora"
-            className="relative w-full border-t border-white/5 bg-[#080504]"
+            className="relative w-full max-w-full overflow-x-clip border-t border-white/5 bg-[#080504]"
             style={{ minHeight: "140dvh", height: "auto" }}
         >
             <div className="sticky top-0 min-h-[100dvh] h-auto md:h-screen w-full flex flex-col items-center justify-center pt-32 md:pt-20 pb-16 md:pb-0">

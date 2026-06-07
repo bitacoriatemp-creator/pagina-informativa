@@ -39,7 +39,6 @@ export default function LenisProvider({
     useEffect(() => {
         // ── Do NOT create Lenis on dashboard routes ──
         if (isDashboard) {
-            // If navigating FROM a non-dashboard page, destroy existing instance
             if (lenisRef.current) {
                 lenisRef.current.destroy();
                 lenisRef.current = null;
@@ -47,29 +46,50 @@ export default function LenisProvider({
             return;
         }
 
-        // ── Create Lenis for landing/marketing pages ──
-        const isMobile = window.matchMedia("(max-width: 767px)").matches;
+        // ── On mobile / touch devices: use NATIVE scroll (no Lenis) ──
+        // Lenis on touch fights the native momentum scroll → the "scroll raro".
+        // Native touch scrolling is smoother and frees the main thread.
+        // Re-evaluates on viewport/input change so desktop⇄mobile stays correct.
+        const mql = window.matchMedia("(max-width: 1023px), (pointer: coarse)");
+        let rafId: number | null = null;
 
-        const lenis = new Lenis({
-            duration: isMobile ? 0.8 : 1.8,
-            easing: appleEase,
-            touchMultiplier: isMobile ? 0 : 1.2,
-            smoothWheel: !isMobile,
-        });
-
-        lenisRef.current = lenis;
-
-        let rafId: number;
-        const raf = (time: number) => {
-            lenis.raf(time);
+        const startLenis = () => {
+            if (lenisRef.current) return;
+            const lenis = new Lenis({
+                duration: 1.8,
+                easing: appleEase,
+                smoothWheel: true,
+            });
+            lenisRef.current = lenis;
+            const raf = (time: number) => {
+                lenis.raf(time);
+                rafId = requestAnimationFrame(raf);
+            };
             rafId = requestAnimationFrame(raf);
         };
-        rafId = requestAnimationFrame(raf);
+
+        const stopLenis = () => {
+            if (rafId != null) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+            if (lenisRef.current) {
+                lenisRef.current.destroy();
+                lenisRef.current = null;
+            }
+        };
+
+        const apply = () => {
+            if (mql.matches) stopLenis(); // móvil/touch → scroll nativo
+            else startLenis();            // desktop con mouse → smooth Lenis
+        };
+
+        apply();
+        mql.addEventListener("change", apply);
 
         return () => {
-            cancelAnimationFrame(rafId);
-            lenis.destroy();
-            lenisRef.current = null;
+            mql.removeEventListener("change", apply);
+            stopLenis();
         };
     }, [isDashboard]);
 

@@ -6,10 +6,8 @@ import { X, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useThemeVars } from "@/hooks/useThemeVars";
 
-// Helper for basePath support in production
-const getImagePath = (path: string) => {
-    return process.env.NODE_ENV === "production" ? `/plataforma${path}` : path;
-};
+// La app se sirve en la raíz; las rutas de imágenes van sin prefijo.
+const getImagePath = (path: string) => path;
 
 interface PlanManagementModalProps {
     isOpen: boolean;

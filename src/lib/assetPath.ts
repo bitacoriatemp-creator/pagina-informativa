@@ -1,13 +1,12 @@
 /**
  * Prefijo de ruta para assets estáticos en public/.
- * En producción (Vercel), la app se sirve bajo /plataforma,
- * así que los archivos de public/ viven en /plataforma/images/...
- * En desarrollo (localhost), no hay prefijo.
+ * La app se sirve en la raíz del dominio (bitacoria.com), así que
+ * los archivos de public/ viven en /images/... sin prefijo.
  *
  * Usar: <Image src={assetPath("/images/logo.webp")} ... />
  */
 
-const BASE_PATH = process.env.NODE_ENV === 'production' ? '/plataforma' : '';
+const BASE_PATH = '';
 
 export function assetPath(path?: string | null): string {
     if (!path) return '';

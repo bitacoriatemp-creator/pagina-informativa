@@ -408,7 +408,7 @@ export default function CronogramaSection() {
     return (
         <section
             id="smart-calendar"
-            className="relative w-full border-t border-white/5"
+            className="relative w-full max-w-full overflow-x-clip border-t border-white/5"
             style={{ backgroundColor: "#050505", minHeight: "150dvh", height: "auto" }}
         >
             {/* ── STICKY WRAPPER ── */}

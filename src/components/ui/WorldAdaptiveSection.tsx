@@ -588,7 +588,7 @@ export default function WorldAdaptiveSection() {
                         className="w-full flex justify-center"
                     >
                         <a
-                            href="#contacto"
+                            href="/registro"
                             className="group inline-flex items-center gap-2 rounded-full px-5 py-2.5 font-ui text-[11px] uppercase tracking-[0.25em] transition-all duration-300"
                             style={{
                                 background: "rgba(195, 151, 103, 0.08)",

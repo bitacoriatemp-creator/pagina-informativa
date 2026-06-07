@@ -11,6 +11,7 @@ import {
     Moon,
     SunDim,
     Bell,
+    AtSign,
 } from "lucide-react";
 import Image from "next/image";
 import { useThemeVars } from "@/hooks/useThemeVars";
@@ -29,14 +30,13 @@ interface DashboardTopBarProps {
 const NAV_ITEMS: { key: PageKey; href: string; label: string; icon: React.ElementType; maxWidth: string }[] = [
     { key: "inicio", href: "/dashboard", label: "Inicio", icon: Home, maxWidth: "100px" },
     { key: "contactos", href: "/dashboard/contacts", label: "Contactos", icon: Users, maxWidth: "100px" },
+    { key: "social", href: "/dashboard/social", label: "Social", icon: AtSign, maxWidth: "100px" },
     { key: "perfil", href: "/dashboard/profile", label: "Perfil", icon: User, maxWidth: "100px" },
     { key: "configuracion", href: "/dashboard/settings", label: "Sistema", icon: Settings, maxWidth: "120px" },
     { key: "ayuda", href: "/dashboard/help", label: "Ayuda", icon: LifeBuoy, maxWidth: "100px" },
 ];
 
-const LOGO_SRC = process.env.NODE_ENV === "production"
-    ? "/plataforma/images/logo_horizontal-removebg-preview.png"
-    : "/images/logo_horizontal-removebg-preview.png";
+const LOGO_SRC = "/images/logo_horizontal-removebg-preview.png";
 
 export default function DashboardTopBar({ activePage, pageTitle, rightActions, onMenuClick }: DashboardTopBarProps) {
     const {

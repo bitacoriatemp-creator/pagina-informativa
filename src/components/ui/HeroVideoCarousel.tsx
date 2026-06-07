@@ -58,7 +58,7 @@ export default function HeroVideoCarousel() {
     }, []);
 
     return (
-        <div className="absolute top-0 right-0 z-[2] h-full w-full md:w-2/3">
+        <div className="absolute top-0 right-0 z-[2] h-full w-full max-w-full overflow-x-clip md:w-2/3">
             <motion.div
                 className="absolute inset-0"
                 style={{
@@ -67,7 +67,7 @@ export default function HeroVideoCarousel() {
                     maskImage:
                         "linear-gradient(to left, black 60%, transparent 100%)",
                 }}
-                initial={{ opacity: 0, x: 40 }}
+                initial={{ opacity: 0 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{
                     duration: 1.6,

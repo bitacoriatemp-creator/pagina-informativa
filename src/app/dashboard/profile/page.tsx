@@ -32,10 +32,8 @@ import { assetPath } from "@/lib/assetPath";
 
 const PlanManagementModal = dynamic(() => import("@/components/dashboard/PlanManagementModal"), { ssr: false });
 
-// Helper for basePath support in production
-const getImagePath = (path: string) => {
-    return process.env.NODE_ENV === "production" ? `/plataforma${path}` : path;
-};
+// La app se sirve en la raíz; las rutas de imágenes van sin prefijo.
+const getImagePath = (path: string) => path;
 
 export default function ProfileDashboard() {
     const {

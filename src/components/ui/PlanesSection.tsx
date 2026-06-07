@@ -221,23 +221,23 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                 {/* Background artwork */}
                 <div
                     aria-hidden="true"
-                    className="absolute bottom-0 right-0 w-full max-h-[70%] h-48 z-0 pointer-events-none overflow-hidden rounded-b-2xl"
+                    className="absolute bottom-0 right-0 w-full max-h-[70%] h-48 z-0 pointer-events-none overflow-hidden rounded-b-2xl mix-blend-normal md:mix-blend-screen"
                     style={{
                         maskImage: "linear-gradient(to top, white 40%, transparent 100%)",
                         WebkitMaskImage: "linear-gradient(to top, white 40%, transparent 100%)",
                         opacity: 0.4,
-                        mixBlendMode: "screen",
+                        transform: "translateZ(0)",
                     }}
                 >
-                    <Image src={plan.image} alt="" fill className="object-cover object-bottom" />
+                    <Image src={plan.image} alt="" fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover object-bottom" />
                 </div>
 
                 {/* All content above image */}
                 <div className="relative z-10 flex flex-col h-full">
 
-                    {/* STICKY HEADER (Title, Price, CTA) */}
-                    <div 
-                        className="sticky top-0 z-30 pt-5 pb-5 -mx-5 px-5 -mt-5"
+                    {/* STICKY HEADER (Title, Price, CTA) — sticky solo en desktop; en móvil estático para evitar repaints/jank */}
+                    <div
+                        className="relative md:sticky md:top-0 z-30 pt-5 pb-5 -mx-5 px-5 -mt-5"
                         style={{ 
                             backgroundColor: plan.featured ? "#121008" : "#0f0f0f",
                             borderBottom: "1px solid rgba(255,255,255,0.05)",
@@ -289,8 +289,8 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                 /* Dual buttons — Executive Plan */
                                 <div className="flex gap-2">
                                     <a
-                                        href="https://www.bitacoria.com/"
-                                        className="relative flex-1 py-3 rounded-lg font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95 flex items-center justify-center text-center"
+                                        href="/registro"
+                                        className="relative flex-1 py-3 rounded-lg font-bold text-sm tracking-wide transition-colors duration-200 active:scale-[0.98] md:transition-all md:duration-300 md:hover:scale-[1.02] md:hover:brightness-110 flex items-center justify-center text-center"
                                         style={{
                                             background: "linear-gradient(180deg, #442485 0%, #201140 100%)",
                                             border: `1px solid ${PURPLE}90`,
@@ -301,8 +301,8 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                         Comenzar
                                     </a>
                                     <a
-                                        href="#contacto"
-                                        className="relative flex-1 py-3 rounded-lg font-semibold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-125 active:scale-95 flex items-center justify-center text-center"
+                                        href="/registro"
+                                        className="relative flex-1 py-3 rounded-lg font-semibold text-sm tracking-wide transition-colors duration-200 active:scale-[0.98] md:transition-all md:duration-300 md:hover:scale-[1.02] md:hover:brightness-125 flex items-center justify-center text-center"
                                         style={{
                                             background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
                                             border: "1px solid rgba(255,255,255,0.15)",
@@ -316,8 +316,8 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                             ) : (
                                 /* Single CTA */
                                 <a
-                                    href="https://www.bitacoria.com/"
-                                    className="relative w-full py-3 rounded-lg font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95 flex items-center justify-center text-center"
+                                    href="/registro"
+                                    className="relative w-full py-3 rounded-lg font-bold text-sm tracking-wide transition-colors duration-200 active:scale-[0.98] md:transition-all md:duration-300 md:hover:scale-[1.02] md:hover:brightness-110 flex items-center justify-center text-center"
                                     style={plan.featured ? {
                                         background: "linear-gradient(180deg, #322511 0%, #181208 100%)",
                                         border: `1px solid ${GOLD}90`,
@@ -345,9 +345,9 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                     size={28}
                                     strokeWidth={1.2}
                                     className="mb-2"
-                                    style={{ 
+                                    style={{
                                         color: f.included ? plan.checkColor : "rgba(255,255,255,0.15)",
-                                        filter: f.included ? "none" : "grayscale(100%) brightness(0.5)"
+                                        filter: "none"
                                     }}
                                 />
                                 <p className={`text-[11px] font-bold tracking-wide uppercase leading-tight ${f.included ? "text-white/90" : "text-white/20"}`}>
@@ -400,7 +400,7 @@ export default function PlanesSection() {
     return (
         <section
             id="soluciones"
-            className="w-full min-h-screen flex flex-col justify-center md:snap-center md:snap-always shrink-0 relative overflow-x-clip scroll-mt-24"
+            className="w-full flex flex-col md:min-h-screen md:justify-center shrink-0 relative overflow-x-clip scroll-mt-24"
             style={{
                 backgroundColor: "#080808",
                 borderTop: "1px solid rgba(255,255,255,0.05)",

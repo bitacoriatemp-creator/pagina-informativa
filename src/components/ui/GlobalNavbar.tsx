@@ -26,7 +26,7 @@ const NAV_LINKS = [
     { label: "Contacto", href: "#contacto" },
 ];
 
-const REGISTER_URL = "https://bitacoria.com/";
+const REGISTER_URL = "/registro";
 const SCROLL_THRESHOLD = 100; // px — después de esto cambia a slim
 
 interface Props {
