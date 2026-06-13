@@ -58,10 +58,13 @@
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
-  /* Compensar la pérdida del blur con fondo más opaco donde importa. */
-  .chocolate-glass { background: rgba(35, 20, 12, 0.92); }
+  /* Compensar la pérdida del blur con fondo más opaco donde importa.
+     (!important: la definición base de .chocolate-glass aparece después
+     en el archivo y a igual especificidad ganaría sin esto.) */
+  .chocolate-glass { background: rgba(35, 20, 12, 0.92) !important; }
+  .cream-glass { background: rgba(40, 31, 24, 0.96) !important; }
   .lq-glass-chip,
-  .lq-glass-chip-success { background: rgba(255, 250, 240, 0.92); }
+  .lq-glass-chip-success { background: rgba(255, 250, 240, 0.92) !important; }
 }
 
 /* ── BACKGROUND: Dark Stage + Engineering Grid ── */
@@ -95,6 +98,17 @@
   inset: 0;
   /* Vignette — dark edges */
   background: radial-gradient(ellipse 65% 65% at 50% 50%, transparent 20%, rgba(15, 8, 5, 0.6) 100%);
+}
+
+/* ── CREAM LIQUID GLASS — ventanas/modales (cálido, translúcido, acentos crema) ── */
+.cream-glass {
+  background:
+    linear-gradient(135deg, rgba(245, 240, 232, 0.08), rgba(245, 240, 232, 0.02) 35%, transparent 65%),
+    rgba(58, 46, 36, 0.62);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid rgba(245, 240, 232, 0.22);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 /* ── MATERIAL 2: Chocolate Reflective Glass ──── */

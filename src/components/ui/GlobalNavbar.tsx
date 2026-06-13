@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FolderPlus, Upload, MessageSquareText, ChevronRight, ChevronDown } from "lucide-react";
 import { assetPath } from "@/lib/assetPath";
 
 /* ══════════════════════════════════════════════════════════════
@@ -385,77 +385,102 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                     onClick={() => setIsHowItWorksOpen(false)}
                 >
                     <div
-                        className="relative w-full max-w-4xl rounded-2xl border border-amber-900/50 bg-zinc-950 p-8 shadow-[0_0_50px_rgba(120,53,15,0.2)]"
+                        className="cream-glass relative w-full max-w-4xl rounded-2xl p-8"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
                             onClick={() => setIsHowItWorksOpen(false)}
-                            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-zinc-800 text-zinc-500 transition-colors hover:border-amber-700/50 hover:text-amber-500"
+                            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-[#f5f0e8]/[0.2] text-[#e8ddc9]/[0.7] transition-colors hover:border-[#e8ddc9]/[0.5] hover:text-[#f5f0e8]"
                             aria-label="Cerrar"
                         >
                             ×
                         </button>
 
-                        <p className="mb-1 text-center font-ui text-[10px] uppercase tracking-[0.3em] text-amber-700/60">
+                        <p className="mb-1 text-center font-ui text-[10px] uppercase tracking-[0.3em] text-[#d8c4a8]">
                             El Flujo de
                         </p>
-                        <h2 className="mb-10 text-center font-display text-2xl font-extrabold uppercase tracking-tight text-white/90 sm:text-3xl">
+                        <h2 className="mb-10 text-center font-display text-2xl font-extrabold uppercase tracking-tight text-[#f5f0e8] sm:text-3xl">
                             BitacorIA
                         </h2>
 
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                            <div className="group relative flex flex-col rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 transition-colors hover:border-amber-900/60">
-                                <span className="pointer-events-none absolute right-4 top-3 font-display text-6xl font-extrabold leading-none text-amber-500/[0.07] select-none">
+                        {/* Flujo: 3 pasos con iconos + flechas (→ en desktop, ↓ en móvil) */}
+                        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+                            {/* Paso 1 */}
+                            <div className="group relative flex flex-1 flex-col rounded-xl border border-[#f5f0e8]/[0.12] bg-[#f5f0e8]/[0.04] p-6 transition-colors hover:border-[#d8c4a8]/[0.4]">
+                                <span className="pointer-events-none absolute right-4 top-3 font-display text-6xl font-extrabold leading-none text-[#f5f0e8]/[0.06] select-none">
                                     01
                                 </span>
-                                <p className="mb-2 font-ui text-[9px] uppercase tracking-[0.25em] text-amber-600/60">
+                                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-[#d8c4a8]/[0.25] bg-[#d8c4a8]/[0.1] text-[#e8ddc9]">
+                                    <FolderPlus size={20} strokeWidth={1.6} />
+                                </div>
+                                <p className="mb-2 font-ui text-[9px] uppercase tracking-[0.25em] text-[#d8c4a8]/[0.8]">
                                     Paso 1
                                 </p>
-                                <h3 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-white/80">
+                                <h3 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-[#f5f0e8]/[0.9]">
                                     Nuevo Proyecto
                                 </h3>
-                                <p className="text-[12px] leading-relaxed text-zinc-400">
+                                <p className="text-[12px] leading-relaxed text-[#f5f0e8]/[0.55]">
                                     Crea tu proyecto. Solo necesitas el nombre de la obra.
                                 </p>
                             </div>
 
-                            <div className="group relative flex flex-col rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 transition-colors hover:border-amber-900/60">
-                                <span className="pointer-events-none absolute right-4 top-3 font-display text-6xl font-extrabold leading-none text-amber-500/[0.07] select-none">
+                            {/* Flecha 1 → 2 */}
+                            <div className="flex shrink-0 items-center justify-center text-[#d8c4a8]/[0.5]">
+                                <ChevronRight className="hidden h-6 w-6 sm:block" strokeWidth={2} />
+                                <ChevronDown className="h-5 w-5 sm:hidden" strokeWidth={2} />
+                            </div>
+
+                            {/* Paso 2 */}
+                            <div className="group relative flex flex-1 flex-col rounded-xl border border-[#f5f0e8]/[0.12] bg-[#f5f0e8]/[0.04] p-6 transition-colors hover:border-[#d8c4a8]/[0.4]">
+                                <span className="pointer-events-none absolute right-4 top-3 font-display text-6xl font-extrabold leading-none text-[#f5f0e8]/[0.06] select-none">
                                     02
                                 </span>
-                                <p className="mb-2 font-ui text-[9px] uppercase tracking-[0.25em] text-amber-600/60">
+                                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-[#d8c4a8]/[0.25] bg-[#d8c4a8]/[0.1] text-[#e8ddc9]">
+                                    <Upload size={20} strokeWidth={1.6} />
+                                </div>
+                                <p className="mb-2 font-ui text-[9px] uppercase tracking-[0.25em] text-[#d8c4a8]/[0.8]">
                                     Paso 2
                                 </p>
-                                <h3 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-white/80">
+                                <h3 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-[#f5f0e8]/[0.9]">
                                     Contextualiza{" "}
-                                    <span className="text-zinc-600 text-[10px] normal-case tracking-normal">
+                                    <span className="text-[#f5f0e8]/[0.35] text-[10px] normal-case tracking-normal">
                                         (opcional)
                                     </span>
                                 </h3>
-                                <p className="text-[12px] leading-relaxed text-zinc-400">
+                                <p className="text-[12px] leading-relaxed text-[#f5f0e8]/[0.55]">
                                     Carga tu catálogo de conceptos o tu calendario de obra. Si no tienes,
                                     inicia una bitácora en blanco.
                                 </p>
                             </div>
 
-                            <div className="group relative flex flex-col rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 transition-colors hover:border-amber-900/60">
-                                <span className="pointer-events-none absolute right-4 top-3 font-display text-6xl font-extrabold leading-none text-amber-500/[0.07] select-none">
+                            {/* Flecha 2 → 3 */}
+                            <div className="flex shrink-0 items-center justify-center text-[#d8c4a8]/[0.5]">
+                                <ChevronRight className="hidden h-6 w-6 sm:block" strokeWidth={2} />
+                                <ChevronDown className="h-5 w-5 sm:hidden" strokeWidth={2} />
+                            </div>
+
+                            {/* Paso 3 */}
+                            <div className="group relative flex flex-1 flex-col rounded-xl border border-[#f5f0e8]/[0.12] bg-[#f5f0e8]/[0.04] p-6 transition-colors hover:border-[#d8c4a8]/[0.4]">
+                                <span className="pointer-events-none absolute right-4 top-3 font-display text-6xl font-extrabold leading-none text-[#f5f0e8]/[0.06] select-none">
                                     03
                                 </span>
-                                <p className="mb-2 font-ui text-[9px] uppercase tracking-[0.25em] text-amber-600/60">
+                                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-[#d8c4a8]/[0.25] bg-[#d8c4a8]/[0.1] text-[#e8ddc9]">
+                                    <MessageSquareText size={20} strokeWidth={1.6} />
+                                </div>
+                                <p className="mb-2 font-ui text-[9px] uppercase tracking-[0.25em] text-[#d8c4a8]/[0.8]">
                                     Paso 3
                                 </p>
-                                <h3 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-white/80">
+                                <h3 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-[#f5f0e8]/[0.9]">
                                     Habla con tu Obra
                                 </h3>
-                                <p className="text-[12px] leading-relaxed text-zinc-400">
+                                <p className="text-[12px] leading-relaxed text-[#f5f0e8]/[0.55]">
                                     Empieza a interactuar. La IA audita la información, cruza los datos
                                     y te da todo masticado.
                                 </p>
                             </div>
                         </div>
 
-                        <p className="mt-8 text-center text-[11px] text-zinc-600">
+                        <p className="mt-8 text-center text-[11px] text-[#f5f0e8]/[0.35]">
                             Sin curva de aprendizaje. Sin configuraciones innecesarias.
                         </p>
                     </div>

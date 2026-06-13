@@ -1,8 +1,32 @@
 "use client";
 
+import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { ArrowRight } from "lucide-react";
+import { useRegistroModal } from "./RegistroModal";
+import { signInWithGoogle } from "@/lib/socialAuth";
+
+/* Apple Sign-In requiere cuenta Apple Developer ($99/año).
+   El botón ya está construido abajo — cambia a `true` cuando el
+   proveedor esté configurado en Supabase. */
+const APPLE_ENABLED = false;
+
+/* Logo "G" oficial multicolor de Google */
+const GoogleG = () => (
+    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.5 6.1 29.5 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.5 6.1 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.4-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+        <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C36.9 40.4 44 35 44 24c0-1.3-.1-2.6-.4-3.9z"/>
+    </svg>
+);
+
+/* Logo Apple (monocromo) */
+const AppleLogo = () => (
+    <svg width="17" height="17" viewBox="0 0 384 512" aria-hidden="true" fill="currentColor">
+        <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+    </svg>
+);
 
 /* ── Lazy-loaded video carousel (Sprint 4.1) ── */
 const HeroVideoCarousel = dynamic(() => import("./HeroVideoCarousel"), { ssr: false });
@@ -40,6 +64,28 @@ const stagger = {
 };
 
 export default function HeroHybrid() {
+    /* ── Registro inline: Google OAuth o correo → modal pre-llenado ── */
+    const { openModal } = useRegistroModal();
+    const [heroEmail, setHeroEmail] = useState("");
+    const [googleLoading, setGoogleLoading] = useState(false);
+
+    const handleHeroSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        openModal({ email: heroEmail.trim() });
+    };
+
+    const handleGoogle = async () => {
+        if (googleLoading) return;
+        setGoogleLoading(true);
+        const started = await signInWithGoogle();
+        if (!started) {
+            // Proveedor aún no configurado → fallback al formulario normal.
+            openModal({});
+            setGoogleLoading(false);
+        }
+        // Si started=true, el navegador ya está redirigiendo a Google.
+    };
+
     /* ── Grid CSS ── */
     const gridBg = [
         "repeating-linear-gradient(to right, rgba(195,151,103,0.045) 0px, rgba(195,151,103,0.045) 1px, transparent 1px, transparent 80px)",
@@ -142,40 +188,72 @@ export default function HeroHybrid() {
                             construir.
                         </motion.p>
 
-                        {/* CTAs — Liquid Glass Bronze */}
-                        <motion.div custom={3} variants={fadeUp} className="flex flex-wrap gap-4">
-                            <a
-                                href="/registro"
-                                className="group relative inline-flex items-center gap-2 rounded-full px-7 py-3 font-ui text-xs font-medium uppercase tracking-widest text-white/90 transition-all duration-300"
-                                style={{
-                                    background: "rgba(195, 151, 103, 0.08)",
-                                    backdropFilter: "blur(12px)",
-                                    WebkitBackdropFilter: "blur(12px)",
-                                    border: "1px solid rgba(195, 151, 103, 0.3)",
-                                    boxShadow:
-                                        "inset 0 0 15px rgba(195, 151, 103, 0.1), 0 4px 10px rgba(0,0,0,0.5)",
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background =
-                                        "rgba(195, 151, 103, 0.18)";
-                                    e.currentTarget.style.borderColor =
-                                        "rgba(195, 151, 103, 0.5)";
-                                    e.currentTarget.style.boxShadow =
-                                        "inset 0 0 20px rgba(195, 151, 103, 0.15), 0 4px 15px rgba(0,0,0,0.6)";
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background =
-                                        "rgba(195, 151, 103, 0.08)";
-                                    e.currentTarget.style.borderColor =
-                                        "rgba(195, 151, 103, 0.3)";
-                                    e.currentTarget.style.boxShadow =
-                                        "inset 0 0 15px rgba(195, 151, 103, 0.1), 0 4px 10px rgba(0,0,0,0.5)";
-                                }}
-                            >
-                                Solicitar Demo
-                                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                            </a>
+                        {/* Bloque de registro — liquid glass, sobrio (estilo Claude) */}
+                        <motion.div custom={3} variants={fadeUp}>
+                            <div className="cream-glass w-full max-w-[400px] rounded-2xl p-6 sm:p-7">
+                                <div className="relative z-10">
+                                    {/* Google */}
+                                    <button
+                                        type="button"
+                                        onClick={handleGoogle}
+                                        disabled={googleLoading}
+                                        className="flex w-full items-center justify-center gap-3 rounded-xl py-3.5 font-ui text-[15px] font-medium text-white/90 transition-colors duration-150 hover:bg-white/[0.09] active:bg-white/[0.12] disabled:opacity-60"
+                                        style={{
+                                            background: "rgba(255, 255, 255, 0.05)",
+                                            border: "1px solid rgba(255, 255, 255, 0.14)",
+                                        }}
+                                    >
+                                        <GoogleG />
+                                        {googleLoading ? "Conectando…" : "Continuar con Google"}
+                                    </button>
 
+                                    {/* Apple — oculto hasta tener Apple Developer (ver APPLE_ENABLED) */}
+                                    {APPLE_ENABLED && (
+                                        <button
+                                            type="button"
+                                            className="mt-3 flex w-full items-center justify-center gap-3 rounded-xl py-3.5 font-ui text-[15px] font-medium text-white/90 transition-colors duration-150 hover:bg-white/[0.09] active:bg-white/[0.12]"
+                                            style={{
+                                                background: "rgba(255, 255, 255, 0.05)",
+                                                border: "1px solid rgba(255, 255, 255, 0.14)",
+                                            }}
+                                        >
+                                            <AppleLogo />
+                                            Continuar con Apple
+                                        </button>
+                                    )}
+
+                                    {/* Divisor */}
+                                    <div className="my-4 text-center font-ui text-sm text-white/40">o</div>
+
+                                    {/* Correo */}
+                                    <form onSubmit={handleHeroSubmit} className="flex flex-col gap-3">
+                                        <input
+                                            type="email"
+                                            required
+                                            value={heroEmail}
+                                            onChange={(e) => setHeroEmail(e.target.value)}
+                                            placeholder="Ingresa tu correo electrónico"
+                                            aria-label="Ingresa tu correo electrónico"
+                                            className="w-full rounded-xl px-4 py-3.5 font-ui text-[16px] text-white/90 placeholder-white/40 outline-none transition-colors duration-150 focus:border-white/30 sm:text-[15px]"
+                                            style={{
+                                                background: "rgba(255, 255, 255, 0.06)",
+                                                border: "1px solid rgba(255, 255, 255, 0.10)",
+                                            }}
+                                        />
+                                        <button
+                                            type="submit"
+                                            className="flex w-full items-center justify-center rounded-xl py-3.5 font-ui text-[15px] font-semibold text-[#1c1208] transition-all duration-150 hover:brightness-95 active:brightness-90"
+                                            style={{ background: "#f5f0e8" }}
+                                        >
+                                            Continuar con correo electrónico
+                                        </button>
+                                    </form>
+
+                                    <p className="mt-4 text-center font-ui text-[11px] leading-relaxed text-white/30">
+                                        Al continuar, aceptas nuestro Aviso de Privacidad.
+                                    </p>
+                                </div>
+                            </div>
                         </motion.div>
 
 
