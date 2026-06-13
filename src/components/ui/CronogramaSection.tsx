@@ -1,694 +1,103 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { motion, useInView, AnimatePresence, type Variants } from "framer-motion";
-import { RefreshCw, GanttChartSquare, HardHat, Zap, CheckCircle2, Loader2 } from "lucide-react";
-import CronogramaAtmosphere from "./CronogramaAtmosphere";
-
-/* ══════════════════════════════════════════════════════════════
-   CronogramaSection — "Domino Effect" Gantt
-   ──────────────────────────────────────────────────────────────
-   4-phase infinite loop (while inView):
-     Phase 1 (0s)    Bars grow in — nominal schedule
-     Phase 2 (3s)    Task t1 (critical) extends +2 days → flickers
-     Phase 3 (3.5s)  Domino: ALL critical tasks slide right
-                     Float tasks stay exactly where they are
-     Phase 4 (8s)    Reset to nominal → repeat
-   ══════════════════════════════════════════════════════════════ */
+import { motion, type Variants } from "framer-motion";
+import { RefreshCw, GanttChartSquare, HardHat } from "lucide-react";
+import { assetPath } from "@/lib/assetPath";
+import DemoPlayer from "./DemoPlayer";
 
 const ACCENT = "#3B82F6";
-const ACCENT_DIM = "rgba(59,130,246,0.75)";
 
-// ── TIMELINE AXIS ─────────────────────────────────────────────────
-const TOTAL_DAYS = 16;          // axis width in logical days
-const DELAY_DAYS = 2;           // how many days t1 overruns (domino shift)
-const DAYS = ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8",
-    "D9", "D10", "D11", "D12", "D13", "D14", "D15", "D16"];
-
-// ── TASK SCHEMA ───────────────────────────────────────────────────
-interface GanttTask {
-    id: string;
-    clave: string;
-    name: string;
-    dur: string;           // display label
-    startDay: number;      // 1-based
-    durDays: number;
-    isCritical: boolean;   // true → red (cascades), false → blue (holds)
-    isMilestone?: boolean; // diamond marker instead of bar
-}
-
-// Nominal schedule — exactly as-designed
-const BASE_TASKS: GanttTask[] = [
-    // ── Ruta Crítica ──
-    { id: "t1", clave: "1.01", name: "Limpieza y trazo", dur: "3d", startDay: 1, durDays: 3, isCritical: true },
-    { id: "t2", clave: "2.01", name: "Excavación de zapatas", dur: "5d", startDay: 3, durDays: 5, isCritical: true },
-    { id: "t4", clave: "2.03", name: "Plantilla de concreto", dur: "2d", startDay: 7, durDays: 2, isCritical: true },
-    { id: "m1", clave: "──", name: "Fin de Cimentación", dur: "0d", startDay: 9, durDays: 0, isCritical: true, isMilestone: true },
-    { id: "t5", clave: "3.01", name: "Armado de zapatas", dur: "4d", startDay: 9, durDays: 4, isCritical: true },
-    // ── Con holgura ──
-    { id: "t3", clave: "2.02", name: "Habilitado de acero", dur: "5d", startDay: 2, durDays: 5, isCritical: false },
-    { id: "t6", clave: "4.01", name: "Inst. hidrosanitarias", dur: "4d", startDay: 9, durDays: 4, isCritical: false },
-    { id: "m2", clave: "──", name: "Cierre de Fase 1", dur: "0d", startDay: 13, durDays: 0, isCritical: false, isMilestone: true },
-];
-
-// ── BAR COLOUR TOKENS ─────────────────────────────────────────────
-const CRIT = { bg: "rgba(239,68,68,0.65)", border: "#EF4444", glow: "0 0 10px rgba(239,68,68,0.40)" };
-const FLOAT = { bg: "rgba(59,130,246,0.55)", border: "#3B82F6", glow: "0 0 8px rgba(59,130,246,0.30)" };
-
-// ── ANIMATION VARIANTS (section) ─────────────────────────────────
-const slideLeft: Variants = {
-    hidden: { opacity: 0, x: -48 },
-    visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 50, damping: 18 } },
-};
-const slideRight: Variants = {
-    hidden: { opacity: 0, x: 48 },
-    visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 50, damping: 18 } },
-};
-const featureStagger: Variants = {
-    hidden: {},
-    visible: { transition: { staggerChildren: 0.13, delayChildren: 0.4 } },
-};
-const featureItem: Variants = {
-    hidden: { opacity: 0, x: -14 },
-    visible: { opacity: 1, x: 0, transition: { type: "tween", ease: "easeOut", duration: 0.38 } },
-};
-
-// ── MARKETING COPY ────────────────────────────────────────────────
 const FEATURES = [
     { Icon: RefreshCw, title: "Sincronización BIM y Bitácora", body: "Si la bitácora reporta un retraso por lluvia, el cronograma completo recalcula las dependencias automáticamente. Adiós a los Excels rotos." },
     { Icon: GanttChartSquare, title: "Visualización clara", body: "Controla tareas programadas, completadas y retrasadas en una interfaz fluida y moderna que todo tu equipo puede entender de un vistazo." },
     { Icon: HardHat, title: "Staging & Producción", body: "Juega con escenarios en modo 'Borrador' antes de hacer Commit y afectar la línea base de tu obra real." },
-] as const;
+];
 
-// ── BIM SYNC BUTTON ───────────────────────────────────────────────
-type SyncState = "idle" | "loading" | "synced";
+const fade: Variants = {
+    hidden: { opacity: 0, y: 24 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+};
 
-function SyncButton({ state }: { state: SyncState }) {
-    if (state === "loading") return (
-        <div className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px] font-semibold"
-            style={{ background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.3)", color: ACCENT_DIM }}>
-            <Loader2 size={11} className="animate-spin" />
-            Sincronizando...
-        </div>
-    );
-    if (state === "synced") return (
-        <motion.div initial={{ scale: 0.88, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px] font-semibold"
-            style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.4)", color: "#22C55E" }}>
-            <CheckCircle2 size={11} />
-            Sincronizado
-        </motion.div>
-    );
-    return (
-        <div className="flex cursor-default items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px] font-semibold"
-            style={{ background: "rgba(59,130,246,0.10)", border: "1px solid rgba(59,130,246,0.28)", color: ACCENT_DIM }}>
-            <Zap size={11} />
-            Sincronizar BIM
-        </div>
-    );
-}
-
-// ── GANTT BAR ─────────────────────────────────────────────────────
-// Each bar is an absolutely-positioned motion.div whose left/width
-// are driven by animated style values. On every render framer-motion
-// will SPRING-interpolate toward the new target values automatically.
-const MILESTONE = { bg: "rgba(234,179,8,0.75)", border: "#EAB308", glow: "0 0 10px rgba(234,179,8,0.45)" };
-
-const GanttBar = React.memo(function GanttBar({
-    task,
-    inView,
-    entryDelay,
-    effectStartDay,
-    effectDurDays,
-    flickerT1,
-}: {
-    task: GanttTask;
-    inView: boolean;
-    entryDelay: number;
-    effectStartDay: number;
-    effectDurDays: number;
-    flickerT1: boolean;
-}) {
-    const s = task.isMilestone ? MILESTONE : (task.isCritical ? CRIT : FLOAT);
-    const leftPct = ((effectStartDay - 1) / TOTAL_DAYS) * 100;
-
-    // ── Milestone: render diamond ──
-    if (task.isMilestone) {
-        return (
-            <div className="relative h-full w-full">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
-                    transition={{ duration: 0.4, ease: "backOut", delay: entryDelay }}
-                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2"
-                    style={{ left: `${leftPct}%` }}
-                >
-                    <div
-                        className="h-3.5 w-3.5 rotate-45"
-                        style={{
-                            background: s.bg,
-                            border: `1.5px solid ${s.border}`,
-                            boxShadow: s.glow,
-                        }}
-                    />
-                </motion.div>
-            </div>
-        );
-    }
-
-    // ── Normal bar ──
-    const widthPct = (effectDurDays / TOTAL_DAYS) * 100;
-    const animate = inView
-        ? {
-            left: `${leftPct}%`,
-            width: `${widthPct}%`,
-            opacity: 1,
-            boxShadow: flickerT1 && task.id === "t1"
-                ? "0 0 22px rgba(239,68,68,0.9)"
-                : s.glow,
-        }
-        : { left: `${leftPct}%`, width: "0%", opacity: 0 };
-
-    return (
-        <div className="relative h-full w-full">
-            <motion.div
-                initial={{ width: "0%", opacity: 0 }}
-                animate={animate}
-                transition={
-                    task.isCritical && inView
-                        ? { type: "spring", stiffness: 55, damping: 14, delay: 0 }
-                        : { duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94], delay: entryDelay }
-                }
-                className={`absolute top-1/2 -translate-y-1/2 rounded-full ${flickerT1 && task.id === "t1" ? "animate-pulse" : ""}`}
-                style={{
-                    height: "13px",
-                    background: s.bg,
-                    border: `1px solid ${s.border}`,
-                }}
-            />
-        </div>
-    );
-});
-
-// ── DEPENDENCY ARROW (elbow connector) ────────────────────────────
-// Draws a right-angle connector from the end of task A to the start of task B.
-const DependencyArrow = React.memo(function DependencyArrow({
-    fromEndDay,
-    toStartDay,
-    fromRowIndex,
-    toRowIndex,
-    totalRows,
-}: {
-    fromEndDay: number;
-    toStartDay: number;
-    fromRowIndex: number;
-    toRowIndex: number;
-    totalRows: number;
-}) {
-    const rowHeight = 100 / totalRows;
-    // Arrow starts from the END of the source bar (startDay + dur - 1 gives last day, then +1 col boundary for the right edge)
-    const fromEndPct = ((fromEndDay) / TOTAL_DAYS) * 100;
-    const toStartPct = ((toStartDay - 1) / TOTAL_DAYS) * 100;
-    const midPct = fromEndPct + (toStartPct - fromEndPct) * 0.5; // elbow at midpoint
-    const topPct = (fromRowIndex + 0.5) * rowHeight;
-    const bottomPct = (toRowIndex + 0.5) * rowHeight;
-    const heightPct = bottomPct - topPct;
-
-    // Skip if source and target are the same column
-    if (toStartPct <= fromEndPct) return null;
-
-    return (
-        <>
-            {/* Vertical segment: drop down from source row center */}
-            <div
-                className="pointer-events-none absolute z-10"
-                style={{
-                    left: `${midPct}%`,
-                    top: `${topPct}%`,
-                    width: 0,
-                    height: `${heightPct}%`,
-                    borderLeft: "1.5px dashed rgba(255,255,255,0.15)",
-                    transition: "all 0.7s ease-in-out",
-                }}
-            />
-            {/* Horizontal from source end to elbow */}
-            <div
-                className="pointer-events-none absolute z-10"
-                style={{
-                    left: `${fromEndPct}%`,
-                    top: `${topPct}%`,
-                    width: `${midPct - fromEndPct}%`,
-                    height: 0,
-                    borderTop: "1.5px dashed rgba(255,255,255,0.15)",
-                    transition: "all 0.7s ease-in-out",
-                }}
-            />
-            {/* Horizontal from elbow to target start */}
-            <div
-                className="pointer-events-none absolute z-10"
-                style={{
-                    left: `${midPct}%`,
-                    top: `${bottomPct}%`,
-                    width: `${toStartPct - midPct}%`,
-                    height: 0,
-                    borderTop: "1.5px dashed rgba(255,255,255,0.15)",
-                    transition: "all 0.7s ease-in-out",
-                }}
-            />
-            {/* Arrow head */}
-            <div
-                className="pointer-events-none absolute z-10"
-                style={{
-                    left: `${toStartPct}%`,
-                    top: `${bottomPct}%`,
-                    transform: "translate(-1px, -3.5px)",
-                    width: 0,
-                    height: 0,
-                    borderTop: "3.5px solid transparent",
-                    borderBottom: "3.5px solid transparent",
-                    borderLeft: "6px solid rgba(255,255,255,0.22)",
-                    transition: "all 0.7s ease-in-out",
-                }}
-            />
-        </>
-    );
-});
-
-// ── DELAY BANNER ──────────────────────────────────────────────────
-// Full-width inline banner — rendered inside the timeline column,
-// BELOW the day-header row, so the chrome bar stays perfectly clean.
-function DelayBanner({ visible }: { visible: boolean }) {
-    return (
-        <AnimatePresence>
-            {visible && (
-                <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "28px" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.28, ease: "easeInOut" }}
-                    className="shrink-0 overflow-hidden border-b"
-                    style={{ borderColor: "rgba(239,68,68,0.35)" }}
-                >
-                    <div
-                        className="flex h-full w-full items-center justify-center gap-2 px-3"
-                        style={{
-                            background: "rgba(26,5,5,0.96)",
-                            borderTop: "1px solid rgba(239,68,68,0.20)",
-                        }}
-                    >
-                        <span className="text-[9px] font-semibold" style={{ color: "#EF4444" }}>
-                            ⚠ Retraso detectado en Ruta Crítica · Recalculando dependencias...
-                        </span>
-                    </div>
-                </motion.div>
-            )}
-        </AnimatePresence>
-    );
-}
-
-// ── MAIN COMPONENT ────────────────────────────────────────────────
 export default function CronogramaSection() {
-    const ganttRef = useRef<HTMLDivElement>(null);
-    const inView = useInView(ganttRef, { once: true, amount: 0.35 });
-
-    const [syncState, setSyncState] = useState<SyncState>("idle");
-
-    // ── Domino state ──
-    const [phase, setPhase] = useState<"nominal" | "flicker" | "delayed">("nominal");
-
-    // ── Compute effective bar coordinates per-phase ───────────────
-    // cascade: how many extra days to push each critical task that
-    // starts AFTER t1 (t2, t4, t5). t1 itself just grows wider.
-    function effective(task: GanttTask): { startDay: number; durDays: number } {
-        if (phase === "nominal") {
-            return { startDay: task.startDay, durDays: task.durDays };
-        }
-        if (!task.isCritical) {
-            // Float tasks freeze — THIS is the visual proof of holgura
-            return { startDay: task.startDay, durDays: task.durDays };
-        }
-        if (task.id === "t1") {
-            // t1 grows wider (the delay)
-            return { startDay: task.startDay, durDays: task.durDays + DELAY_DAYS };
-        }
-        // Every other critical task shifts right by DELAY_DAYS (cascade)
-        return { startDay: task.startDay + DELAY_DAYS, durDays: task.durDays };
-    }
-
-    // ── BIM sync micro-interaction (one-time on inView) ───────────
-    useEffect(() => {
-        if (!inView) return;
-        const t1 = setTimeout(() => setSyncState("loading"), 2800);
-        const t2 = setTimeout(() => setSyncState("synced"), 4600);
-        return () => { clearTimeout(t1); clearTimeout(t2); };
-    }, [inView]);
-
-    // ── Domino loop (runs while inView) ───────────────────────────
-    // Phase timeline per cycle:
-    //   0s     → "nominal"  (bars just entered / reset)
-    //   3000ms → "flicker"  (t1 flashes red)
-    //   3500ms → "delayed"  (full cascade)
-    //   8500ms → "nominal"  (reset → repeat after 500ms pause)
-    //
-    // FIX: All timeout IDs are collected in a ref array.
-    // The effect's cleanup function clears EVERY pending timeout,
-    // stopping the recursive chain immediately on unmount or inView change.
-    // Previously, returning a cleanup inside runCycle() was a no-op —
-    // React only calls the return value of the useEffect callback itself.
-    const timerIdsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-    useEffect(() => {
-        if (!inView) return;
-
-        // Helper: schedule a timeout and track its ID for cleanup
-        function schedule(fn: () => void, delay: number) {
-            const id = setTimeout(fn, delay);
-            timerIdsRef.current.push(id);
-            return id;
-        }
-
-        function runCycle() {
-            schedule(() => setPhase("flicker"), 3000);
-            schedule(() => setPhase("delayed"), 3500);
-            schedule(() => {
-                setPhase("nominal");
-                schedule(runCycle, 500); // next cycle — also tracked
-            }, 8500);
-        }
-
-        // Kick off first cycle after initial bar grow-in (~1.5s)
-        schedule(runCycle, 1500);
-
-        // Cleanup: cancel every pending timeout when unmounting or inView changes
-        return () => {
-            timerIdsRef.current.forEach(clearTimeout);
-            timerIdsRef.current = [];
-            setPhase("nominal"); // reset visual state on cleanup
-        };
-    }, [inView]);
-
-    // ── Compute dependency arrows for critical path ──
-    const criticalTasks = BASE_TASKS.filter(t => t.isCritical && !t.isMilestone);
-    const arrows: { fromIdx: number; toIdx: number; fromEndDay: number; toStartDay: number }[] = [];
-    for (let i = 0; i < criticalTasks.length - 1; i++) {
-        const from = criticalTasks[i];
-        const to = criticalTasks[i + 1];
-        const fromEff = effective(from);
-        const toEff = effective(to);
-        const fromIdx = BASE_TASKS.indexOf(from);
-        const toIdx = BASE_TASKS.indexOf(to);
-        arrows.push({
-            fromIdx,
-            toIdx,
-            fromEndDay: fromEff.startDay + fromEff.durDays - 1,
-            toStartDay: toEff.startDay,
-        });
-    }
-
     return (
         <section
             id="smart-calendar"
-            className="minh-150dvh relative w-full max-w-full overflow-x-clip border-t border-white/5"
-            style={{ backgroundColor: "#050505", height: "auto" }}
+            className="relative w-full overflow-x-clip border-t border-white/5 bg-[#050505] py-24 md:py-32"
         >
-            {/* ── STICKY WRAPPER ── */}
-            <div className="sticky top-0 minh-100dvh h-auto md:h-screen w-full flex items-center justify-center pt-32 md:pt-20 pb-32 md:pb-0">
-                {/* ── ATMOSPHERIC LAYERS (Sprint 4.2: extracted + memoized) ── */}
-                <CronogramaAtmosphere />
+            <div
+                className="pointer-events-none absolute inset-x-0 top-0 z-0 h-2/3"
+                style={{ background: `radial-gradient(ellipse 60% 50% at 50% 0%, ${ACCENT}10 0%, transparent 70%)` }}
+            />
 
-                {/* ── SPLIT GRID ────────────────────────────────────────── */}
-                <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 md:px-6 lg:grid-cols-2 lg:gap-14 lg:px-12">
+            <div className="relative z-10 mx-auto w-full max-w-5xl px-6">
+                {/* Header */}
+                <motion.div
+                    variants={fade}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.3 }}
+                    className="mx-auto flex max-w-2xl flex-col items-center gap-5 text-center"
+                >
+                    <div className="inline-flex items-center gap-2.5">
+                        <span className="h-2 w-2 rounded-full" style={{ background: ACCENT, boxShadow: `0 0 8px ${ACCENT}` }} />
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.3em]" style={{ color: `${ACCENT}88` }}>
+                            Smart Calendar
+                        </span>
+                    </div>
+                    <h2
+                        className="font-display text-3xl font-extrabold uppercase leading-[1.04] tracking-tight text-white/92 md:text-4xl lg:text-5xl"
+                        style={{ textShadow: "0 0 60px rgba(59,130,246,0.09), 0 4px 40px rgba(0,0,0,0.95)" }}
+                    >
+                        Cronograma <span style={{ color: ACCENT }}>vivo.</span>
+                    </h2>
+                    <p className="max-w-xl text-[15px] leading-relaxed text-white/45">
+                        Gantt inteligente que se ajusta solo.{" "}
+                        <span className="font-medium text-white/65">Cuando algo cambia en obra, el calendario lo sabe antes que tú.</span>
+                    </p>
+                </motion.div>
 
-                    {/* ════════════════════════════════════════════════════════
-            LEFT — Copy
-           ════════════════════════════════════════════════════════ */}
-                    <motion.div variants={slideLeft} initial="hidden" whileInView="visible"
-                        viewport={{ once: true, amount: 0.2 }} className="flex flex-col gap-7">
+                {/* Demo real */}
+                <motion.div
+                    variants={fade}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.2 }}
+                    className="mt-10 md:mt-12"
+                >
+                    <DemoPlayer
+                        src={assetPath("/videos/demo-calendar.mp4")}
+                        poster={assetPath("/videos/demo-calendar-poster.jpg")}
+                        label="Smart Calendar"
+                        accent={ACCENT}
+                    />
+                </motion.div>
 
-                        {/* Module label */}
-                        <div className="inline-flex items-center gap-2.5">
-                            <span className="h-2 w-2 rounded-full" style={{ background: ACCENT, boxShadow: `0 0 8px ${ACCENT}` }} />
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.3em]" style={{ color: `${ACCENT}88` }}>
-                                Smart Calendar
+                {/* Features */}
+                <div className="mt-12 grid gap-8 sm:grid-cols-3">
+                    {FEATURES.map(({ Icon, title, body }) => (
+                        <div key={title} className="flex flex-col gap-3">
+                            <span
+                                className="flex h-10 w-10 items-center justify-center rounded-full"
+                                style={{ background: `${ACCENT}14`, border: `1px solid ${ACCENT}35` }}
+                            >
+                                <Icon size={16} style={{ color: ACCENT }} strokeWidth={2.2} />
                             </span>
+                            <p className="text-[14px] font-semibold text-white/85">{title}</p>
+                            <p className="text-[13px] leading-relaxed text-white/40">{body}</p>
                         </div>
+                    ))}
+                </div>
 
-                        {/* Headline */}
-                        <h2 className="font-display text-3xl font-extrabold uppercase leading-[1.04] tracking-tight text-white/92 md:text-4xl sm:text-5xl xl:text-6xl"
-                            style={{ textShadow: `0 0 60px rgba(59,130,246,0.09), 0 4px 40px rgba(0,0,0,0.95)` }}>
-                            Cronograma<br />
-                            <span style={{ color: ACCENT }}>vivo.</span>
-                        </h2>
-
-                        {/* Sub-headline */}
-                        <p className="max-w-sm text-base leading-relaxed text-white/38">
-                            Gantt inteligente que se ajusta solo.{" "}
-                            <span className="font-medium text-white/58">
-                                Cuando algo cambia en obra, el calendario lo sabe antes que tú.
-                            </span>
-                        </p>
-
-                        {/* Features */}
-                        <motion.ul variants={featureStagger} initial="hidden" whileInView="visible"
-                            viewport={{ once: true, amount: 0.3 }} className="flex flex-col gap-5">
-                            {FEATURES.map(({ Icon, title, body }) => (
-                                <motion.li key={title} variants={featureItem} className="flex items-start gap-3.5">
-                                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
-                                        style={{ background: `${ACCENT}14`, border: `1px solid ${ACCENT}35` }}>
-                                        <Icon size={12} style={{ color: ACCENT }} strokeWidth={2.5} />
-                                    </span>
-                                    <div>
-                                        <p className="text-sm font-semibold text-white/78">{title}</p>
-                                        <p className="mt-0.5 text-sm leading-relaxed text-white/33">{body}</p>
-                                    </div>
-                                </motion.li>
-                            ))}
-                        </motion.ul>
-
-                        {/* CTA */}
-                        <a href="#bim-sync" className="group inline-flex w-fit items-center gap-2 text-sm font-medium transition-colors"
-                            style={{ color: `${ACCENT}58` }}>
-                            Ver siguiente módulo
-                            <span className="transition-transform group-hover:translate-x-1">→</span>
-                        </a>
-                    </motion.div>
-
-                    {/* ════════════════════════════════════════════════════════
-            RIGHT — Gantt Mockup (LOCKED BOX)
-           ════════════════════════════════════════════════════════ */}
-                    <motion.div variants={slideRight} initial="hidden" whileInView="visible"
-                        viewport={{ once: true, amount: 0.2 }} className="flex w-full justify-center">
-
-                        <div className="w-full overflow-x-auto pb-2 md:overflow-visible">
-                            <div ref={ganttRef}
-                                className="relative flex w-full min-w-[320px] max-w-[600px] flex-col overflow-hidden rounded-2xl border border-white/8 mx-auto"
-                                style={{
-                                    height: "520px", background: "#111111",
-                                    boxShadow: `0 0 70px rgba(59,130,246,0.07), 0 28px 60px rgba(0,0,0,0.80)`
-                                }}>
-
-
-
-                                {/* ── Chrome bar ── */}
-                                <div className="flex shrink-0 items-center gap-3 border-b px-4 py-3"
-                                    style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-                                        <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
-                                        <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-                                    </div>
-                                    <div className="flex flex-1 items-center justify-center">
-                                        <span className="relative px-3 py-1 text-[10px] font-semibold uppercase tracking-wider"
-                                            style={{ color: ACCENT }}>
-                                            Staging (Borrador)
-                                            <div
-                                                className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full"
-                                                style={{ background: ACCENT }} />
-                                        </span>
-                                    </div>
-                                    <SyncButton state={syncState} />
-                                </div>
-
-                                {/* ── Gantt body ── */}
-                                <div className="flex flex-1 overflow-hidden">
-
-                                    {/* Task list */}
-                                    <div className="flex w-[185px] shrink-0 flex-col border-r"
-                                        style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-
-                                        {/* Header */}
-                                        <div className="grid shrink-0 grid-cols-[28px_1fr_34px] items-center gap-1 border-b px-3 py-2"
-                                            style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-                                            <span className="text-[8px] font-semibold uppercase tracking-wider text-white/20">Clave</span>
-                                            <span className="text-[8px] font-semibold uppercase tracking-wider text-white/20">Tarea</span>
-                                            <span className="text-center text-[8px] font-semibold uppercase tracking-wider text-white/20">Dur.</span>
-                                        </div>
-
-                                        {/* Rows */}
-                                        <div className="flex flex-1 flex-col overflow-hidden">
-                                            {BASE_TASKS.map((t, i) => {
-                                                const claveColor = t.isMilestone ? MILESTONE.border : (t.isCritical ? CRIT.border : FLOAT.border);
-                                                const { durDays } = effective(t);
-                                                const durLabel = t.isMilestone ? "◆" : `${durDays}d`;
-                                                const isDelayedTask = phase !== "nominal" && t.id === "t1";
-                                                return (
-                                                    <div key={t.id}
-                                                        className="grid grid-cols-[28px_1fr_34px] items-center gap-1 border-b px-3"
-                                                        style={{
-                                                            borderColor: "rgba(255,255,255,0.04)",
-                                                            height: `${100 / BASE_TASKS.length}%`,
-                                                            background: isDelayedTask
-                                                                ? "rgba(239,68,68,0.06)"
-                                                                : (i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.012)"),
-                                                            transition: "background 0.5s ease",
-                                                        }}>
-                                                        <span className="font-mono text-[8px] font-bold" style={{ color: claveColor }}>
-                                                            {t.clave}
-                                                        </span>
-                                                        <span className="flex items-center gap-1 truncate text-[9px] text-white/50">
-                                                            {isDelayedTask && (
-                                                                <motion.span
-                                                                    initial={{ opacity: 0, scale: 0.5 }}
-                                                                    animate={{ opacity: 1, scale: 1 }}
-                                                                    className="text-[8px] shrink-0"
-                                                                >
-                                                                    ⚠️
-                                                                </motion.span>
-                                                            )}
-                                                            <span className="truncate" style={{ color: isDelayedTask ? "#EF4444" : undefined }}>
-                                                                {t.name}
-                                                            </span>
-                                                        </span>
-                                                        <motion.span
-                                                            animate={{
-                                                                color: isDelayedTask
-                                                                    ? "#EF4444"
-                                                                    : "rgba(255,255,255,0.25)"
-                                                            }}
-                                                            transition={{ duration: 0.3 }}
-                                                            className="text-center font-mono text-[8px]">
-                                                            {durLabel}
-                                                        </motion.span>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-
-                                    {/* Timeline */}
-                                    <div className="flex flex-1 flex-col overflow-hidden">
-
-                                        {/* Day headers */}
-                                        <div className="grid shrink-0 border-b"
-                                            style={{
-                                                gridTemplateColumns: `repeat(${DAYS.length}, minmax(0, 1fr))`,
-                                                borderColor: "rgba(255,255,255,0.05)"
-                                            }}>
-                                            {DAYS.map((d) => (
-                                                <div key={d} className="border-r py-2 text-center text-[7px] font-semibold text-white/18"
-                                                    style={{ borderColor: "rgba(255,255,255,0.04)" }}>
-                                                    {d}
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        {/* ── Delay banner — sits between day-header and bar rows ── */}
-                                        <DelayBanner visible={phase !== "nominal"} />
-
-                                        {/* Bar rows */}
-                                        <div className="relative flex flex-1 flex-col overflow-hidden">
-                                            {BASE_TASKS.map((task, i) => {
-                                                const { startDay, durDays } = effective(task);
-                                                return (
-                                                    <div key={task.id}
-                                                        className="relative shrink-0 border-b"
-                                                        style={{
-                                                            borderColor: "rgba(255,255,255,0.04)",
-                                                            height: `${100 / BASE_TASKS.length}%`,
-                                                            background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.012)"
-                                                        }}>
-
-                                                        {/* Grid lines */}
-                                                        <div className="pointer-events-none absolute inset-0 grid"
-                                                            style={{ gridTemplateColumns: `repeat(${DAYS.length}, minmax(0, 1fr))` }}>
-                                                            {DAYS.map((d) => (
-                                                                <div key={d} className="border-r"
-                                                                    style={{ borderColor: "rgba(255,255,255,0.03)" }} />
-                                                            ))}
-                                                        </div>
-
-                                                        {/* Animated bar or milestone diamond */}
-                                                        <GanttBar
-                                                            task={task}
-                                                            inView={inView}
-                                                            entryDelay={0.15 + i * 0.11}
-                                                            effectStartDay={startDay}
-                                                            effectDurDays={durDays}
-                                                            flickerT1={phase === "flicker"}
-                                                        />
-                                                    </div>
-                                                );
-                                            })}
-
-                                            {/* ── Dependency arrows (critical path connectors) ── */}
-                                            {inView && arrows.map((a, i) => (
-                                                <DependencyArrow
-                                                    key={`arrow-${i}`}
-                                                    fromEndDay={a.fromEndDay}
-                                                    toStartDay={a.toStartDay}
-                                                    fromRowIndex={a.fromIdx}
-                                                    toRowIndex={a.toIdx}
-                                                    totalRows={BASE_TASKS.length}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* ── Status bar / Legend ── */}
-                                <div className="flex shrink-0 items-center justify-between border-t px-4 py-2"
-                                    style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="h-2 w-2 rounded-full"
-                                                style={{ background: CRIT.border, boxShadow: CRIT.glow }} />
-                                            <span className="text-[8px] text-white/35">
-                                                Ruta Crítica <span className="text-white/20">(Holgura 0)</span>
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="h-2 w-2 rounded-full"
-                                                style={{ background: FLOAT.border, boxShadow: FLOAT.glow }} />
-                                            <span className="text-[8px] text-white/35">Actividades con holgura</span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="h-2.5 w-2.5 rotate-45"
-                                                style={{ background: MILESTONE.bg, border: `1px solid ${MILESTONE.border}` }} />
-                                            <span className="text-[8px] text-white/35">Hito</span>
-                                        </div>
-                                    </div>
-                                    {/* Phase indicator */}
-                                    <AnimatePresence mode="wait">
-                                        {phase !== "nominal" ? (
-                                            <motion.span key="recalc"
-                                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                                className="text-[8px] font-semibold" style={{ color: "#EF4444" }}>
-                                                ⟳ Recalculando...
-                                            </motion.span>
-                                        ) : (
-                                            <motion.span key="ok"
-                                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                                className="text-[8px] text-white/20">
-                                                {BASE_TASKS.length} tareas · Días 1–{TOTAL_DAYS}
-                                            </motion.span>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-
-                            </div>
-                        </div>
-                    </motion.div>
-
+                {/* CTA */}
+                <div className="mt-12 flex justify-center">
+                    <a
+                        href="#bim-sync"
+                        className="group inline-flex items-center gap-2 text-sm font-medium transition-colors"
+                        style={{ color: `${ACCENT}99` }}
+                    >
+                        Ver siguiente módulo
+                        <span className="transition-transform group-hover:translate-x-1">→</span>
+                    </a>
                 </div>
             </div>
         </section>
