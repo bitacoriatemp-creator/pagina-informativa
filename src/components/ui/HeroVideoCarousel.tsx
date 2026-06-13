@@ -41,6 +41,9 @@ export default function HeroVideoCarousel() {
             setActiveVideo(nextIdx);
             videos[nextIdx].currentTime = 0;
             videos[nextIdx].play().catch(() => {});
+            // Pre-calienta SOLO el clip que sigue (los demás quedan en preload=none
+            // hasta su turno — evita bajar ~12MB de golpe en datos móviles).
+            videos[(nextIdx + 1) % 5].preload = "auto";
         };
 
         v0.onended = () => playNext(0);
@@ -82,6 +85,7 @@ export default function HeroVideoCarousel() {
                         src={src}
                         muted
                         playsInline
+                        preload={i === 0 ? "auto" : "none"}
                         className="absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-1000"
                         style={{ opacity: activeVideo === i ? 0.85 : 0 }}
                     />

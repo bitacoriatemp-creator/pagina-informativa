@@ -7,8 +7,6 @@ import Image from "next/image";
 import { assetPath } from "@/lib/assetPath";
 import { useLenis } from "@/components/ui/LenisProvider";
 
-import { supabase } from "@/lib/supabase";
-
 /* ══════════════════════════════════════════════════════════════
    FooterSection — Contacto y Legal (con Modales)
    ──────────────────────────────────────────────────────────────
@@ -128,6 +126,8 @@ export default function FooterSection() {
         setStatus("loading");
         setErrorMessage("");
 
+        // Import perezoso: supabase-js solo se descarga si alguien se suscribe.
+        const { supabase } = await import("@/lib/supabase");
         const { error } = await supabase
             .from("newsletter")
             .insert([{ email: email.trim().toLowerCase() }]);
@@ -172,7 +172,7 @@ export default function FooterSection() {
     }, [activeModal, lenisRef]);
 
     return (
-        <section
+        <footer
             id="contacto"
             className="relative w-full overflow-hidden"
             style={{
@@ -193,7 +193,7 @@ export default function FooterSection() {
                             <Image
                                 src={assetPath("/images/logo-bitacoria.webp")}
                                 alt="BitacorIA"
-                                width={240}
+                                width={96}
                                 height={96}
                                 className="h-24 w-auto object-contain object-left opacity-90"
                             />
@@ -431,6 +431,6 @@ export default function FooterSection() {
                     background-color: rgba(255, 255, 255, 0.2);
                 }
             `}</style>
-        </section>
+        </footer>
     );
 }

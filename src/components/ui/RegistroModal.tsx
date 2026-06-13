@@ -92,6 +92,13 @@ export function RegistroModalProvider({ children }: { children: ReactNode }) {
             openModal();
         };
         document.addEventListener("click", onClick);
+        // Aterrizaje vía /registro → /?registro=1 (clic pre-hidratación,
+        // ctrl+click o pestaña nueva): abre el modal directamente.
+        try {
+            if (new URLSearchParams(window.location.search).has("registro")) {
+                openModal();
+            }
+        } catch { /* */ }
         return () => document.removeEventListener("click", onClick);
     }, [openModal]);
 
@@ -189,9 +196,14 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
             }
             const detail = await res.json().catch(() => ({}));
             throw new Error((detail as { error?: string }).error || `status_${res.status}`);
-        } catch {
+        } catch (err) {
             setStatus("error");
-            setErrMsg("No pudimos completar tu registro. Revisa los datos e intenta de nuevo.");
+            // fetch lanza TypeError en fallo de red — frecuente en obra con señal débil
+            setErrMsg(
+                err instanceof TypeError
+                    ? "Sin conexión. Verifica tu señal e intenta de nuevo."
+                    : "No pudimos completar tu registro. Revisa los datos e intenta de nuevo."
+            );
         }
     }
 

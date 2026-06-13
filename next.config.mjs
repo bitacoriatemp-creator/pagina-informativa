@@ -6,6 +6,10 @@ const nextConfig = {
     },
     async redirects() {
         return [
+            // /registro no es una ruta real (el modal intercepta los clics);
+            // este redirect salva clics pre-hidratación, ctrl+click y pestañas
+            // nuevas: vuelven a la landing con el modal abierto (?registro=1).
+            { source: "/registro", destination: "/?registro=1", permanent: false },
             // /esia dado de baja (la conferencia ya pasó) → manda a la landing.
             { source: "/esia", destination: "/", permanent: false },
             { source: "/esia/:path*", destination: "/", permanent: false },

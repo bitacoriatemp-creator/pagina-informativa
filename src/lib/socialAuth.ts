@@ -1,5 +1,3 @@
-import { supabase } from "./supabase";
-
 /* ══════════════════════════════════════════════════════════════
    socialAuth — Login social vía Supabase Auth (Google; Apple después)
    ──────────────────────────────────────────────────────────────
@@ -10,6 +8,13 @@ import { supabase } from "./supabase";
 
 const SUPA_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+
+/* Import perezoso: supabase-js (~30kB gz) no entra al bundle inicial;
+   se descarga en background la primera vez que se necesita. */
+async function getClient() {
+    const { supabase } = await import("./supabase");
+    return supabase;
+}
 
 /** ¿Hay anon key real configurada? (los JWT de Supabase miden >100 chars) */
 const hasRealAnonKey = () => ANON_KEY.length > 60;
@@ -37,6 +42,7 @@ async function isProviderEnabled(provider: "google" | "apple"): Promise<boolean>
  */
 export async function signInWithGoogle(): Promise<boolean> {
     if (!(await isProviderEnabled("google"))) return false;
+    const supabase = await getClient();
     const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -49,6 +55,10 @@ export async function signInWithGoogle(): Promise<boolean> {
 /** Sesión activa (si la hay) tras volver del OAuth. Local, no rompe sin red. */
 export async function getSessionUser() {
     try {
+        // Sin anon key real no hay sesiones OAuth posibles: evita siquiera
+        // descargar supabase-js en ese caso.
+        if (!hasRealAnonKey()) return null;
+        const supabase = await getClient();
         const { data } = await supabase.auth.getSession();
         return data.session?.user ?? null;
     } catch {
@@ -58,12 +68,15 @@ export async function getSessionUser() {
 
 /** Suscripción a cambios de sesión (p.ej. SIGNED_IN al volver de Google). */
 export function onAuthChange(cb: (user: { email?: string; user_metadata?: Record<string, unknown> } | null) => void) {
-    try {
-        const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-            cb(session?.user ?? null);
-        });
-        return () => data.subscription.unsubscribe();
-    } catch {
-        return () => {};
-    }
+    if (!hasRealAnonKey()) return () => {};
+    let cleanup = () => {};
+    import("./supabase")
+        .then(({ supabase }) => {
+            const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+                cb(session?.user ?? null);
+            });
+            cleanup = () => data.subscription.unsubscribe();
+        })
+        .catch(() => { /* sin supabase, sin auth social */ });
+    return () => cleanup();
 }

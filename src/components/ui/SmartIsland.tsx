@@ -90,8 +90,13 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
         const mq = window.matchMedia("(max-width: 767px)");
         setIsMobile(mq.matches);
         const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-        mq.addEventListener("change", handler);
-        return () => mq.removeEventListener("change", handler);
+        // Safari <14: solo addListener/removeListener
+        if (typeof mq.addEventListener === "function") mq.addEventListener("change", handler);
+        else (mq as MediaQueryList & { addListener: (cb: (e: MediaQueryListEvent) => void) => void }).addListener(handler);
+        return () => {
+            if (typeof mq.removeEventListener === "function") mq.removeEventListener("change", handler);
+            else (mq as MediaQueryList & { removeListener: (cb: (e: MediaQueryListEvent) => void) => void }).removeListener(handler);
+        };
     }, []);
 
     // Ref para rastrear el valor anterior de forceExpand

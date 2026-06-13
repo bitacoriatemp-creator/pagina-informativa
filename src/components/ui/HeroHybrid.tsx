@@ -93,7 +93,7 @@ export default function HeroHybrid() {
     ].join(", ");
 
     return (
-        <section className="relative min-h-screen overflow-hidden">
+        <section id="hero-or-chaos" className="relative min-h-screen overflow-hidden">
             {/* ══════════════════════════════════════════════
                 BACKGROUND LAYERS
                 ══════════════════════════════════════════════ */}
@@ -250,7 +250,10 @@ export default function HeroHybrid() {
                                     </form>
 
                                     <p className="mt-4 text-center font-ui text-[11px] leading-relaxed text-white/30">
-                                        Al continuar, aceptas nuestro Aviso de Privacidad.
+                                        Al continuar, aceptas nuestro{" "}
+                                        <a href="#contacto" className="underline underline-offset-2 decoration-white/30 hover:text-white/50">
+                                            Aviso de Privacidad
+                                        </a>.
                                     </p>
                                 </div>
                             </div>

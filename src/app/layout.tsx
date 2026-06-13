@@ -29,6 +29,7 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://bitacoria.com"),
   title: "BitacorIA — Inteligencia de Campo para Construcción",
   description:
     "Plataforma de Field Intelligence que digitaliza y automatiza la gestión de bitácoras de obra con IA. Control total de tu operación en campo.",
@@ -38,7 +39,34 @@ export const metadata: Metadata = {
     "construcción",
     "field intelligence",
     "gestión de obra",
+    "precios unitarios",
+    "catálogo de conceptos",
   ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "https://bitacoria.com",
+    siteName: "BitacorIA",
+    locale: "es_MX",
+    title: "BitacorIA — Inteligencia de Campo para Construcción",
+    description:
+      "Bitácoras, catálogos de conceptos y estimaciones de obra con IA. Regístrate y agenda tu demo.",
+    images: [
+      {
+        url: "/images/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "BitacorIA — Auditoría inteligente para tu obra",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BitacorIA — Inteligencia de Campo para Construcción",
+    description:
+      "Bitácoras, catálogos de conceptos y estimaciones de obra con IA.",
+    images: ["/images/og-image.jpg"],
+  },
 };
 
 export const viewport: Viewport = {
@@ -61,6 +89,22 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="font-sans antialiased overflow-x-clip" suppressHydrationWarning>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "BitacorIA",
+              applicationCategory: "BusinessApplication",
+              operatingSystem: "Web",
+              url: "https://bitacoria.com",
+              inLanguage: "es",
+              description:
+                "Plataforma de Field Intelligence que digitaliza y automatiza la gestión de bitácoras de obra con IA.",
+            }),
+          }}
+        />
         <ThemeProvider>
           <LenisProvider>{children}</LenisProvider>
         </ThemeProvider>

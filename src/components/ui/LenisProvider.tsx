@@ -85,10 +85,14 @@ export default function LenisProvider({
         };
 
         apply();
-        mql.addEventListener("change", apply);
+        // Safari <14 solo tiene addListener/removeListener (sin esto, el
+        // TypeError en useEffect desmonta TODO el árbol → página en blanco).
+        if (typeof mql.addEventListener === "function") mql.addEventListener("change", apply);
+        else (mql as MediaQueryList & { addListener: (cb: () => void) => void }).addListener(apply);
 
         return () => {
-            mql.removeEventListener("change", apply);
+            if (typeof mql.removeEventListener === "function") mql.removeEventListener("change", apply);
+            else (mql as MediaQueryList & { removeListener: (cb: () => void) => void }).removeListener(apply);
             stopLenis();
         };
     }, [isDashboard]);

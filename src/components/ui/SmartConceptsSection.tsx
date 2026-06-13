@@ -387,11 +387,11 @@ export default function SmartConceptsSection() {
     return (
         <section
             id="smart-concepts"
-            className="relative w-full max-w-full overflow-x-clip border-t border-white/5 bg-[#050505]"
-            style={{ minHeight: "130dvh", height: "auto" }}
+            className="minh-130dvh relative w-full max-w-full overflow-x-clip border-t border-white/5 bg-[#050505]"
+            style={{ height: "auto" }}
         >
             {/* ── STICKY WRAPPER ── */}
-            <div className="sticky top-0 w-full min-h-[100dvh] h-auto md:h-screen flex flex-col justify-center pt-24 md:pt-[120px] pb-32 md:pb-10">
+            <div className="sticky top-0 w-full minh-100dvh h-auto md:h-screen flex flex-col justify-center pt-24 md:pt-[120px] pb-32 md:pb-10">
                 {/* ── ATMOSPHERIC LAYER 1: Multi-zone emerald focal glow ── */}
                 <div
                     className="pointer-events-none absolute inset-0 z-0"

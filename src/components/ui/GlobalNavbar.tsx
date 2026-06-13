@@ -123,11 +123,14 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                     }}
                 >
                     {/* Logo image (existente) */}
+                    {/* width/height 1:1 = ratio intrínseco real del asset (1182x1182):
+                        evita el salto de altura (CLS) del pill navbar al decodificar. */}
                     <Image
                         src={assetPath("/images/logo-bitacoria.webp")}
                         alt="BitacorIA"
-                        width={100}
-                        height={32}
+                        width={64}
+                        height={64}
+                        priority
                         className="shrink-0 w-16 md:w-[100px] h-auto"
                         style={{
                             filter:
@@ -273,7 +276,7 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                         <Image
                             src={assetPath("/images/logo-bitacoria-horizontal.png")}
                             alt="BitacorIA"
-                            width={150}
+                            width={40}
                             height={40}
                             className="h-8 md:h-10 w-auto"
                             style={{
@@ -281,7 +284,6 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                                 // sobre el dark logo lo convierte en blanco translúcido.
                                 filter: "brightness(0) invert(1)",
                             }}
-                            priority
                         />
                     </a>
 

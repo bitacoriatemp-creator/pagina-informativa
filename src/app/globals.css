@@ -15,10 +15,16 @@
     scroll-behavior: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* hidden = fallback para Safari <16 (no soporta clip); los navegadores
+       modernos toman clip, que no crea contenedor de scroll. */
+    overflow-x: hidden;
     overflow-x: clip;
   }
 
   body {
+    /* solo clip (sin fallback hidden): en Safari <16 body queda 'visible',
+       pero el clip/hidden del html ya corta el scroll lateral; un hidden aquí
+       convertiría a body en scroll-container y congelaría position:sticky. */
     overflow-x: clip;
     max-width: 100vw;
     color: #ECEBE9;
@@ -36,6 +42,18 @@
     font-family: var(--font-orbitron), "Orbitron", system-ui, sans-serif;
   }
 }
+
+/* ── ANCLAS: que la navbar fija no tape los títulos al navegar ── */
+#soluciones, #smart-concepts, #bitacora, #smart-calendar, #bim-sync, #contacto, #hero-or-chaos {
+  scroll-margin-top: 72px;
+}
+
+/* ── dvh con fallback vh (Safari <15.4 no soporta dvh; en style inline
+      de React no hay cascada posible, por eso estas clases) ── */
+.minh-100dvh { min-height: 100vh; min-height: 100dvh; }
+.minh-130dvh { min-height: 130vh; min-height: 130dvh; }
+.minh-140dvh { min-height: 140vh; min-height: 140dvh; }
+.minh-150dvh { min-height: 150vh; min-height: 150dvh; }
 
 /* ── PERFORMANCE & ACCESIBILIDAD MÓVIL ───────────────────────────
    1) Respeta "Reducir movimiento" del sistema: neutraliza animaciones

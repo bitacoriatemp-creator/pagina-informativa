@@ -2,9 +2,18 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useInView, MotionConfig } from "framer-motion";
+import dynamic from "next/dynamic";
 import HeroHybrid from "@/components/ui/HeroHybrid";
 import GlobalNavbar from "@/components/ui/GlobalNavbar";
-import ProblemChaos from "@/components/ui/ProblemChaos";
+
+/* ProblemChaos usa Matter.js (~26kB gz) y está 3 pantallas abajo del fold:
+   carga diferida con placeholder del mismo alto para no causar CLS. */
+const ProblemChaos = dynamic(() => import("@/components/ui/ProblemChaos"), {
+    ssr: false,
+    loading: () => (
+        <div style={{ height: "200vh", minHeight: 1600, backgroundColor: "#0c0604" }} />
+    ),
+});
 import SmartIslandShowcase from "@/components/ui/SmartIslandShowcase";
 import SmartConceptsSection from "@/components/ui/SmartConceptsSection";
 import SmartBimSyncSection from "@/components/ui/SmartBimSyncSection";
@@ -79,8 +88,9 @@ export default function LandingPage() {
                 {/* Sección 1: Hero */}
                 <HeroHybrid />
 
-                {/* Sección 2: Planes de Pago (movida arriba — primer scroll) */}
-                <div id="soluciones">
+                {/* Sección 2: Planes de Pago (movida arriba — primer scroll).
+                    El id="soluciones" lo lleva la <section> interna del componente. */}
+                <div>
                     <PlanesSection />
                 </div>
 
@@ -93,29 +103,29 @@ export default function LandingPage() {
                 </div>
 
                 {/* Sección 4: Smart Concepts */}
-                <div ref={conceptsRef} id="smart-concepts">
+                <div ref={conceptsRef}>
                     <SmartConceptsSection />
                 </div>
 
                 {/* Sección 5: Bitácoras */}
-                <div ref={bitacoraRef} id="bitacora">
+                <div ref={bitacoraRef}>
                     <BitacoraSection />
                 </div>
 
                 {/* Sección 6: Smart Calendar */}
-                <div ref={calendarRef} id="smart-calendar">
+                <div ref={calendarRef}>
                     <CronogramaSection />
                 </div>
 
                 {/* Sección 7: Smart BIM Sync — isla desaparece después */}
-                <div ref={bimRef} id="bim-sync">
+                <div ref={bimRef}>
                     <SmartBimSyncSection />
                 </div>
 
                 {/* Sección 7.5: Alcance Global — globe spinning con 8 países activos */}
                 <WorldAdaptiveSection />
 
-                <div id="contacto">
+                <div>
                     <FooterSection />
                 </div>
 

@@ -153,8 +153,9 @@ export default function WorldAdaptiveSection() {
 
     const [worldData, setWorldData] = useState<CountryPolygon[] | null>(null);
 
-    /* ── Fetch + decode TopoJSON ── */
+    /* ── Fetch + decode TopoJSON (diferido: solo al acercarse la sección) ── */
     useEffect(() => {
+        if (!inView) return;
         let cancelled = false;
         fetch(assetPath("/world-borders.json"))
             .then((res) => {
@@ -167,12 +168,13 @@ export default function WorldAdaptiveSection() {
             })
             .catch((err) => console.error("WorldAdaptiveSection: failed borders", err));
         return () => { cancelled = true; };
-    }, []);
+    }, [inView]);
 
     /* ══════════════════════════════════════════════
        GLOBE CANVAS — fronteras reales + dots pulsantes
        ══════════════════════════════════════════════ */
     useEffect(() => {
+        if (!inView) return; // no dibujar el globo hasta que la sección se acerque
         const canvas = globeCanvasRef.current;
         const container = globeContainerRef.current;
         if (!canvas || !container) return;
@@ -386,7 +388,7 @@ export default function WorldAdaptiveSection() {
             ro.disconnect();
             if (rafId !== null) cancelAnimationFrame(rafId);
         };
-    }, [worldData]);
+    }, [worldData, inView]);
 
     return (
         <section
