@@ -15,16 +15,12 @@ const ProblemChaos = dynamic(() => import("@/components/ui/ProblemChaos"), {
     ),
 });
 import SmartIslandShowcase from "@/components/ui/SmartIslandShowcase";
-import SmartConceptsSection from "@/components/ui/SmartConceptsSection";
 import SmartBimSyncSection from "@/components/ui/SmartBimSyncSection";
 import WorldAdaptiveSection from "@/components/ui/WorldAdaptiveSection";
-import CronogramaSection from "@/components/ui/CronogramaSection";
-import BitacoraSection from "@/components/ui/BitacoraSection";
 import PlanesSection from "@/components/ui/PlanesSection";
 import FooterSection from "@/components/ui/FooterSection";
 import SmartIsland from "@/components/ui/SmartIsland";
 import type { IslandState } from "@/components/ui/SmartIsland";
-import LaserTrail from "@/components/ui/LaserTrail";
 import { RegistroModalProvider } from "@/components/ui/RegistroModal";
 
 export default function LandingPage() {
@@ -35,29 +31,18 @@ export default function LandingPage() {
     const showcaseRef = useRef<HTMLDivElement>(null);
     const showcaseInView = useInView(showcaseRef, { margin: "0px 0px -95% 0px" });
 
-    // Sección 4: Smart Concepts
-    const conceptsRef = useRef<HTMLDivElement>(null);
-    const conceptsInView = useInView(conceptsRef, { amount: 0.1 });
-
-    // Sección 5: Bitácoras
-    const bitacoraRef = useRef<HTMLDivElement>(null);
-    const bitacoraInView = useInView(bitacoraRef, { amount: 0.1 });
-
-    // Sección 6: Smart Calendar
-    const calendarRef = useRef<HTMLDivElement>(null);
-    const calendarInView = useInView(calendarRef, { amount: 0.1 });
-
-    // Sección 7: Smart BIM Sync
+    // Sección 4: Smart BIM Sync (Smart Concepts / Bitácora / Smart Calendar
+    // ahora viven dentro del Hero como HeroDemoShowcase — ya no son secciones aparte).
     const bimRef = useRef<HTMLDivElement>(null);
     const bimInView = useInView(bimRef, { amount: 0.1 });
 
     /* ── MÁQUINA DE ESTADOS ──
        hidden  → Hero + ProblemChaos (secciones 1-2)
        center  → Showcase (sección 3) — isla se revela grande, centrada
-       top     → Concepts + Bitácoras + Calendar + BIM (secciones 4-7)
-       hidden  → Planes + Footer (sección 8+) — desaparece
+       top     → Smart BIM Sync (sección 4)
+       hidden  → Planes + Footer (sección 5+) — desaparece
     */
-    const isInContentSections = conceptsInView || bitacoraInView || calendarInView || bimInView;
+    const isInContentSections = bimInView;
 
     let islandState: IslandState = "hidden";
     if (isInContentSections) {
@@ -70,9 +55,6 @@ export default function LandingPage() {
         <MotionConfig reducedMotion="user">
         <RegistroModalProvider>
         <main className="bg-[#0c0604] min-h-screen text-white relative">
-            {/* ── RASTRO LÁSER GLOBAL ── */}
-                <LaserTrail />
-
                 {/* ── NAVBAR GLOBAL (fixed, persiste en todo el scroll) ── */}
                 <GlobalNavbar onOpenQuienesSomos={() => setIsQuienesSomosOpen(true)} />
 
@@ -102,27 +84,12 @@ export default function LandingPage() {
                     <SmartIslandShowcase />
                 </div>
 
-                {/* Sección 4: Smart Concepts */}
-                <div ref={conceptsRef}>
-                    <SmartConceptsSection />
-                </div>
-
-                {/* Sección 5: Bitácoras */}
-                <div ref={bitacoraRef}>
-                    <BitacoraSection />
-                </div>
-
-                {/* Sección 6: Smart Calendar */}
-                <div ref={calendarRef}>
-                    <CronogramaSection />
-                </div>
-
-                {/* Sección 7: Smart BIM Sync — isla desaparece después */}
+                {/* Sección 4: Smart BIM Sync — isla desaparece después */}
                 <div ref={bimRef}>
                     <SmartBimSyncSection />
                 </div>
 
-                {/* Sección 7.5: Alcance Global — globe spinning con 8 países activos */}
+                {/* Sección 5: Alcance Global — globe spinning con 8 países activos */}
                 <WorldAdaptiveSection />
 
                 <div>

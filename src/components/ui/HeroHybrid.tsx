@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useRegistroModal } from "./RegistroModal";
-import { signInWithGoogle } from "@/lib/socialAuth";
+import HeroLiquidGlass from "./HeroLiquidGlass";
 
 /* Apple Sign-In requiere cuenta Apple Developer ($99/año).
    El botón ya está construido abajo — cambia a `true` cuando el
@@ -28,21 +28,19 @@ const AppleLogo = () => (
     </svg>
 );
 
-/* ── Lazy-loaded video carousel (Sprint 4.1) ── */
-const HeroVideoCarousel = dynamic(() => import("./HeroVideoCarousel"), { ssr: false });
+/* ── Showcase de producto: los 3 demos reales (antes secciones aparte) ── */
+const HeroDemoShowcase = dynamic(() => import("./HeroDemoShowcase"), { ssr: false });
+
 
 /* ══════════════════════════════════════════════════════════════
    HeroHybrid — Self-contained Hero Section
    ──────────────────────────────────────────────────────────────
-   Background layers:
-     0  Solid dark base (#0c0604)
-     1  Subtle golden grid (CSS repeating gradients)
-     2  Video area (5 videos in sequential loop with crossfade)
-     4  Bottom fade
-     5  Vignette
-     5.5 Mobile text contrast overlay
-   Foreground:
+   Background: HeroLiquidGlass — blobs líquidos + lámina de vidrio +
+   luz que sigue al cursor y cambia de tinte según la zona.
+   Foreground (layout estilo Claude — copy a la izquierda, producto
+   contenido a la derecha):
      Content (tagline, headline, CTAs)
+     HeroDemoShowcase (Smart Concepts / Bitácora / Smart Calendar)
      Scroll indicator
    NOTA: la navbar fue movida a GlobalNavbar.tsx (fixed, persiste
    en todo el scroll de la landing). El "Cómo Funciona" modal
@@ -67,144 +65,120 @@ export default function HeroHybrid() {
     /* ── Registro inline: Google OAuth o correo → modal pre-llenado ── */
     const { openModal } = useRegistroModal();
     const [heroEmail, setHeroEmail] = useState("");
-    const [googleLoading, setGoogleLoading] = useState(false);
 
     const handleHeroSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         openModal({ email: heroEmail.trim() });
     };
 
-    const handleGoogle = async () => {
-        if (googleLoading) return;
-        setGoogleLoading(true);
-        const started = await signInWithGoogle();
-        if (!started) {
-            // Proveedor aún no configurado → fallback al formulario normal.
-            openModal({});
-            setGoogleLoading(false);
-        }
-        // Si started=true, el navegador ya está redirigiendo a Google.
-    };
+    /* Todo acceso pasa por la encuesta y de ahí a WhatsApp: es el canal donde
+       atendemos al lead, hablando con la persona en vez de dar de alta cuentas
+       sin contexto. Nada de OAuth aquí: sin proveedor configurado, intentarlo
+       solo añadía una petición muerta y un parpadeo de "Conectando…" antes de
+       abrir la misma encuesta. socialAuth.ts sigue disponible si se retoma. */
+    const handleGoogle = () => openModal({});
 
-    /* ── Grid CSS ── */
-    const gridBg = [
-        "repeating-linear-gradient(to right, rgba(195,151,103,0.045) 0px, rgba(195,151,103,0.045) 1px, transparent 1px, transparent 80px)",
-        "repeating-linear-gradient(to bottom, rgba(195,151,103,0.045) 0px, rgba(195,151,103,0.045) 1px, transparent 1px, transparent 80px)",
-    ].join(", ");
-
+    /* minh-100dvh en vez de min-h-screen: en iOS Safari la barra de
+       direcciones hace que 100vh sea mayor que la pantalla visible. */
     return (
-        <section id="hero-or-chaos" className="relative min-h-screen overflow-hidden">
+        <section id="hero-or-chaos" className="relative minh-100dvh overflow-hidden">
             {/* ══════════════════════════════════════════════
-                BACKGROUND LAYERS
+                BACKGROUND — liquid glass + luz que sigue al cursor
                 ══════════════════════════════════════════════ */}
-            <div className="absolute inset-0 overflow-hidden">
-
-                {/* ── LAYER 0: Solid dark base ── */}
-                <div
-                    className="absolute inset-0"
-                    style={{ backgroundColor: "#0c0604" }}
-                />
-
-                {/* ── LAYER 1: Golden Grid ── */}
-                <motion.div
-                    className="absolute inset-0 z-[1]"
-                    style={{ background: gridBg }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 2, delay: 0.5 }}
-                />
-
-                {/* ── VIDEO AREA — lazy-loaded carousel (Sprint 4.1) ── */}
-                <HeroVideoCarousel />
-
-                {/* ── LAYER 4: Bottom fade ── */}
-                <div
-                    className="absolute bottom-0 left-0 z-[4] w-full pointer-events-none"
-                    style={{
-                        height: "20%",
-                        background:
-                            "linear-gradient(to top, #0c0604 5%, transparent 100%)",
-                    }}
-                />
-
-                {/* ── LAYER 5: Vignette ── */}
-                <div
-                    className="absolute inset-0 z-[5] pointer-events-none"
-                    style={{
-                        background:
-                            "radial-gradient(ellipse 70% 60% at 30% 50%, transparent 0%, rgba(12,6,4,0.4) 100%)",
-                    }}
-                />
-
-                {/* ── LAYER 5.5: Mobile Text Contrast ── */}
-                <div 
-                    className="absolute inset-0 z-[6] pointer-events-none md:hidden bg-gradient-to-r from-[#0c0604]/90 via-[#0c0604]/70 to-transparent" 
-                />
-            </div>
+            <HeroLiquidGlass />
 
             {/* NAVBAR: movida a GlobalNavbar (fixed, persiste en todo el scroll) */}
 
             {/* ══════════════════════════════════════════════
                 HERO CONTENT — Text + Liquid Glass Buttons
                 ══════════════════════════════════════════════ */}
-            <div className="relative z-20 flex min-h-screen items-center pointer-events-none">
-                <div className="mx-auto w-full max-w-[1600px] px-6 md:px-16 lg:px-24">
+            {/* Contenido anclado arriba (no centrado): la columna izquierda
+                arranca justo bajo la isla y crece hacia abajo, así no se hunde
+                —ni se corta— en pantallas de poca altura. */}
+            <div className="relative z-20 flex minh-100dvh items-start pointer-events-none pt-28 pb-16 md:pt-24 md:pb-10">
+                <div className="hero-grid mx-auto w-full max-w-[1600px] gap-y-6 px-6 md:px-10 lg:gap-x-8 lg:gap-y-0 lg:px-16">
+                    {/* Cada área orquesta su propia entrada. Antes el stagger vivía
+                       en un único padre; al partir el contenido en áreas de grid la
+                       propagación de variantes dejaba a los hijos en el estado
+                       "hidden" (opacidad 0) y el hero se veía en blanco. */}
                     <motion.div
                         initial="hidden"
                         animate="visible"
                         variants={stagger}
-                        className="relative z-10 max-w-xl pointer-events-auto"
+                        className="hero-area-copy relative z-10 w-full max-w-xl pointer-events-auto"
                     >
                         {/* Tag line */}
                         <motion.p
                             custom={0}
                             variants={fadeUp}
-                            className="mb-4 font-ui text-xs uppercase tracking-[0.3em] text-[#c39767]/70"
+                            className="mb-3 font-ui text-xs uppercase tracking-[0.3em] text-[#c39767]/70"
                         >
-                            Plataforma de Gestión Inteligente
+                            Gestión de obra con IA
                         </motion.p>
 
                         {/* Headline */}
                         <motion.h1
                             custom={1}
                             variants={fadeUp}
-                            className="mb-5 font-display text-3xl font-extrabold uppercase leading-[1.08] tracking-tight sm:text-4xl lg:text-5xl xl:text-6xl"
+                            /* Hasta lg el hero es de una columna y cabe un titular
+                               grande. Desde lg la columna es fluida (~43%), así que el
+                               tamaño también: clamp escala con el ancho en vez de dar
+                               saltos, y topa en 72px — el tamaño actual de escritorio.
+                               Medido: "INTELIGENTE." ocupa ~7.4x el tamaño de fuente. */
+                            className="mb-4 font-display text-4xl font-extrabold uppercase leading-[1.06] tracking-tight sm:text-5xl md:text-6xl lg:text-[clamp(2.75rem,4.6vw,4.5rem)]"
                         >
-                            Auditoría
+                            Tu obra
                             <br />
-                            inteligente
-                            <br />
-                            <span className="text-gradient">para tu obra.</span>
+                            <span className="text-gradient">inteligente.</span>
                         </motion.h1>
 
                         {/* Sub-headline */}
                         <motion.p
                             custom={2}
                             variants={fadeUp}
-                            className="mb-12 max-w-md text-sm leading-relaxed text-text/40 lg:text-base"
+                            className="mb-6 max-w-md text-sm leading-relaxed text-text/40 lg:text-base"
                         >
-                            Administra usuarios, valida documentos y permite que la IA
-                            aprenda de tus propios datos para prevenir errores antes de
-                            construir.
+                            Gestiona, valida y cotiza en un solo lugar. La IA aprende de
+                            tus propios datos para prevenir errores antes de construir.
                         </motion.p>
+                    </motion.div>
 
-                        {/* Bloque de registro — liquid glass, sobrio (estilo Claude) */}
-                        <motion.div custom={3} variants={fadeUp}>
-                            <div className="cream-glass w-full max-w-[400px] rounded-2xl p-6 sm:p-7">
+                    {/* Showcase de producto — Smart Concepts / Bitácora / Smart Calendar.
+                        En una columna va justo tras el subtítulo (enseñar antes de pedir);
+                        en lg+ pasa a la derecha con su descuelgue propio. */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.9, ease: [0.25, 0.4, 0.25, 1] as const, delay: 0.35 }}
+                        className="hero-area-demo relative z-10 flex w-full max-w-4xl pointer-events-auto lg:mt-24 lg:justify-center"
+                    >
+                        <HeroDemoShowcase />
+                    </motion.div>
+
+                    {/* Bloque de registro — liquid glass, sobrio (estilo Claude) */}
+                    <motion.div
+                        custom={3}
+                        variants={fadeUp}
+                        initial="hidden"
+                        animate="visible"
+                        className="hero-area-cta pointer-events-auto"
+                    >
+                            {/* Mismo radio que la tarjeta del video: los dos recuadros
+                                del hero leen como una familia y no como dos piezas sueltas. */}
+                            <div className="cream-glass w-full max-w-[400px] rounded-[28px] p-5">
                                 <div className="relative z-10">
                                     {/* Google */}
                                     <button
                                         type="button"
                                         onClick={handleGoogle}
-                                        disabled={googleLoading}
-                                        className="flex w-full items-center justify-center gap-3 rounded-xl py-3.5 font-ui text-[15px] font-medium text-white/90 transition-colors duration-150 hover:bg-white/[0.09] active:bg-white/[0.12] disabled:opacity-60"
+                                        className="flex w-full items-center justify-center gap-3 rounded-xl py-3 font-ui text-[14px] font-medium text-white/90 transition-colors duration-150 hover:bg-white/[0.09] active:bg-white/[0.12]"
                                         style={{
                                             background: "rgba(255, 255, 255, 0.05)",
                                             border: "1px solid rgba(255, 255, 255, 0.14)",
                                         }}
                                     >
                                         <GoogleG />
-                                        {googleLoading ? "Conectando…" : "Continuar con Google"}
+                                        Continuar con Google
                                     </button>
 
                                     {/* Apple — oculto hasta tener Apple Developer (ver APPLE_ENABLED) */}
@@ -223,10 +197,10 @@ export default function HeroHybrid() {
                                     )}
 
                                     {/* Divisor */}
-                                    <div className="my-4 text-center font-ui text-sm text-white/40">o</div>
+                                    <div className="my-2.5 text-center font-ui text-[13px] text-white/40">o</div>
 
                                     {/* Correo */}
-                                    <form onSubmit={handleHeroSubmit} className="flex flex-col gap-3">
+                                    <form onSubmit={handleHeroSubmit} className="flex flex-col gap-2.5">
                                         <input
                                             type="email"
                                             required
@@ -234,7 +208,7 @@ export default function HeroHybrid() {
                                             onChange={(e) => setHeroEmail(e.target.value)}
                                             placeholder="Ingresa tu correo electrónico"
                                             aria-label="Ingresa tu correo electrónico"
-                                            className="w-full rounded-xl px-4 py-3.5 font-ui text-[16px] text-white/90 placeholder-white/40 outline-none transition-colors duration-150 focus:border-white/30 sm:text-[15px]"
+                                            className="w-full rounded-xl px-4 py-3 font-ui text-[16px] text-white/90 placeholder-white/40 outline-none transition-colors duration-150 focus:border-white/30 sm:text-[14px]"
                                             style={{
                                                 background: "rgba(255, 255, 255, 0.06)",
                                                 border: "1px solid rgba(255, 255, 255, 0.10)",
@@ -242,14 +216,14 @@ export default function HeroHybrid() {
                                         />
                                         <button
                                             type="submit"
-                                            className="flex w-full items-center justify-center rounded-xl py-3.5 font-ui text-[15px] font-semibold text-[#1c1208] transition-all duration-150 hover:brightness-95 active:brightness-90"
+                                            className="flex w-full items-center justify-center rounded-xl py-3 font-ui text-[14px] font-semibold text-[#1c1208] transition-all duration-150 hover:brightness-95 active:brightness-90"
                                             style={{ background: "#f5f0e8" }}
                                         >
                                             Continuar con correo electrónico
                                         </button>
                                     </form>
 
-                                    <p className="mt-4 text-center font-ui text-[11px] leading-relaxed text-white/30">
+                                    <p className="mt-3 text-center font-ui text-[10px] leading-snug text-white/30">
                                         Al continuar, aceptas nuestro{" "}
                                         <a href="#contacto" className="underline underline-offset-2 decoration-white/30 hover:text-white/50">
                                             Aviso de Privacidad
@@ -258,9 +232,6 @@ export default function HeroHybrid() {
                                 </div>
                             </div>
                         </motion.div>
-
-
-                    </motion.div>
                 </div>
             </div>
 

@@ -66,6 +66,17 @@ export async function getSessionUser() {
     }
 }
 
+/** Cierra la sesión OAuth de Supabase (si la hay). No rompe sin anon key. */
+export async function signOut() {
+    try {
+        if (!hasRealAnonKey()) return;
+        const supabase = await getClient();
+        await supabase.auth.signOut();
+    } catch {
+        /* sin sesión / sin red — nada que hacer */
+    }
+}
+
 /** Suscripción a cambios de sesión (p.ej. SIGNED_IN al volver de Google). */
 export function onAuthChange(cb: (user: { email?: string; user_metadata?: Record<string, unknown> } | null) => void) {
     if (!hasRealAnonKey()) return () => {};

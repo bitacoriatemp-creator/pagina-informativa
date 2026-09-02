@@ -3,8 +3,11 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight, FolderPlus, Upload, MessageSquareText, ChevronRight, ChevronDown } from "lucide-react";
+import { ArrowRight, FolderPlus, Upload, MessageSquareText, ChevronRight, ChevronDown, User } from "lucide-react";
 import { assetPath } from "@/lib/assetPath";
+import { useAccount, clearStoredAccount } from "@/lib/account";
+import { signOut } from "@/lib/socialAuth";
+import AccountMenu, { AccountRowMobile } from "./AccountMenu";
 
 /* ══════════════════════════════════════════════════════════════
    GlobalNavbar — two-state morphing navbar
@@ -37,6 +40,13 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
     const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const account = useAccount();
+
+    const handleSignOut = async () => {
+        await signOut();
+        clearStoredAccount();
+        setIsMenuOpen(false);
+    };
 
     /* ── Scroll listener — toggle entre hero-pill y slim-bar ── */
     useEffect(() => {
@@ -103,7 +113,10 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                 STATE 1: HERO PILL NAVBAR (scrollY < threshold)
                 ══════════════════════════════════════════════ */}
             <motion.nav
-                className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 md:left-1/2 md:right-auto md:top-6 md:px-0 md:-translate-x-1/2"
+                /* El contenedor cambia de modo en el mismo punto que su contenido:
+                   si la pill pasa a ancho completo en tablet pero el nav sigue
+                   centrado y sin ancho, el hijo w-full se queda sin referencia. */
+                className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 lg:left-1/2 lg:right-auto lg:top-6 lg:px-0 lg:-translate-x-1/2"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{
                     opacity: isScrolled ? 0 : 1,
@@ -113,7 +126,9 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                 style={{ pointerEvents: isScrolled ? "none" : "auto" }}
             >
                 <div
-                    className="flex items-center justify-between md:justify-start gap-3 md:gap-6 rounded-full px-4 py-2.5 md:px-6 md:py-3 w-full md:w-auto"
+                    /* El menú completo entra a partir de lg, no de md: en tablet
+                       (768–1023) la pill se salía de la pantalla por la derecha. */
+                    className="flex items-center justify-between lg:justify-start gap-3 lg:gap-5 rounded-full px-4 py-2 lg:px-5 lg:py-2 w-full lg:w-auto"
                     style={{
                         background: "rgba(12, 6, 4, 0.55)",
                         backdropFilter: "blur(18px)",
@@ -131,7 +146,7 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                         width={64}
                         height={64}
                         priority
-                        className="shrink-0 w-16 md:w-[100px] h-auto"
+                        className="shrink-0 w-12 lg:w-[54px] h-auto"
                         style={{
                             filter:
                                 "brightness(0) invert(1) sepia(1) saturate(0.3) hue-rotate(350deg) brightness(0.85)",
@@ -139,11 +154,11 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                     />
 
                     <div
-                        className="hidden md:block h-5 w-px shrink-0"
+                        className="hidden xl:block h-5 w-px shrink-0"
                         style={{ background: "rgba(195, 151, 103, 0.2)" }}
                     />
 
-                    <div className="hidden md:flex items-center gap-6 lg:gap-7">
+                    <div className="hidden lg:flex items-center gap-5 xl:gap-7">
                         {NAV_LINKS.map((link) =>
                             renderNavLink(
                                 link,
@@ -154,39 +169,44 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                     </div>
 
                     <div
-                        className="hidden md:block h-5 w-px shrink-0"
+                        className="hidden xl:block h-5 w-px shrink-0"
                         style={{ background: "rgba(195, 151, 103, 0.2)" }}
                     />
 
                     {/* ACCEDER button desktop */}
-                    <a
-                        href={REGISTER_URL}
-                        className="hidden md:inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-1.5 font-ui text-[11px] uppercase tracking-widest whitespace-nowrap transition-all duration-300"
-                        style={{
-                            background: "rgba(195, 151, 103, 0.12)",
-                            border: "1px solid rgba(195, 151, 103, 0.4)",
-                            color: "#c39767",
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "rgba(195, 151, 103, 0.22)";
-                            e.currentTarget.style.borderColor = "rgba(195, 151, 103, 0.65)";
-                            e.currentTarget.style.color = "#f0d9b5";
-                            e.currentTarget.style.boxShadow = "0 0 14px rgba(195, 151, 103, 0.25)";
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = "rgba(195, 151, 103, 0.12)";
-                            e.currentTarget.style.borderColor = "rgba(195, 151, 103, 0.4)";
-                            e.currentTarget.style.color = "#c39767";
-                            e.currentTarget.style.boxShadow = "none";
-                        }}
-                    >
-                        <span className="leading-none">Acceder</span>
-                        <ArrowRight className="w-3 h-3 shrink-0" strokeWidth={2.2} />
-                    </a>
+                    {account ? (
+                        <AccountMenu account={account} onSignOut={handleSignOut} variant="pill" />
+                    ) : (
+                        <a
+                            href={REGISTER_URL}
+                            aria-label="Acceder o registrarte"
+                            title="Acceder"
+                            className="hidden lg:flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                            style={{
+                                background: "rgba(195, 151, 103, 0.12)",
+                                border: "1px solid rgba(195, 151, 103, 0.4)",
+                                color: "#c39767",
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = "rgba(195, 151, 103, 0.22)";
+                                e.currentTarget.style.borderColor = "rgba(195, 151, 103, 0.65)";
+                                e.currentTarget.style.color = "#f0d9b5";
+                                e.currentTarget.style.boxShadow = "0 0 14px rgba(195, 151, 103, 0.25)";
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = "rgba(195, 151, 103, 0.12)";
+                                e.currentTarget.style.borderColor = "rgba(195, 151, 103, 0.4)";
+                                e.currentTarget.style.color = "#c39767";
+                                e.currentTarget.style.boxShadow = "none";
+                            }}
+                        >
+                            <User size={16} strokeWidth={2} />
+                        </a>
+                    )}
 
                     {/* HAMBURGER mobile (hero state) */}
                     <button
-                        className="flex md:hidden items-center justify-center w-9 h-9 rounded-full shrink-0 transition-colors"
+                        className="flex lg:hidden items-center justify-center w-9 h-9 rounded-full shrink-0 transition-colors"
                         style={{
                             background: "rgba(195,151,103,0.1)",
                             border: "1px solid rgba(195,151,103,0.25)",
@@ -227,15 +247,19 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                                     () => setIsMenuOpen(false),
                                 )
                             )}
-                            <a
-                                href={REGISTER_URL}
-                                className="flex items-center justify-between font-ui text-xs uppercase tracking-widest px-6 py-3.5 transition-colors duration-200"
-                                style={{ color: "#c39767", background: "rgba(195, 151, 103, 0.08)" }}
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                <span className="leading-none">Acceder</span>
-                                <ArrowRight className="w-3.5 h-3.5 shrink-0" strokeWidth={2.2} />
-                            </a>
+                            {account ? (
+                                <AccountRowMobile account={account} onSignOut={handleSignOut} />
+                            ) : (
+                                <a
+                                    href={REGISTER_URL}
+                                    className="flex items-center justify-between font-ui text-xs uppercase tracking-widest px-6 py-3.5 transition-colors duration-200"
+                                    style={{ color: "#c39767", background: "rgba(195, 151, 103, 0.08)" }}
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    <span className="leading-none">Acceder</span>
+                                    <ArrowRight className="w-3.5 h-3.5 shrink-0" strokeWidth={2.2} />
+                                </a>
+                            )}
                         </nav>
                     </div>
                 )}
@@ -299,28 +323,33 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                     </div>
 
                     {/* Acceder slim — desktop */}
-                    <a
-                        href={REGISTER_URL}
-                        className="hidden md:inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 font-ui text-[10px] uppercase tracking-widest whitespace-nowrap transition-all duration-300"
-                        style={{
-                            background: "rgba(195, 151, 103, 0.12)",
-                            border: "1px solid rgba(195, 151, 103, 0.4)",
-                            color: "#c39767",
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "rgba(195, 151, 103, 0.22)";
-                            e.currentTarget.style.borderColor = "rgba(195, 151, 103, 0.65)";
-                            e.currentTarget.style.color = "#f0d9b5";
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = "rgba(195, 151, 103, 0.12)";
-                            e.currentTarget.style.borderColor = "rgba(195, 151, 103, 0.4)";
-                            e.currentTarget.style.color = "#c39767";
-                        }}
-                    >
-                        Acceder
-                        <span className="text-[12px] leading-none">→</span>
-                    </a>
+                    {account ? (
+                        <AccountMenu account={account} onSignOut={handleSignOut} variant="slim" />
+                    ) : (
+                        <a
+                            href={REGISTER_URL}
+                            aria-label="Acceder o registrarte"
+                            title="Acceder"
+                            className="hidden md:flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                            style={{
+                                background: "rgba(195, 151, 103, 0.12)",
+                                border: "1px solid rgba(195, 151, 103, 0.4)",
+                                color: "#c39767",
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = "rgba(195, 151, 103, 0.22)";
+                                e.currentTarget.style.borderColor = "rgba(195, 151, 103, 0.65)";
+                                e.currentTarget.style.color = "#f0d9b5";
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = "rgba(195, 151, 103, 0.12)";
+                                e.currentTarget.style.borderColor = "rgba(195, 151, 103, 0.4)";
+                                e.currentTarget.style.color = "#c39767";
+                            }}
+                        >
+                            <User size={15} strokeWidth={2} />
+                        </a>
+                    )}
 
                     {/* HAMBURGER mobile (slim state) */}
                     <button
@@ -364,15 +393,19 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                                     () => setIsMenuOpen(false),
                                 )
                             )}
-                            <a
-                                href={REGISTER_URL}
-                                className="flex items-center justify-between font-ui text-xs uppercase tracking-widest px-5 py-3 transition-colors duration-200"
-                                style={{ color: "#c39767", background: "rgba(195, 151, 103, 0.08)" }}
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                <span className="leading-none">Acceder</span>
-                                <ArrowRight className="w-3.5 h-3.5 shrink-0" strokeWidth={2.2} />
-                            </a>
+                            {account ? (
+                                <AccountRowMobile account={account} onSignOut={handleSignOut} />
+                            ) : (
+                                <a
+                                    href={REGISTER_URL}
+                                    className="flex items-center justify-between font-ui text-xs uppercase tracking-widest px-5 py-3 transition-colors duration-200"
+                                    style={{ color: "#c39767", background: "rgba(195, 151, 103, 0.08)" }}
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    <span className="leading-none">Acceder</span>
+                                    <ArrowRight className="w-3.5 h-3.5 shrink-0" strokeWidth={2.2} />
+                                </a>
+                            )}
                         </nav>
                     </div>
                 )}

@@ -44,7 +44,7 @@
 }
 
 /* ── ANCLAS: que la navbar fija no tape los títulos al navegar ── */
-#soluciones, #smart-concepts, #bitacora, #smart-calendar, #bim-sync, #contacto, #hero-or-chaos {
+#soluciones, #bim-sync, #contacto, #hero-or-chaos {
   scroll-margin-top: 72px;
 }
 
@@ -666,6 +666,122 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HERO GRID — orden del contenido por dispositivo
+   ───────────────────────────────────────────────────────────────
+   Una sola columna hasta 1024px (no 768): el salto a dos columnas
+   con una columna de texto fija era lo que estrangulaba el video en
+   tablet (82x46px en 768). En una columna el orden es
+   gancho → prueba → petición: copy, demo, y al final el registro.
+
+   En >=1024 las columnas son FLUIDAS (44/56), no un ancho fijo:
+   así el video crece con la pantalla en vez de recibir las sobras.
+   44/56 es justo la proporción que ya tenía el escritorio a 1440,
+   de modo que ahí no cambia nada.
+   ═══════════════════════════════════════════════════════════════ */
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "copy"
+    "demo"
+    "cta";
+  align-content: start;
+}
+
+@media (min-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: minmax(0, 43fr) minmax(0, 57fr);
+    grid-template-areas:
+      "copy demo"
+      "cta  demo";
+  }
+}
+
+.hero-area-copy { grid-area: copy; }
+.hero-area-demo { grid-area: demo; }
+.hero-area-cta  { grid-area: cta; }
+
+/* ═══════════════════════════════════════════════════════════════
+   HERO LIQUID GLASS — fondo del hero (ver HeroLiquidGlass.tsx)
+   Blobs de color a la deriva + lámina de vidrio esmerilado.
+   El blur va como `filter` sobre los blobs (no backdrop-filter):
+   más barato y sobrevive al corte de backdrop-filter en móvil.
+   ═══════════════════════════════════════════════════════════════ */
+.lg-blobs {
+  filter: blur(90px);
+  opacity: 0.45;
+}
+
+.lg-blob {
+  position: absolute;
+  display: block;
+  border-radius: 9999px;
+  will-change: transform;
+}
+
+.lg-blob--a {
+  top: -18%;
+  left: 8%;
+  width: 46%;
+  height: 62%;
+  background: radial-gradient(circle, rgba(195, 151, 103, 0.16) 0%, transparent 70%);
+  animation: lg-drift-a 26s ease-in-out infinite;
+}
+
+.lg-blob--b {
+  top: 22%;
+  right: -6%;
+  width: 52%;
+  height: 70%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.09) 0%, transparent 70%);
+  animation: lg-drift-b 32s ease-in-out infinite;
+}
+
+.lg-blob--c {
+  bottom: -22%;
+  left: 30%;
+  width: 44%;
+  height: 58%;
+  background: radial-gradient(circle, rgba(0, 210, 106, 0.06) 0%, transparent 70%);
+  animation: lg-drift-c 38s ease-in-out infinite;
+}
+
+/* Lámina de vidrio: difumina los blobs y añade el brillo diagonal */
+.lg-sheet {
+  backdrop-filter: blur(28px) saturate(1.25);
+  -webkit-backdrop-filter: blur(28px) saturate(1.25);
+  background: linear-gradient(135deg,
+      rgba(245, 240, 232, 0.022) 0%,
+      rgba(245, 240, 232, 0.008) 30%,
+      transparent 58%,
+      rgba(195, 151, 103, 0.010) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+@keyframes lg-drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(9%, 12%, 0) scale(1.12); }
+}
+
+@keyframes lg-drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.06); }
+  50%      { transform: translate3d(-11%, -9%, 0) scale(0.94); }
+}
+
+@keyframes lg-drift-c {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(0.96); }
+  50%      { transform: translate3d(-8%, -14%, 0) scale(1.1); }
+}
+
+/* Móvil y tablet: el blur de 90px sobre 3 blobs a pantalla completa es lo
+   más caro de repintar del hero al hacer scroll. Bajamos el radio y
+   congelamos la deriva — a ese tamaño el matiz del blur no se aprecia. */
+@media (max-width: 1023px) {
+  .lg-blobs { filter: blur(60px); }
+  .lg-blob { animation: none !important; }
 }
 
 /* Force Rebuild */

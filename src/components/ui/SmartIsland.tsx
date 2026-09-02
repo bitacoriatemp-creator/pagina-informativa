@@ -27,6 +27,9 @@ import {
    DOM node and the animation never re-played.
    ══════════════════════════════════════════════════════════════ */
 
+/* Smart Concepts / Bitácora / Smart Calendar ahora viven dentro del Hero
+   (HeroDemoShowcase) en vez de secciones aparte — sus módulos regresan
+   arriba al hero. */
 export const modules = [
     {
         id: "concepts",
@@ -34,7 +37,7 @@ export const modules = [
         Icon: TableProperties,
         color: "#00D26A",
         activeColor: "#000000",
-        targetId: "smart-concepts",
+        targetId: "hero-or-chaos",
     },
     {
         id: "bitacora",
@@ -42,7 +45,7 @@ export const modules = [
         Icon: Book,
         color: "#C39767",
         activeColor: "#1a0e08",
-        targetId: "bitacora",
+        targetId: "hero-or-chaos",
     },
     {
         id: "calendar",
@@ -50,7 +53,7 @@ export const modules = [
         Icon: CalendarDays,
         color: "#3B82F6",
         activeColor: "#000000",
-        targetId: "smart-calendar",
+        targetId: "hero-or-chaos",
     },
     {
         id: "bim",

@@ -23,6 +23,10 @@ import {
     type FormEvent,
 } from "react";
 import { getSessionUser, onAuthChange } from "@/lib/socialAuth";
+import { setStoredAccount } from "@/lib/account";
+import { motion } from "framer-motion";
+import { Check, ChevronDown, Facebook, Instagram } from "lucide-react";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 const REGISTERED_FLAG = "bitacoria_registered";
 
@@ -54,11 +58,87 @@ const INTERESES: [string, string][] = [
     ["Investigando", "Solo investigando — no estoy en el mercado ahora"],
 ];
 
+/* Glifo oficial de WhatsApp (monocromo, hereda currentColor) */
+const WhatsAppIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884a9.82 9.82 0 0 1 6.988 2.896 9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.886-9.885 9.886m8.413-18.297A11.82 11.82 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.548 4.142 1.588 5.945L.057 24l6.305-1.654a11.88 11.88 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.82 11.82 0 0 0-3.48-8.413" />
+    </svg>
+);
+
+/* Glifo de Discord (lucide no lo trae) */
+const DiscordIcon = ({ size = 15 }: { size?: number | string }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M20.317 4.369a19.8 19.8 0 0 0-4.885-1.515.07.07 0 0 0-.079.036c-.21.375-.444.865-.608 1.25a18.3 18.3 0 0 0-5.487 0 12.6 12.6 0 0 0-.617-1.25.08.08 0 0 0-.079-.036A19.7 19.7 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057q.003.032.027.05a19.9 19.9 0 0 0 5.993 3.03.08.08 0 0 0 .084-.028 14 14 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13 13 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10 10 0 0 0 .372-.292.07.07 0 0 1 .078-.01c3.927 1.793 8.18 1.793 12.061 0a.07.07 0 0 1 .079.009q.18.15.372.293a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.08.08 0 0 0 .084.028 19.8 19.8 0 0 0 6.002-3.03.08.08 0 0 0 .028-.05c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.028M8.02 15.331c-1.182 0-2.157-1.085-2.157-2.419s.956-2.419 2.157-2.419c1.21 0 2.176 1.095 2.157 2.42 0 1.333-.956 2.418-2.157 2.418m7.975 0c-1.183 0-2.157-1.085-2.157-2.419s.955-2.419 2.157-2.419c1.21 0 2.176 1.095 2.157 2.42 0 1.333-.946 2.418-2.157 2.418" />
+    </svg>
+);
+
+/* Canales de respaldo si el registro falla. WhatsApp va aparte: es el
+   principal y se muestra siempre primero, no dentro de "otras opciones". */
+/* size acepta número o cadena: es la firma de los iconos de lucide, y
+   restringirla a número rompía el typecheck de producción. */
+const SOCIALES: { label: string; href: string; Icon: React.ComponentType<{ size?: number | string }> }[] = [
+    { label: "Facebook", href: "https://www.facebook.com/profile.php?id=61587078702990", Icon: Facebook },
+    { label: "Instagram", href: "https://www.instagram.com/bitacor_ia/", Icon: Instagram },
+    { label: "Discord", href: "https://discord.gg/2VNC8vhsSP", Icon: DiscordIcon },
+];
+
+/** CTA de WhatsApp — mismo acabado en la pantalla de éxito y en la de error. */
+function WhatsAppCTA({
+    href,
+    compact = false,
+    children,
+}: {
+    href: string;
+    compact?: boolean;
+    children: React.ReactNode;
+}) {
+    return (
+        <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            /* btn-premium-shine: pasada de luz al hacer hover, el mismo
+               recurso que usan los demás CTA del sitio. */
+            className={
+                "btn-premium-shine group flex w-full items-center justify-center gap-3 rounded-full font-ui font-semibold tracking-tight transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 active:translate-y-0 " +
+                (compact ? "py-3 text-[14px]" : "py-3.5 text-[15px]")
+            }
+            style={{
+                /* Esmeralda profundo, no el verde neón de WhatsApp: convive con
+                   el chocolate del modal en vez de gritar sobre él. */
+                background: "linear-gradient(180deg,#1f7a4d 0%,#146039 55%,#0d4529 100%)",
+                color: "#f5f0e8",
+                border: "1px solid rgba(245,240,232,0.16)",
+                boxShadow: [
+                    "inset 0 1px 0 rgba(255,255,255,0.20)",   // labio de luz arriba
+                    "inset 0 -12px 22px rgba(0,0,0,0.22)",    // hundido abajo → volumen
+                    "0 14px 30px -12px rgba(0,0,0,0.65)",     // sombra profunda, no halo
+                    "0 4px 12px -6px rgba(20,96,57,0.45)",    // verde apenas insinuado
+                ].join(", "),
+            }}
+        >
+            <span
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors duration-300 group-hover:bg-[rgba(245,240,232,0.22)]"
+                style={{
+                    background: "rgba(245,240,232,0.14)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22)",
+                }}
+            >
+                <WhatsAppIcon />
+            </span>
+            <span>{children}</span>
+            <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
+                →
+            </span>
+        </a>
+    );
+}
+
 const inputCls =
     "w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-sm text-white placeholder-zinc-500 outline-none transition-colors focus:border-[#c39767]/70";
 const selectCls = inputCls + " appearance-none cursor-pointer";
 
-type OpenOpts = { perfil?: string; interes?: string; email?: string; nombre?: string };
+type OpenOpts = { perfil?: string; interes?: string; email?: string; nombre?: string; avatar?: string };
 type Ctx = { openModal: (opts?: OpenOpts) => void; closeModal: () => void };
 
 const RegistroModalContext = createContext<Ctx | null>(null);
@@ -114,7 +194,8 @@ export function RegistroModalProvider({ children }: { children: ReactNode }) {
             handled = true;
             const meta = user.user_metadata ?? {};
             const nombre = (meta.full_name || meta.name || "") as string;
-            openModal({ email: user.email, nombre });
+            const avatar = (meta.avatar_url || meta.picture || "") as string;
+            openModal({ email: user.email, nombre, avatar });
         };
         getSessionUser().then(maybeOpen);
         const unsub = onAuthChange(maybeOpen);
@@ -132,6 +213,14 @@ export function RegistroModalProvider({ children }: { children: ReactNode }) {
 function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
     const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
     const [errMsg, setErrMsg] = useState("");
+    const [doneName, setDoneName] = useState("");
+    /* Enlace a WhatsApp con los datos del lead ya redactados. Se arma al
+       enviar y se ofrece en la pantalla de éxito como botón (un <a> real:
+       nunca lo bloquea el navegador, a diferencia de un window.open que
+       ocurre después de esperar a la red). */
+    const [waUrl, setWaUrl] = useState<string | null>(null);
+    /* Canales secundarios plegados: WhatsApp no debe competir con ellos. */
+    const [showOtras, setShowOtras] = useState(false);
     const paisRef = useRef<HTMLSelectElement>(null);
 
     /* Esc para cerrar */
@@ -182,6 +271,13 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
             interes_compra: (fd.get("interes_compra") || "").toString().trim(),
         };
         setStatus("submitting");
+
+        /* Etiqueta larga del interés y nombre del país: en el mensaje de
+           WhatsApp queremos texto legible, no el código interno. */
+        const paisLegible = PAISES.find(([v]) => v === payload.pais)?.[1] ?? payload.pais;
+        const interesLegible =
+            INTERESES.find(([v]) => v === payload.interes_compra)?.[1] ?? payload.interes_compra;
+
         try {
             const res = await fetch(REGISTER_ENDPOINT, {
                 method: "POST",
@@ -191,6 +287,17 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
             // 200 = nuevo, 409 = ya registrado → ambos cuentan como éxito
             if (res.ok || res.status === 409) {
                 try { localStorage.setItem(REGISTERED_FLAG, "true"); } catch { /* */ }
+                // Guarda la cuenta → el navbar muestra el avatar arriba al instante.
+                setStoredAccount({ email: payload.email, nombre: payload.nombre, avatar: hint.avatar });
+                setDoneName(payload.nombre.split(" ")[0]);
+                setWaUrl(
+                    buildWhatsAppUrl({
+                        ...payload,
+                        pais: paisLegible,
+                        interes_compra: interesLegible,
+                        obras_activas: payload.obras_activas as string | number | null,
+                    })
+                );
                 setStatus("success");
                 return;
             }
@@ -198,6 +305,16 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
             throw new Error((detail as { error?: string }).error || `status_${res.status}`);
         } catch (err) {
             setStatus("error");
+            // Si nuestra base falla no bloqueamos al lead: le ofrecemos WhatsApp
+            // igual, que es justo el canal donde queremos que acabe.
+            setWaUrl(
+                buildWhatsAppUrl({
+                    ...payload,
+                    pais: paisLegible,
+                    interes_compra: interesLegible,
+                    obras_activas: payload.obras_activas as string | number | null,
+                })
+            );
             // fetch lanza TypeError en fallo de red — frecuente en obra con señal débil
             setErrMsg(
                 err instanceof TypeError
@@ -227,23 +344,66 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
                 </button>
 
                 {status === "success" ? (
-                    <div className="py-6 text-center">
-                        <div
-                            className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full text-2xl text-[#c39767]"
-                            style={{ background: "rgba(195,151,103,0.14)", border: "1px solid rgba(195,151,103,0.4)" }}
+                    <div className="py-4 text-center">
+                        <motion.div
+                            initial={{ scale: 0, rotate: -25 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ type: "spring", stiffness: 240, damping: 14 }}
+                            className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full"
+                            style={{
+                                background: "rgba(195,151,103,0.16)",
+                                border: "1px solid rgba(195,151,103,0.5)",
+                                boxShadow: "0 0 0 6px rgba(195,151,103,0.08)",
+                            }}
                         >
-                            ✓
-                        </div>
-                        <h2 className="mb-2 font-display text-2xl font-bold text-white">¡Estás dentro!</h2>
-                        <p className="mb-6 text-sm text-zinc-400">
-                            Recibimos tu solicitud. Te contactaremos muy pronto para coordinar tu demo —
-                            revisa tu correo (incluida la carpeta de spam).
+                            <Check size={32} strokeWidth={2.6} style={{ color: "#e8c9a0" }} />
+                        </motion.div>
+                        <motion.h2
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.12 }}
+                            className="mb-2 font-display text-2xl font-bold text-white"
+                        >
+                            {doneName ? `¡Listo, ${doneName}!` : "¡Estás dentro!"}
+                        </motion.h2>
+                        <p className="mb-5 text-sm leading-relaxed text-zinc-400">
+                            {waUrl
+                                ? "Quedaste en la lista de acceso anticipado. Sigue la conversación por WhatsApp y agendamos tu demo hoy mismo."
+                                : "Quedaste en la lista de acceso anticipado. Te escribimos muy pronto para coordinar tu demo en vivo — revisa tu correo (y la carpeta de spam)."}
                         </p>
+                        <div
+                            className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] text-[#e8c9a0]"
+                            style={{ background: "rgba(195,151,103,0.1)", border: "1px solid rgba(195,151,103,0.3)" }}
+                        >
+                            Tu cuenta ya aparece arriba <span aria-hidden>↗</span>
+                        </div>
+
+                        {/* Salto a WhatsApp con el mensaje ya redactado. Es un <a>
+                            real —no un window.open— para que ningún navegador lo
+                            bloquee. Si no hay número configurado, no se muestra. */}
+                        {waUrl && (
+                            <div className="mb-3">
+                                <WhatsAppCTA href={waUrl}>Continuar en WhatsApp</WhatsAppCTA>
+                            </div>
+                        )}
+
                         <button
                             onClick={onClose}
-                            className="rounded-full border border-[#f5f0e8]/[0.25] px-6 py-2.5 font-ui text-xs uppercase tracking-widest text-[#e8ddc9] transition-colors hover:bg-[#f5f0e8]/[0.08]"
+                            className={
+                                waUrl
+                                    ? "w-full rounded-full py-2.5 font-ui text-xs font-semibold uppercase tracking-widest text-[#e8ddc9]/70 transition-colors hover:text-[#f5f0e8]"
+                                    : "w-full rounded-full py-3 font-ui text-xs font-semibold uppercase tracking-widest text-amber-50 transition-all"
+                            }
+                            style={
+                                waUrl
+                                    ? undefined
+                                    : {
+                                          background: "linear-gradient(180deg,#c39767 0%,#b07a4d 55%,#8b5c3b 100%)",
+                                          boxShadow: "0 8px 22px rgba(139,92,59,0.35), inset 0 1px 0 rgba(255,255,255,0.25)",
+                                      }
+                            }
                         >
-                            Cerrar
+                            {waUrl ? "Ahora no" : "Entendido"}
                         </button>
                     </div>
                 ) : (
@@ -298,7 +458,66 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
                                 ))}
                             </select>
 
-                            {errMsg && <p className="text-sm text-red-400">{errMsg}</p>}
+                            {errMsg && (
+                                <div className="space-y-3">
+                                    <p className="text-sm text-red-400">{errMsg}</p>
+
+                                    {/* ── PROCESO DE EMERGENCIA ──
+                                        Si el registro falla, el lead no se pierde: le
+                                        damos canales directos con sus datos ya escritos.
+                                        WhatsApp es el principal; el resto queda plegado
+                                        para no competir con él. */}
+                                    {waUrl && (
+                                        <div
+                                            className="rounded-2xl p-4"
+                                            style={{
+                                                background: "rgba(245,240,232,0.04)",
+                                                border: "1px solid rgba(245,240,232,0.10)",
+                                            }}
+                                        >
+                                            <p className="mb-3 text-[13px] leading-relaxed text-zinc-400">
+                                                No te quedes fuera: escríbenos y te damos acceso
+                                                a mano. Tus datos ya van en el mensaje.
+                                            </p>
+
+                                            <WhatsAppCTA href={waUrl} compact>
+                                                Escríbenos por WhatsApp
+                                            </WhatsAppCTA>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowOtras((v) => !v)}
+                                                aria-expanded={showOtras}
+                                                className="mt-3 flex w-full items-center justify-center gap-1.5 text-[12px] font-medium text-[#e8ddc9]/60 transition-colors hover:text-[#f5f0e8]"
+                                            >
+                                                Otras opciones
+                                                <ChevronDown
+                                                    size={14}
+                                                    className="transition-transform duration-300"
+                                                    style={{ transform: showOtras ? "rotate(180deg)" : "none" }}
+                                                />
+                                            </button>
+
+                                            {showOtras && (
+                                                <div className="mt-3 grid grid-cols-3 gap-2">
+                                                    {SOCIALES.map(({ label, href, Icon }) => (
+                                                        <a
+                                                            key={label}
+                                                            href={href}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex flex-col items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] py-2.5 text-[11px] font-medium text-white/50 transition-all duration-300 hover:border-[#C39767]/40 hover:bg-[#C39767]/10 hover:text-[#e8b97a]"
+                                                        >
+                                                            <Icon size={15} />
+                                                            {label}
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             <button
                                 type="submit"

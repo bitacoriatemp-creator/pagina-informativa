@@ -38,3 +38,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Herramientas y config local — no pertenecen al repo publico
+.claude/
+tools/

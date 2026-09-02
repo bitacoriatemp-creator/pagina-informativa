@@ -418,7 +418,11 @@ export default function PlanesSection() {
                 }}
             />
 
-            <div className="relative z-10 mx-auto max-w-7xl px-6 py-20 lg:px-12">
+            {/* w-full es la defensa: sin ancho explícito, mx-auto dentro de un
+                flex-col hace que el contenedor se mida por su contenido. Si algo
+                vuelve a ser más ancho que la pantalla, se saldrá ESE elemento —y
+                overflow-x-clip lo recorta— pero el resto seguirá centrado. */}
+            <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-20 lg:px-12">
 
                 {/* Section header */}
                 <motion.div
@@ -458,49 +462,67 @@ export default function PlanesSection() {
                     viewport={{ once: true }}
                     className="mb-14 flex justify-center"
                 >
-                    <div 
+                    {/* Los botones se miden por su texto (padding), no con anchos
+                        fijos: con w-32 + w-56 el conmutador pedía 362px y en un
+                        celular de 375 no cabía. Como el contenedor de la sección
+                        lleva mx-auto dentro de un flex-col, ese ancho mínimo lo
+                        dimensionaba por contenido y descentraba TODA la sección. */}
+                    <div
                         className="relative flex items-center p-1 rounded-full border border-white/10"
                         style={{ background: "rgba(10,10,10,0.8)" }}
                     >
-                        {/* Fondo Deslizante */}
-                        <motion.div
-                            className="absolute inset-1 rounded-full z-0"
-                            style={{ 
-                                background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
-                                border: "1px solid rgba(255,255,255,0.08)",
-                                width: isAnnual ? "14rem" : "8rem",
-                            }}
-                            initial={false}
-                            animate={{
-                                x: isAnnual ? "8rem" : "0", 
-                            }}
-                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                        />
-
                         {/* Botón Mensual */}
                         <button
                             onClick={() => setIsAnnual(false)}
-                            className={`relative z-10 w-32 py-2.5 text-xs font-bold uppercase tracking-wider rounded-full transition-colors duration-300 ${!isAnnual ? "text-white" : "text-white/40 hover:text-white/70"}`}
+                            className={`relative whitespace-nowrap rounded-full px-6 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors duration-300 sm:px-10 ${!isAnnual ? "text-white" : "text-white/40 hover:text-white/70"}`}
                         >
-                            Mensual
+                            {/* La pastilla vive DENTRO del botón activo y viaja con
+                                layoutId: siempre mide lo que mide el botón, sin rems
+                                fijos que resincronizar en cada breakpoint. */}
+                            {!isAnnual && (
+                                <motion.span
+                                    layoutId="planes-toggle-pill"
+                                    className="absolute inset-0 rounded-full"
+                                    style={{
+                                        background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
+                                        border: "1px solid rgba(255,255,255,0.08)",
+                                    }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                />
+                            )}
+                            <span className="relative z-10">Mensual</span>
                         </button>
 
                         {/* Botón Anual */}
                         <button
                             onClick={() => setIsAnnual(true)}
-                            className={`relative z-10 w-56 py-2.5 text-xs font-bold uppercase tracking-wider rounded-full flex items-center justify-center gap-2 transition-colors duration-300 ${isAnnual ? "text-white" : "text-white/40 hover:text-white/70"}`}
+                            className={`relative flex items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors duration-300 sm:px-7 ${isAnnual ? "text-white" : "text-white/40 hover:text-white/70"}`}
                         >
-                            Anual 
-                            <span 
-                                className="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-extrabold tracking-widest" 
-                                style={{ 
-                                    background: isAnnual ? `${GOLD}20` : "transparent", 
+                            {isAnnual && (
+                                <motion.span
+                                    layoutId="planes-toggle-pill"
+                                    className="absolute inset-0 rounded-full"
+                                    style={{
+                                        background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
+                                        border: "1px solid rgba(255,255,255,0.08)",
+                                    }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                />
+                            )}
+                            <span className="relative z-10">Anual</span>
+                            <span
+                                className="relative z-10 inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[9px] font-extrabold tracking-widest"
+                                style={{
+                                    background: isAnnual ? `${GOLD}20` : "transparent",
                                     color: isAnnual ? GOLD : "rgba(255,255,255,0.3)",
                                     border: isAnnual ? `1px solid ${GOLD}40` : "1px solid transparent",
                                     transition: "all 0.3s ease"
                                 }}
                             >
-                                2 MESES GRATIS
+                                {/* En pantallas chicas la etiqueta larga es lo que más
+                                    ensancha el conmutador: se acorta, no se recorta. */}
+                                <span className="sm:hidden">2 MESES</span>
+                                <span className="hidden sm:inline">2 MESES GRATIS</span>
                             </span>
                         </button>
                     </div>
