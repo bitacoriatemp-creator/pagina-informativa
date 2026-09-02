@@ -1,5 +1,7 @@
 "use client";
 
+import { mostrarDemo } from "@/lib/eventos";
+
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, LayoutGroup, useAnimationFrame, useSpring, useMotionValue } from "framer-motion";
 import { useLenis } from "./LenisProvider";
@@ -38,6 +40,7 @@ export const modules = [
         color: "#00D26A",
         activeColor: "#000000",
         targetId: "hero-or-chaos",
+        demo: 0,
     },
     {
         id: "bitacora",
@@ -46,6 +49,7 @@ export const modules = [
         color: "#C39767",
         activeColor: "#1a0e08",
         targetId: "hero-or-chaos",
+        demo: 1,
     },
     {
         id: "calendar",
@@ -54,6 +58,7 @@ export const modules = [
         color: "#3B82F6",
         activeColor: "#000000",
         targetId: "hero-or-chaos",
+        demo: 2,
     },
     {
         id: "bim",
@@ -348,6 +353,10 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
                                         setActiveTabId(mod.id); // actualiza el ícono del colapsado
                                         if (isMobile) setIsExpanded(false); // colapsa al navegar
                                         handleScroll(mod.targetId);
+                                        // Los tres módulos del hero comparten ancla: sin esto
+                                        // "Bitácora" subía al hero pero seguía el demo que
+                                        // estuviera puesto. Smart BIM no tiene demo: solo baja.
+                                        if (mod.demo !== undefined) mostrarDemo(mod.demo);
                                     }}
                                 >
                                     <motion.div

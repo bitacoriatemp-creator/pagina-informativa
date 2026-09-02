@@ -129,6 +129,36 @@
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
+/* ── FORMULARIO DEL HERO — bloques sueltos, sin contenedor ──────────
+   Referencia: el login de Claude (bordes finos, relleno casi nulo, un
+   solo botón relleno), traducido a fondo oscuro: si copiáramos los
+   bloques blancos tal cual, sobre #060302 serían tres barras brillantes
+   y se perdería la ligereza que buscamos.
+   Sin backdrop-filter a propósito: no necesita fallback en móvil. */
+.auth-field {
+  height: 3rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f5f0e8;
+  transition: border-color 200ms ease, background-color 200ms ease, box-shadow 200ms ease;
+}
+
+.auth-field:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.auth-field:focus-visible,
+.auth-field:focus-within {
+  outline: none;
+  border-color: rgba(195, 151, 103, 0.6);
+  box-shadow: 0 0 0 3px rgba(195, 151, 103, 0.15);
+}
+
+.auth-field::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
 /* ── MATERIAL 2: Chocolate Reflective Glass ──── */
 
 .chocolate-glass {

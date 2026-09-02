@@ -6,6 +6,7 @@ import { Facebook, Instagram, ArrowRight, X } from "lucide-react";
 import Image from "next/image";
 import { assetPath } from "@/lib/assetPath";
 import { useLenis } from "@/components/ui/LenisProvider";
+import { EVENTO_LEGAL, type DocumentoLegal } from "@/lib/eventos";
 
 /* ══════════════════════════════════════════════════════════════
    FooterSection — Contacto y Legal (con Modales)
@@ -16,7 +17,7 @@ import { useLenis } from "@/components/ui/LenisProvider";
 
 const BRONZE = "#C39767";
 
-type LegalDocument = "faq" | "terms" | "privacy" | null;
+type LegalDocument = DocumentoLegal | null;
 type SubscribeStatus = "idle" | "loading" | "success" | "error";
 
 const LEGAL_CONTENT = {
@@ -145,6 +146,14 @@ export default function FooterSection() {
             setStatus("success");
         }
     };
+
+    // ── Apertura remota: el hero (y quien quiera) abre estos modales sin
+    //    tener acceso al estado del footer. Ver src/lib/eventos.ts.
+    useEffect(() => {
+        const abrir = (e: Event) => setActiveModal((e as CustomEvent<DocumentoLegal>).detail);
+        window.addEventListener(EVENTO_LEGAL, abrir);
+        return () => window.removeEventListener(EVENTO_LEGAL, abrir);
+    }, []);
 
     // ── SCROLL LOCK: Freeze Lenis + body overflow when any modal is open ──
     useEffect(() => {
@@ -378,7 +387,9 @@ export default function FooterSection() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6"
+                        /* z-[200] como los otros modales de la landing: con z-50 la isla
+                           flotante (z-[100]) quedaba por encima del aviso. */
+                        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6"
                         onClick={() => setActiveModal(null)}
                     >
                         {/* 2. VENTANA DEL MODAL (Aquí está la magia del scroll interno) */}

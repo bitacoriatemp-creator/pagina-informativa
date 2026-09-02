@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useRegistroModal } from "./RegistroModal";
 import HeroLiquidGlass from "./HeroLiquidGlass";
+import { abrirLegal } from "@/lib/eventos";
 
 /* Apple Sign-In requiere cuenta Apple Developer ($99/año).
    El botón ya está construido abajo — cambia a `true` cuando el
@@ -155,83 +156,90 @@ export default function HeroHybrid() {
                         <HeroDemoShowcase />
                     </motion.div>
 
-                    {/* Bloque de registro — liquid glass, sobrio (estilo Claude) */}
+                    {/* Bloque de registro — bloques sueltos, sin contenedor.
+                        Referencia: el login de Claude. El aire entre piezas hace
+                        el trabajo que antes hacía la caja, y un único botón
+                        relleno (Continuar) fija la jerarquía.
+                        Todo en font-sans (Kumbh): Teko es condensada y a este
+                        tamaño apretaba los botones y volvía ilegible el aviso.
+                        La lógica no cambia — Google y correo abren la encuesta. */}
                     <motion.div
                         custom={3}
                         variants={fadeUp}
                         initial="hidden"
                         animate="visible"
-                        className="hero-area-cta pointer-events-auto"
+                        className="hero-area-cta pointer-events-auto w-full max-w-[400px] font-sans"
                     >
-                            {/* Mismo radio que la tarjeta del video: los dos recuadros
-                                del hero leen como una familia y no como dos piezas sueltas. */}
-                            <div className="cream-glass w-full max-w-[400px] rounded-[28px] p-5">
-                                <div className="relative z-10">
-                                    {/* Google */}
-                                    <button
-                                        type="button"
-                                        onClick={handleGoogle}
-                                        className="flex w-full items-center justify-center gap-3 rounded-xl py-3 font-ui text-[14px] font-medium text-white/90 transition-colors duration-150 hover:bg-white/[0.09] active:bg-white/[0.12]"
-                                        style={{
-                                            background: "rgba(255, 255, 255, 0.05)",
-                                            border: "1px solid rgba(255, 255, 255, 0.14)",
-                                        }}
-                                    >
-                                        <GoogleG />
-                                        Continuar con Google
-                                    </button>
+                        {/* Social */}
+                        <div className="flex flex-col gap-3">
+                            {/* Icono absoluto + texto centrado: el texto queda
+                                ópticamente centrado en el bloque, como la referencia. */}
+                            <button
+                                type="button"
+                                onClick={handleGoogle}
+                                className="auth-field relative flex w-full items-center justify-center px-12 text-[15px] font-medium"
+                            >
+                                <span className="absolute left-4 flex items-center" aria-hidden>
+                                    <GoogleG />
+                                </span>
+                                Continuar con Google
+                            </button>
 
-                                    {/* Apple — oculto hasta tener Apple Developer (ver APPLE_ENABLED) */}
-                                    {APPLE_ENABLED && (
-                                        <button
-                                            type="button"
-                                            className="mt-3 flex w-full items-center justify-center gap-3 rounded-xl py-3.5 font-ui text-[15px] font-medium text-white/90 transition-colors duration-150 hover:bg-white/[0.09] active:bg-white/[0.12]"
-                                            style={{
-                                                background: "rgba(255, 255, 255, 0.05)",
-                                                border: "1px solid rgba(255, 255, 255, 0.14)",
-                                            }}
-                                        >
-                                            <AppleLogo />
-                                            Continuar con Apple
-                                        </button>
-                                    )}
+                            {/* Apple — oculto hasta tener Apple Developer (ver APPLE_ENABLED) */}
+                            {APPLE_ENABLED && (
+                                <button
+                                    type="button"
+                                    className="auth-field relative flex w-full items-center justify-center px-12 text-[15px] font-medium"
+                                >
+                                    <span className="absolute left-4 flex items-center" aria-hidden>
+                                        <AppleLogo />
+                                    </span>
+                                    Continuar con Apple
+                                </button>
+                            )}
+                        </div>
 
-                                    {/* Divisor */}
-                                    <div className="my-2.5 text-center font-ui text-[13px] text-white/40">o</div>
+                        {/* Divisor: solo la línea. La "o" suelta era un carácter
+                            huérfano entre dos bloques. */}
+                        <div className="my-6 h-px w-full bg-white/10" aria-hidden />
 
-                                    {/* Correo */}
-                                    <form onSubmit={handleHeroSubmit} className="flex flex-col gap-2.5">
-                                        <input
-                                            type="email"
-                                            required
-                                            value={heroEmail}
-                                            onChange={(e) => setHeroEmail(e.target.value)}
-                                            placeholder="Ingresa tu correo electrónico"
-                                            aria-label="Ingresa tu correo electrónico"
-                                            className="w-full rounded-xl px-4 py-3 font-ui text-[16px] text-white/90 placeholder-white/40 outline-none transition-colors duration-150 focus:border-white/30 sm:text-[14px]"
-                                            style={{
-                                                background: "rgba(255, 255, 255, 0.06)",
-                                                border: "1px solid rgba(255, 255, 255, 0.10)",
-                                            }}
-                                        />
-                                        <button
-                                            type="submit"
-                                            className="flex w-full items-center justify-center rounded-xl py-3 font-ui text-[14px] font-semibold text-[#1c1208] transition-all duration-150 hover:brightness-95 active:brightness-90"
-                                            style={{ background: "#f5f0e8" }}
-                                        >
-                                            Continuar con correo electrónico
-                                        </button>
-                                    </form>
+                        {/* Correo — etiqueta encima del campo, no placeholder dentro:
+                            así el campo no se queda "vacío de sentido" al escribir. */}
+                        <form onSubmit={handleHeroSubmit}>
+                            <label htmlFor="hero-email" className="mb-2 block text-[14px] text-[#f5f0e8]/85">
+                                Correo electrónico
+                            </label>
+                            {/* 16px en móvil evita el zoom automático de iOS al enfocar. */}
+                            <input
+                                id="hero-email"
+                                type="email"
+                                required
+                                autoComplete="email"
+                                value={heroEmail}
+                                onChange={(e) => setHeroEmail(e.target.value)}
+                                className="auth-field w-full px-4 text-[16px] outline-none sm:text-[15px]"
+                            />
+                            <button
+                                type="submit"
+                                className="mt-4 flex h-12 w-full items-center justify-center rounded-xl bg-[#f5f0e8] text-[15px] font-semibold text-[#1a120c] transition-colors duration-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c39767]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#060302]"
+                            >
+                                Continuar
+                            </button>
+                        </form>
 
-                                    <p className="mt-3 text-center font-ui text-[10px] leading-snug text-white/30">
-                                        Al continuar, aceptas nuestro{" "}
-                                        <a href="#contacto" className="underline underline-offset-2 decoration-white/30 hover:text-white/50">
-                                            Aviso de Privacidad
-                                        </a>.
-                                    </p>
-                                </div>
-                            </div>
-                        </motion.div>
+                        <p className="mt-5 text-center text-[13px] leading-snug text-white/45">
+                            Al continuar, aceptas nuestro{" "}
+                            {/* Abre el aviso real (modal legal del footer). Antes era un
+                                ancla a #contacto: mandaba al pie de página, no al aviso. */}
+                            <button
+                                type="button"
+                                onClick={() => abrirLegal("privacy")}
+                                className="underline underline-offset-4 decoration-white/30 transition-colors hover:text-white/70"
+                            >
+                                Aviso de Privacidad
+                            </button>.
+                        </p>
+                    </motion.div>
                 </div>
             </div>
 

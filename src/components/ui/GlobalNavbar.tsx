@@ -229,7 +229,10 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                 {/* MOBILE DROPDOWN (hero state) */}
                 {isMenuOpen && !isScrolled && (
                     <div
-                        className="absolute top-full left-0 right-0 mt-3 md:hidden rounded-2xl overflow-hidden"
+                        /* lg, no md: la hamburguesa del pill se muestra hasta 1024px
+                           (los links entran en lg). Con md:hidden, en tablet el botón
+                           abría un menú que este contenedor ocultaba. */
+                        className="absolute top-full left-0 right-0 mt-3 lg:hidden rounded-2xl overflow-hidden"
                         style={{
                             background: "rgba(8, 4, 2, 0.94)",
                             backdropFilter: "blur(20px)",

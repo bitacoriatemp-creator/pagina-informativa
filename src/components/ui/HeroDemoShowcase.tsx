@@ -1,5 +1,7 @@
 "use client";
 
+import { EVENTO_DEMO } from "@/lib/eventos";
+
 import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Volume2, VolumeX } from "lucide-react";
@@ -243,6 +245,20 @@ export default function HeroDemoShowcase() {
             v.play().catch(() => {});
         }
     };
+
+    /* La isla flotante pide un demo concreto ("Bitácora" → índice 1). goTo
+       cambia en cada render, así que el listener lee la versión vigente por ref
+       y se suscribe una sola vez. */
+    const goToRef = useRef(goTo);
+    goToRef.current = goTo;
+    useEffect(() => {
+        const alPedir = (e: Event) => {
+            const i = (e as CustomEvent<number>).detail;
+            if (Number.isInteger(i) && i >= 0 && i < DEMOS.length) goToRef.current(i);
+        };
+        window.addEventListener(EVENTO_DEMO, alPedir);
+        return () => window.removeEventListener(EVENTO_DEMO, alPedir);
+    }, []);
 
     /* ── Touch: ampliar a pantalla completa ──
        Recortada, la tarjeta enseña el detalle pero no la interfaz entera. Un
