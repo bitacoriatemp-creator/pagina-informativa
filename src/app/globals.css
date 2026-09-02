@@ -159,6 +159,43 @@
   color: rgba(255, 255, 255, 0.3);
 }
 
+/* ── Resalte del enlace legal al llegar desde el hero ──────────────
+   El aviso vive en el pie, junto a Términos y FAQ. Al bajar desde el
+   hero hay que decir cuál de los tres es: dos latidos de bronce y se
+   apaga solo. El color base (blanco 50%) lo pone la lista del pie. */
+@keyframes resaltar-legal {
+  0%, 100% {
+    background-color: rgba(195, 151, 103, 0);
+    box-shadow: 0 0 0 0 rgba(195, 151, 103, 0);
+    color: rgba(255, 255, 255, 0.5);
+  }
+  20%, 65% {
+    background-color: rgba(195, 151, 103, 0.18);
+    box-shadow: 0 0 0 6px rgba(195, 151, 103, 0.12);
+    color: #f5f0e8;
+  }
+  42% {
+    background-color: rgba(195, 151, 103, 0.05);
+    box-shadow: 0 0 0 6px rgba(195, 151, 103, 0.03);
+    color: #f5f0e8;
+  }
+}
+
+.legal-resaltado {
+  animation: resaltar-legal 2s ease-in-out;
+}
+
+/* Sin animación: el resalte se queda fijo mientras dura, que es la
+   información que importa (cuál enlace es), no el latido. */
+@media (prefers-reduced-motion: reduce) {
+  .legal-resaltado {
+    animation: none;
+    background-color: rgba(195, 151, 103, 0.18);
+    box-shadow: 0 0 0 6px rgba(195, 151, 103, 0.12);
+    color: #f5f0e8;
+  }
+}
+
 /* ── MATERIAL 2: Chocolate Reflective Glass ──── */
 
 .chocolate-glass {

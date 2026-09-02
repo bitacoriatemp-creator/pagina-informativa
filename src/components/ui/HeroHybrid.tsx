@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useRegistroModal } from "./RegistroModal";
 import HeroLiquidGlass from "./HeroLiquidGlass";
-import { abrirLegal } from "@/lib/eventos";
+import { irALegal } from "@/lib/eventos";
 
 /* Apple Sign-In requiere cuenta Apple Developer ($99/año).
    El botón ya está construido abajo — cambia a `true` cuando el
@@ -229,11 +229,12 @@ export default function HeroHybrid() {
 
                         <p className="mt-5 text-center text-[13px] leading-snug text-white/45">
                             Al continuar, aceptas nuestro{" "}
-                            {/* Abre el aviso real (modal legal del footer). Antes era un
-                                ancla a #contacto: mandaba al pie de página, no al aviso. */}
+                            {/* Baja al aviso real, en el pie junto a Términos y FAQ, y lo
+                                resalta al llegar. Antes era un ancla a #contacto: dejaba
+                                al usuario en el pie sin señalar cuál de los tres era. */}
                             <button
                                 type="button"
-                                onClick={() => abrirLegal("privacy")}
+                                onClick={() => irALegal("privacy")}
                                 className="underline underline-offset-4 decoration-white/30 transition-colors hover:text-white/70"
                             >
                                 Aviso de Privacidad

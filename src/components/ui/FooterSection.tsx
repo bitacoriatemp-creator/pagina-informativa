@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Facebook, Instagram, ArrowRight, X } from "lucide-react";
 import Image from "next/image";
 import { assetPath } from "@/lib/assetPath";
 import { useLenis } from "@/components/ui/LenisProvider";
-import { EVENTO_LEGAL, type DocumentoLegal } from "@/lib/eventos";
+import { EVENTO_IR_LEGAL, type DocumentoLegal } from "@/lib/eventos";
 
 /* ══════════════════════════════════════════════════════════════
    FooterSection — Contacto y Legal (con Modales)
@@ -116,6 +117,18 @@ export default function FooterSection() {
     const [activeModal, setActiveModal] = useState<LegalDocument>(null);
     const lenisRef = useLenis();
 
+    // Enlace legal señalado tras llegar desde el hero (ver efecto más abajo).
+    const refsLegal = useRef<Partial<Record<DocumentoLegal, HTMLButtonElement | null>>>({});
+    const apagar = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const respaldo = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    /* El modal se monta en <body>: este <footer> lleva isolation:isolate, que
+       lo encerraba en un contexto de apilamiento propio a nivel 0 — por debajo
+       del hero (z-20) y de la navbar (z-50). Su z-[200] no podía ganar y el
+       aviso salía por detrás del video. */
+    const [montado, setMontado] = useState(false);
+    useEffect(() => setMontado(true), []);
+
     // ── NEWSLETTER STATE ──
     const [email, setEmail] = useState("");
     const [status, setStatus] = useState<SubscribeStatus>("idle");
@@ -147,13 +160,55 @@ export default function FooterSection() {
         }
     };
 
-    // ── Apertura remota: el hero (y quien quiera) abre estos modales sin
-    //    tener acceso al estado del footer. Ver src/lib/eventos.ts.
+    // ── Llegada desde el hero: bajar al enlace y resaltarlo ──
+    //    El resalte espera a que termine el scroll; si latiera durante el
+    //    viaje, el usuario llegaría cuando ya se apagó. Ver src/lib/eventos.ts.
     useEffect(() => {
-        const abrir = (e: Event) => setActiveModal((e as CustomEvent<DocumentoLegal>).detail);
-        window.addEventListener(EVENTO_LEGAL, abrir);
-        return () => window.removeEventListener(EVENTO_LEGAL, abrir);
-    }, []);
+        const alPedir = (e: Event) => {
+            const doc = (e as CustomEvent<DocumentoLegal>).detail;
+            const el = refsLegal.current[doc];
+            if (!el) return;
+
+            let yaEncendido = false;
+            const encender = () => {
+                if (yaEncendido) return;
+                yaEncendido = true;
+                /* La clase se pone a mano, no por estado: reiniciar una animación
+                   CSS exige quitarla, forzar un reflow y volver a ponerla — con
+                   estado de React el reinicio depende de rAF, que el navegador
+                   congela en pestañas de segundo plano. React no reescribe este
+                   className porque su propio valor no cambia entre renders. */
+                el.classList.remove("legal-resaltado");
+                void el.offsetWidth;
+                el.classList.add("legal-resaltado");
+                if (apagar.current) clearTimeout(apagar.current);
+                apagar.current = setTimeout(() => el.classList.remove("legal-resaltado"), 2100);
+            };
+
+            const lenis = lenisRef.current;
+            if (lenis) {
+                // Centrar el enlace; Lenis recorta al final de la página, que es
+                // donde acaba quedando por estar el pie al fondo.
+                const offset = -(window.innerHeight - el.offsetHeight) / 2;
+                lenis.scrollTo(el, { offset, onComplete: encender });
+            } else {
+                // Móvil/touch: scroll nativo, sin callback de fin.
+                el.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+            /* Respaldo: onComplete de Lenis va sobre requestAnimationFrame, que
+               el navegador congela si la pestaña pasa a segundo plano a media
+               bajada. Sin esto el resalte no llegaría nunca. Se ignora si el
+               scroll terminó bien (encender solo actúa una vez). */
+            if (respaldo.current) clearTimeout(respaldo.current);
+            respaldo.current = setTimeout(encender, 2200);
+        };
+        window.addEventListener(EVENTO_IR_LEGAL, alPedir);
+        return () => {
+            window.removeEventListener(EVENTO_IR_LEGAL, alPedir);
+            if (apagar.current) clearTimeout(apagar.current);
+            if (respaldo.current) clearTimeout(respaldo.current);
+        };
+    }, [lenisRef]);
 
     // ── SCROLL LOCK: Freeze Lenis + body overflow when any modal is open ──
     useEffect(() => {
@@ -317,31 +372,25 @@ export default function FooterSection() {
                         <h4 className="mb-6 font-display text-xs font-bold uppercase tracking-widest text-[#C39767]">
                             Legal & Soporte
                         </h4>
+                        {/* -mx-2 px-2: el resalte necesita algo de caja alrededor del
+                            texto; los márgenes negativos lo compensan para que la
+                            columna siga alineada con las demás. */}
                         <ul className="flex flex-col gap-4 text-[13px] text-white/50 items-start">
-                            <li>
-                                <button
-                                    onClick={() => setActiveModal("faq")}
-                                    className="transition-colors hover:text-white"
-                                >
-                                    Preguntas Frecuentes (FAQ)
-                                </button>
-                            </li>
-                            <li>
-                                <button
-                                    onClick={() => setActiveModal("terms")}
-                                    className="transition-colors hover:text-white"
-                                >
-                                    Términos y Condiciones
-                                </button>
-                            </li>
-                            <li>
-                                <button
-                                    onClick={() => setActiveModal("privacy")}
-                                    className="transition-colors hover:text-white"
-                                >
-                                    Aviso de Privacidad
-                                </button>
-                            </li>
+                            {([
+                                { key: "faq", texto: "Preguntas Frecuentes (FAQ)" },
+                                { key: "terms", texto: "Términos y Condiciones" },
+                                { key: "privacy", texto: "Aviso de Privacidad" },
+                            ] as const).map(({ key, texto }) => (
+                                <li key={key}>
+                                    <button
+                                        ref={(el) => { refsLegal.current[key] = el; }}
+                                        onClick={() => setActiveModal(key)}
+                                        className="-mx-2 rounded-md px-2 py-1 text-left transition-colors hover:text-white"
+                                    >
+                                        {texto}
+                                    </button>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 
@@ -379,7 +428,8 @@ export default function FooterSection() {
                 </div>
             </div>
 
-            {/* ── MODALES LEGALES (Portal virtual dentro del layout) ── */}
+            {/* ── MODALES LEGALES (montados en <body>, ver `montado` arriba) ── */}
+            {montado && createPortal(
             <AnimatePresence>
                 {activeModal && (
                     <motion.div
@@ -424,7 +474,8 @@ export default function FooterSection() {
                         </motion.div>
                     </motion.div>
                 )}
-            </AnimatePresence>
+            </AnimatePresence>,
+            document.body)}
 
             {/* Simple local style for a clean scrollbar inside the modal */}
             <style jsx>{`
