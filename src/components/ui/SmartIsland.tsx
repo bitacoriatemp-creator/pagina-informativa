@@ -290,7 +290,10 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
                             height: undefined,
                             transition: "width 1000ms cubic-bezier(0.34,1.56,0.64,1), height 1000ms cubic-bezier(0.34,1.56,0.64,1), border-radius 600ms ease, box-shadow 300ms ease",
                         }}
-                        className="relative inline-flex items-center justify-center gap-1.5 rounded-full px-2 py-2 overflow-hidden font-sans cursor-pointer"
+                        /* Sin cursor-pointer: el <nav> no tiene onClick — solo los módulos, que
+               ya lo declaran. Prometía mano en el padding y los huecos, donde no
+               pasa nada. */
+            className="relative inline-flex items-center justify-center gap-1.5 rounded-full px-2 py-2 overflow-hidden font-sans"
                     >
                         {/* ── HALO COMETA ──
                          * Ahora está DENTRO del nav con overflow-hidden.
@@ -325,7 +328,13 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
                             return (
                                 <div
                                     key={mod.id}
-                                    className="relative cursor-pointer flex-shrink-0"
+                                    /* Es un control: sin esto no había forma de usar la isla
+                                       con teclado. tabIndex -1 mientras está oculta, para no
+                                       dejar paradas de foco invisibles. */
+                                    role="button"
+                                    tabIndex={effectiveState === "hidden" ? -1 : 0}
+                                    aria-label={`Ir a ${mod.label}`}
+                                    className="relative cursor-pointer flex-shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                                     style={{
                                         width: hideOnCollapse ? "0px" : undefined,
                                         opacity: hideOnCollapse ? 0 : 1,
@@ -344,7 +353,12 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
                                             filter    200ms ease                           200ms,
                                             padding   400ms ease                           100ms
                                         `,
-                                        pointerEvents: hideOnCollapse ? "none" : "auto",
+                                        /* Sin pointerEvents propio: debe HEREDARSE del contenedor.
+                                           Ponerlo en "auto" aquí anulaba el "none" de la variante
+                                           `hidden` (pointer-events se hereda y un hijo con "auto"
+                                           vuelve a capturar), así que con la isla invisible estos
+                                           cuatro cuadros de 38x38 seguían tragándose los clics en
+                                           medio de la pantalla y te mandaban a otra sección. */
                                     }}
                                     onMouseEnter={() => setHoveredId(mod.id)}
                                     onMouseLeave={() => setHoveredId(null)}
@@ -357,6 +371,11 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
                                         // "Bitácora" subía al hero pero seguía el demo que
                                         // estuviera puesto. Smart BIM no tiene demo: solo baja.
                                         if (mod.demo !== undefined) mostrarDemo(mod.demo);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key !== "Enter" && e.key !== " ") return;
+                                        e.preventDefault();   // Espacio no debe desplazar la página
+                                        e.currentTarget.click();
                                     }}
                                 >
                                     <motion.div

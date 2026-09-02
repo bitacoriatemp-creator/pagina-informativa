@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight, FolderPlus, Upload, MessageSquareText, ChevronRight, ChevronDown, User } from "lucide-react";
@@ -47,6 +47,31 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
         clearStoredAccount();
         setIsMenuOpen(false);
     };
+
+    /* Las dos barras están siempre montadas y la apagada solo se atenúa con
+       opacity 0 + pointer-events none. Eso frena el ratón pero NO el teclado: al
+       tabular, el foco caía en una barra invisible y Enter navegaba a ciegas.
+       `inert` la saca del orden de tabulación y del árbol de accesibilidad; se
+       aplica por atributo porque React 18 no admite la prop. */
+    const pillRef = useRef<HTMLElement>(null);
+    const slimRef = useRef<HTMLElement>(null);
+    useEffect(() => {
+        const marcar = (el: HTMLElement | null, inerte: boolean) => {
+            if (!el) return;
+            if (inerte) el.setAttribute("inert", "");
+            else el.removeAttribute("inert");
+        };
+        marcar(pillRef.current, isScrolled);
+        marcar(slimRef.current, !isScrolled);
+    }, [isScrolled]);
+
+    /* Escape cierra "Cómo Funciona", como en los demás modales del sitio. */
+    useEffect(() => {
+        if (!isHowItWorksOpen) return;
+        const alTeclear = (e: KeyboardEvent) => { if (e.key === "Escape") setIsHowItWorksOpen(false); };
+        window.addEventListener("keydown", alTeclear);
+        return () => window.removeEventListener("keydown", alTeclear);
+    }, [isHowItWorksOpen]);
 
     /* ── Scroll listener — toggle entre hero-pill y slim-bar ── */
     useEffect(() => {
@@ -123,7 +148,9 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                     y: isScrolled ? -16 : 0,
                 }}
                 transition={{ duration: 0.45, ease: [0.25, 0.4, 0.25, 1] as const }}
+                ref={pillRef}
                 style={{ pointerEvents: isScrolled ? "none" : "auto" }}
+                aria-hidden={isScrolled}
             >
                 <div
                     /* El menú completo entra a partir de lg, no de md: en tablet
@@ -212,10 +239,13 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                             border: "1px solid rgba(195,151,103,0.25)",
                         }}
                         onClick={() => setIsMenuOpen((o) => !o)}
-                        aria-label="Abrir menú"
+                        /* El icono ya cambia a X, pero el nombre accesible estaba fijo:
+                           el lector anunciaba "Abrir menú" mientras el botón cerraba. */
+                        aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
+                        aria-expanded={isMenuOpen}
                     >
                         {isMenuOpen ? (
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                                 <path d="M1 1l12 12M13 1L1 13" stroke="#c39767" strokeWidth="1.8" strokeLinecap="round" />
                             </svg>
                         ) : (
@@ -279,7 +309,9 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                     y: isScrolled ? 0 : -16,
                 }}
                 transition={{ duration: 0.4, ease: [0.25, 0.4, 0.25, 1] as const }}
+                ref={slimRef}
                 style={{ pointerEvents: isScrolled ? "auto" : "none" }}
+                aria-hidden={!isScrolled}
             >
                 <div
                     className="flex items-center justify-between h-12 md:h-14 px-4 md:px-8 lg:px-12"
@@ -315,7 +347,12 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                     </a>
 
                     {/* Nav links — slim center desktop */}
-                    <div className="hidden md:flex items-center gap-6 lg:gap-8">
+                    {/* lg, no md: AccountMenu solo aparece desde 1024px, así que con
+                        el corte en md la barra slim se quedaba sin avatar Y sin
+                        hamburguesa entre 768 y 1023 — con sesión iniciada no había
+                        forma de ver la cuenta ni cerrar sesión. Ahora coincide con
+                        la pill. */}
+                    <div className="hidden lg:flex items-center gap-6 lg:gap-8">
                         {NAV_LINKS.map((link) =>
                             renderNavLink(
                                 link,
@@ -333,7 +370,7 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                             href={REGISTER_URL}
                             aria-label="Acceder o registrarte"
                             title="Acceder"
-                            className="hidden md:flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                            className="hidden lg:flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-300"
                             style={{
                                 background: "rgba(195, 151, 103, 0.12)",
                                 border: "1px solid rgba(195, 151, 103, 0.4)",
@@ -356,16 +393,17 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
 
                     {/* HAMBURGER mobile (slim state) */}
                     <button
-                        className="flex md:hidden items-center justify-center w-8 h-8 rounded-full shrink-0 transition-colors"
+                        className="flex lg:hidden items-center justify-center w-8 h-8 rounded-full shrink-0 transition-colors"
                         style={{
                             background: "rgba(195,151,103,0.08)",
                             border: "1px solid rgba(195,151,103,0.2)",
                         }}
                         onClick={() => setIsMenuOpen((o) => !o)}
-                        aria-label="Abrir menú"
+                        aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
+                        aria-expanded={isMenuOpen}
                     >
                         {isMenuOpen ? (
-                            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                                 <path d="M1 1l12 12M13 1L1 13" stroke="#c39767" strokeWidth="1.8" strokeLinecap="round" />
                             </svg>
                         ) : (
@@ -379,7 +417,7 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                 {/* MOBILE DROPDOWN (slim state) */}
                 {isMenuOpen && isScrolled && (
                     <div
-                        className="md:hidden border-t"
+                        className="lg:hidden border-t"
                         style={{
                             background: "rgba(8, 4, 2, 0.95)",
                             backdropFilter: "blur(20px)",
@@ -422,18 +460,25 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                     className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
                     onClick={() => setIsHowItWorksOpen(false)}
                 >
+                    {/* max-h + scroll interno: sin ellos, los 3 pasos apilados en móvil
+                        desbordan y el centrado recorta ARRIBA, dejando la × fuera de la
+                        pantalla sin más salida que acertar en el borde del fondo. */}
                     <div
-                        className="cream-glass relative w-full max-w-4xl rounded-2xl p-8"
+                        className="cream-glass relative flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl p-8"
                         onClick={(e) => e.stopPropagation()}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Cómo funciona BitacorIA"
                     >
                         <button
                             onClick={() => setIsHowItWorksOpen(false)}
-                            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-[#f5f0e8]/[0.2] text-[#e8ddc9]/[0.7] transition-colors hover:border-[#e8ddc9]/[0.5] hover:text-[#f5f0e8]"
+                            className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-[#f5f0e8]/[0.2] text-[#e8ddc9]/[0.7] transition-colors hover:border-[#e8ddc9]/[0.5] hover:text-[#f5f0e8]"
                             aria-label="Cerrar"
                         >
                             ×
                         </button>
 
+                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1" data-lenis-prevent>
                         <p className="mb-1 text-center font-ui text-[10px] uppercase tracking-[0.3em] text-[#d8c4a8]">
                             El Flujo de
                         </p>
@@ -521,6 +566,7 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                         <p className="mt-8 text-center text-[11px] text-[#f5f0e8]/[0.35]">
                             Sin curva de aprendizaje. Sin configuraciones innecesarias.
                         </p>
+                        </div>
                     </div>
                 </div>
             )}

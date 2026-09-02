@@ -140,25 +140,44 @@ export default function FooterSection() {
         setStatus("loading");
         setErrorMessage("");
 
-        // Import perezoso: supabase-js solo se descarga si alguien se suscribe.
-        const { supabase } = await import("@/lib/supabase");
-        const { error } = await supabase
-            .from("newsletter")
-            .insert([{ email: email.trim().toLowerCase() }]);
+        /* Con try/catch: si el import perezoso falla (chunk 404 tras un despliegue,
+           red caída — justo el riesgo que introduce cargarlo tarde), la promesa
+           reventaba sin capturar y status se quedaba en "loading" para siempre,
+           con el campo y el botón deshabilitados y el spinner girando. Sin salida
+           salvo recargar. */
+        try {
+            // Import perezoso: supabase-js solo se descarga si alguien se suscribe.
+            const { supabase } = await import("@/lib/supabase");
+            const { error } = await supabase
+                .from("newsletter")
+                .insert([{ email: email.trim().toLowerCase() }]);
 
-        if (error) {
-            // Postgres unique constraint violation = code 23505
-            if (error.code === "23505" || error.message?.includes("duplicate")) {
-                setErrorMessage("Este correo ya está registrado.");
+            if (error) {
+                // Postgres unique constraint violation = code 23505
+                if (error.code === "23505" || error.message?.includes("duplicate")) {
+                    setErrorMessage("Este correo ya está registrado.");
+                } else {
+                    setErrorMessage("Hubo un error al suscribirte. Inténtalo de nuevo.");
+                }
+                setStatus("error");
             } else {
-                setErrorMessage("Hubo un error al suscribirte. Inténtalo de nuevo.");
+                setEmail("");
+                setStatus("success");
             }
+        } catch {
+            setErrorMessage("No pudimos conectar. Revisa tu conexión e inténtalo de nuevo.");
             setStatus("error");
-        } else {
-            setEmail("");
-            setStatus("success");
         }
     };
+
+    // Escape cierra, como en los demás modales del sitio (QuienesSomos y Registro
+    // ya lo tenían; este no, y era la única salida además del fondo).
+    useEffect(() => {
+        if (!activeModal) return;
+        const alTeclear = (e: KeyboardEvent) => { if (e.key === "Escape") setActiveModal(null); };
+        window.addEventListener("keydown", alTeclear);
+        return () => window.removeEventListener("keydown", alTeclear);
+    }, [activeModal]);
 
     // ── Llegada desde el hero: bajar al enlace y resaltarlo ──
     //    El resalte espera a que termine el scroll; si latiera durante el
@@ -442,34 +461,41 @@ export default function FooterSection() {
                         className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6"
                         onClick={() => setActiveModal(null)}
                     >
-                        {/* 2. VENTANA DEL MODAL (Aquí está la magia del scroll interno) */}
-                        {/* DEBE TENER: max-h-[85vh] y overflow-y-auto */}
+                        {/* El panel NO scrollea: lo hace el div interior. Antes el panel
+                            era el contenedor de scroll y la X, al ser `absolute`, se
+                            anclaba al contenido y se iba de la pantalla — los tres
+                            documentos son más altos que 85vh, así que el único botón
+                            de cerrar desaparecía justo al empezar a leer. */}
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="cream-glass relative w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-2xl p-6 sm:p-10 overscroll-contain"
+                            className="cream-glass relative flex w-full max-w-3xl max-h-[85vh] flex-col overflow-hidden rounded-2xl p-6 sm:p-10"
                             onClick={(e) => e.stopPropagation()}
-                            data-lenis-prevent
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label={LEGAL_CONTENT[activeModal].title}
                         >
-                            {/* Botón de cerrar absoluto arriba a la derecha */}
+                            {/* Cerrar: ahora se ancla al panel, que ya no se desplaza */}
                             <button
                                 onClick={() => setActiveModal(null)}
-                                className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+                                className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
                                 aria-label="Cerrar modal"
                             >
                                 <X size={16} strokeWidth={2} />
                             </button>
 
-                            {/* Título */}
-                            <h3 className="font-display text-xl font-bold tracking-wide text-white mb-6 border-b border-white/10 pb-4">
-                                {LEGAL_CONTENT[activeModal].title}
-                            </h3>
+                            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1" data-lenis-prevent>
+                                {/* Título */}
+                                <h3 className="font-display text-xl font-bold tracking-wide text-white mb-6 border-b border-white/10 pb-4 pr-10">
+                                    {LEGAL_CONTENT[activeModal].title}
+                                </h3>
 
-                            {/* 3. CONTENIDO (Preguntas y respuestas) */}
-                            <div className="flex flex-col gap-8 mt-4">
-                                {LEGAL_CONTENT[activeModal].body}
+                                {/* 3. CONTENIDO (Preguntas y respuestas) */}
+                                <div className="flex flex-col gap-8 mt-4">
+                                    {LEGAL_CONTENT[activeModal].body}
+                                </div>
                             </div>
                         </motion.div>
                     </motion.div>

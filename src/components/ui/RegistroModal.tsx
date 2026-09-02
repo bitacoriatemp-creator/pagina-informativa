@@ -87,14 +87,17 @@ function WhatsAppCTA({
     href,
     compact = false,
     children,
+    onClick,
 }: {
     href: string;
     compact?: boolean;
     children: React.ReactNode;
+    onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }) {
     return (
         <a
             href={href}
+            onClick={onClick}
             target="_blank"
             rel="noopener noreferrer"
             /* btn-premium-shine: pasada de luz al hacer hover, el mismo
@@ -222,6 +225,30 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
     /* Canales secundarios plegados: WhatsApp no debe competir con ellos. */
     const [showOtras, setShowOtras] = useState(false);
     const paisRef = useRef<HTMLSelectElement>(null);
+    const formRef = useRef<HTMLFormElement>(null);
+    /* Para no cerrar el modal cuando el gesto empieza dentro del panel. */
+    const fondoPulsado = useRef(false);
+
+    /* Arma el enlace de WhatsApp leyendo el formulario TAL COMO ESTÁ AHORA.
+       En el bloque de error el usuario sigue editando los mismos campos; si el
+       enlace se quedara con el snapshot del envío fallido, corregir el correo y
+       pulsar WhatsApp mandaría el dato viejo — y ahí ese mensaje es la única
+       captura del lead, porque la base ya falló. */
+    const urlWhatsAppActual = () => {
+        const form = formRef.current;
+        if (!form) return null;
+        const fd = new FormData(form);
+        const pais = (fd.get("pais") || "").toString().trim().toUpperCase();
+        const interes = (fd.get("interes_compra") || "").toString().trim();
+        return buildWhatsAppUrl({
+            nombre: (fd.get("nombre") || "").toString().trim(),
+            email: (fd.get("email") || "").toString().trim().toLowerCase(),
+            perfil: (fd.get("perfil") || "").toString().trim(),
+            obras_activas: (fd.get("obras_activas") as string) || null,
+            interes_compra: INTERESES.find(([v]) => v === interes)?.[1] ?? interes,
+            pais: PAISES.find(([v]) => v === pais)?.[1] ?? pais,
+        });
+    };
 
     /* Esc para cerrar */
     useEffect(() => {
@@ -327,21 +354,30 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
     return (
         <div
             className="fixed inset-0 z-[300] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
-            onClick={onClose}
+            /* Cerrar solo si el gesto EMPIEZA y TERMINA en el fondo. Con onClick a
+               secas, arrastrar para seleccionar texto dentro de un campo y soltar
+               fuera cerraba el modal y borraba los cinco datos ya escritos. */
+            onPointerDown={(e) => { fondoPulsado.current = e.target === e.currentTarget; }}
+            onClick={(e) => { if (e.target === e.currentTarget && fondoPulsado.current) onClose(); }}
             data-lenis-prevent
         >
+            {/* El panel ya no scrollea: lo hace el div interior, para que la × no se
+                vaya con el contenido (en el estado de error crece y superaba 90vh). */}
             <div
-                className="cream-glass relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl p-7 md:p-8"
+                className="cream-glass relative flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl p-7 md:p-8"
                 onClick={(e) => e.stopPropagation()}
-                data-lenis-prevent
+                role="dialog"
+                aria-modal="true"
             >
                 <button
                     onClick={onClose}
                     aria-label="Cerrar"
-                    className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-[#f5f0e8]/[0.2] text-[#e8ddc9]/[0.7] transition-colors hover:border-[#e8ddc9]/[0.5] hover:text-[#f5f0e8]"
+                    className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-[#f5f0e8]/[0.2] text-[#e8ddc9]/[0.7] transition-colors hover:border-[#e8ddc9]/[0.5] hover:text-[#f5f0e8]"
                 >
                     ×
                 </button>
+
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain" data-lenis-prevent>
 
                 {status === "success" ? (
                     <div className="py-4 text-center">
@@ -375,7 +411,12 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
                             className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] text-[#e8c9a0]"
                             style={{ background: "rgba(195,151,103,0.1)", border: "1px solid rgba(195,151,103,0.3)" }}
                         >
-                            Tu cuenta ya aparece arriba <span aria-hidden>↗</span>
+                            {/* El avatar del navbar solo se pinta desde 1024px; por debajo
+                                la cuenta vive dentro del menú. Decir "arriba" en móvil
+                                mandaba al lead a mirar donde no hay nada, y justo en el
+                                momento de conversión. */}
+                            <span className="hidden lg:inline">Tu cuenta ya aparece arriba <span aria-hidden>↗</span></span>
+                            <span className="lg:hidden">Tu cuenta ya está en el menú <span aria-hidden>☰</span></span>
                         </div>
 
                         {/* Salto a WhatsApp con el mensaje ya redactado. Es un <a>
@@ -416,7 +457,7 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
                             Déjanos tus datos y te contactamos para mostrarte BitacorIA en vivo.
                         </p>
 
-                        <form onSubmit={handleSubmit} className="space-y-3">
+                        <form onSubmit={handleSubmit} ref={formRef} className="space-y-3">
                             <input name="nombre" required defaultValue={hint.nombre ?? ""} placeholder="Nombre completo" className={inputCls} />
                             <input
                                 name="email"
@@ -480,7 +521,17 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
                                                 a mano. Tus datos ya van en el mensaje.
                                             </p>
 
-                                            <WhatsAppCTA href={waUrl} compact>
+                                            {/* Relee el formulario justo al pulsar: si el
+                                                usuario corrigió un campo tras el fallo, el
+                                                mensaje sale con el dato bueno. */}
+                                            <WhatsAppCTA
+                                                href={waUrl}
+                                                compact
+                                                onClick={(e) => {
+                                                    const fresca = urlWhatsAppActual();
+                                                    if (fresca) e.currentTarget.href = fresca;
+                                                }}
+                                            >
                                                 Escríbenos por WhatsApp
                                             </WhatsAppCTA>
 
@@ -537,6 +588,7 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
                         </form>
                     </>
                 )}
+                </div>
             </div>
         </div>
     );
