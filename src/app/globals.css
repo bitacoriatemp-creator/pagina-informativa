@@ -196,6 +196,96 @@
   }
 }
 
+/* ── ENCUESTA: renglones de bitácora, no cajas ─────────────────────
+   Seis cajas redondeadas idénticas apiladas es justo el aspecto
+   genérico que hay que evitar. Aquí cada dato se escribe sobre un
+   renglón —como en la bitácora de obra que vende el producto— y el
+   renglón se enciende en bronce mientras escribes. Sin relleno, sin
+   borde alrededor: el único peso visual lo lleva lo que el usuario
+   teclea. */
+.campo-linea {
+  width: 100%;
+  background: transparent;
+  color: #f5f0e8;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0;
+  padding: 0.45rem 0;
+  outline: none;
+  transition: border-color 240ms ease, box-shadow 240ms ease;
+}
+
+.campo-linea::placeholder {
+  color: rgba(255, 255, 255, 0.22);
+}
+
+.campo-linea:hover {
+  border-bottom-color: rgba(255, 255, 255, 0.28);
+}
+
+.campo-linea:focus,
+.campo-linea:focus-visible {
+  border-bottom-color: rgba(195, 151, 103, 0.9);
+  /* Un segundo trazo bajo el renglón: el foco se ve sin recuadro. */
+  box-shadow: 0 1px 0 0 rgba(195, 151, 103, 0.35);
+}
+
+/* Los <option> los pinta el sistema: sin esto salen blancos sobre
+   blanco en varios navegadores al usar un select transparente. */
+.campo-linea option {
+  background: #16100b;
+  color: #f5f0e8;
+}
+
+/* El país va como metadato al pie, sin renglón propio. Va aquí y no con
+   `border-b-0` de Tailwind porque .campo-linea se declara después de las
+   utilidades y ganaba el borde. */
+.campo-linea.sin-regla,
+.campo-linea.sin-regla:hover,
+.campo-linea.sin-regla:focus {
+  border-bottom-color: transparent;
+  box-shadow: none;
+}
+
+/* Selects: quitamos el control nativo para dibujar nuestra flecha. */
+.campo-linea.es-select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 1.5rem;
+}
+
+/* ── Barra de scroll fina para los paneles oscuros ─────────────────
+   La nativa es ancha y clara: sobre estos paneles se ve como una
+   pieza pegada encima del contenido. */
+/* Ojo con el orden: si se declara `scrollbar-width`, Chrome prefiere la
+   propiedad estándar y DESACTIVA por completo ::-webkit-scrollbar — se
+   queda la barra del sistema, con sus flechas. Por eso las estándar van
+   aisladas para los navegadores que no soportan el pseudo-elemento. */
+@supports not selector(::-webkit-scrollbar) {
+  .scroll-fino {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+  }
+}
+
+.scroll-fino::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-fino::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-fino::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+
+.scroll-fino::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
 /* ── MATERIAL 2: Chocolate Reflective Glass ──── */
 
 .chocolate-glass {

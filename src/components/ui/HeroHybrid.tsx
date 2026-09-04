@@ -96,6 +96,8 @@ export default function HeroHybrid() {
             {/* Contenido anclado arriba (no centrado): la columna izquierda
                 arranca justo bajo la isla y crece hacia abajo, así no se hunde
                 —ni se corta— en pantallas de poca altura. */}
+            {/* Sin padding extra: con la marca a la derecha ya no pisa el
+                antetítulo, así que el hero recupera su altura original. */}
             <div className="relative z-20 flex minh-100dvh items-start pointer-events-none pt-28 pb-16 md:pt-24 md:pb-10">
                 <div className="hero-grid mx-auto w-full max-w-[1600px] gap-y-6 px-6 md:px-10 lg:gap-x-8 lg:gap-y-0 lg:px-16">
                     {/* Cada área orquesta su propia entrada. Antes el stagger vivía

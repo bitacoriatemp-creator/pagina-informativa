@@ -44,6 +44,14 @@ export default function LandingPage() {
     */
     const isInContentSections = bimInView;
 
+    /* Escape cierra, como en los demás modales del sitio. Este no lo tenía. */
+    useEffect(() => {
+        if (!isQuienesSomosOpen) return;
+        const alTeclear = (e: KeyboardEvent) => { if (e.key === "Escape") setIsQuienesSomosOpen(false); };
+        window.addEventListener("keydown", alTeclear);
+        return () => window.removeEventListener("keydown", alTeclear);
+    }, [isQuienesSomosOpen]);
+
     let islandState: IslandState = "hidden";
     if (isInContentSections) {
         islandState = "top";
@@ -103,21 +111,35 @@ export default function LandingPage() {
                         onClick={() => setIsQuienesSomosOpen(false)}
                         data-lenis-prevent
                     >
+                        {/* El panel ya no scrollea: lo hace el cuerpo. Antes la × era
+                            `absolute` dentro del contenedor de scroll y se iba con el
+                            texto — el único botón de cerrar desaparecía al leer. */}
                         <div
-                            className="cream-glass relative w-full max-w-3xl max-h-[85vh] overflow-y-auto overscroll-contain rounded-2xl p-8 md:p-12"
+                            className="cream-glass relative flex w-full max-w-3xl max-h-[85vh] flex-col overflow-hidden rounded-2xl p-8 md:p-12"
                             onClick={e => e.stopPropagation()}
-                            data-lenis-prevent
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label="Quiénes Somos"
                         >
-                            <button 
-                                onClick={() => setIsQuienesSomosOpen(false)} 
-                                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-[#f5f0e8]/[0.2] text-[#e8ddc9]/[0.7] hover:border-[#e8ddc9]/[0.5] hover:text-[#f5f0e8] transition-colors"
+                            <button
+                                onClick={() => setIsQuienesSomosOpen(false)}
+                                aria-label="Cerrar"
+                                className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-[#f5f0e8]/[0.2] text-[#e8ddc9]/[0.7] hover:border-[#e8ddc9]/[0.5] hover:text-[#f5f0e8] transition-colors"
                             >
                                 ×
                             </button>
-                            <div className="mb-1 font-ui text-[11px] uppercase tracking-[0.35em] text-[#c39767]/70">El origen de BitacorIA</div>
-                            <h2 className="mb-8 text-3xl font-display font-bold uppercase text-white/90 tracking-tight">Quiénes Somos</h2>
+                            <div className="shrink-0 pr-10">
+                                <div className="mb-1 font-ui text-[12px] uppercase tracking-[0.3em] text-[#c39767]/80">El origen de BitacorIA</div>
+                                <h2 className="mb-7 text-3xl font-display font-bold uppercase text-[#f5f0e8] tracking-tight">Quiénes Somos</h2>
+                            </div>
 
-                            <div className="space-y-8 text-zinc-400 text-sm leading-relaxed">
+                            {/* Reglas finas entre apartados en vez de solo aire: el mismo
+                                idioma de bitácora de la encuesta. Kumbh 15px sobre marrón,
+                                no `zinc` (gris frío) sobre un panel cálido. */}
+                            <div
+                                className="min-h-0 flex-1 overflow-y-auto overscroll-contain scroll-fino pr-3 divide-y divide-white/[0.07] text-[15px] leading-relaxed text-white/60 [&>*]:py-7 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0"
+                                data-lenis-prevent
+                            >
                                 <div className="space-y-3">
                                     <h3 className="font-display text-xs font-bold uppercase tracking-widest text-[#c39767]">Innovación con sello de campo</h3>
                                     <p>En BitacorIA no somos una empresa de software común que intenta adivinar cómo funciona una obra desde una oficina. Nacimos directamente en el polvo del terreno, entre planos impresos, levantamientos topográficos y la presión diaria de cumplir con los tiempos de entrega. Conocemos de primera mano los verdaderos dolores de cabeza de la construcción: catálogos de conceptos infinitos, programaciones de obra que se desfasan por falta de comunicación y el eterno reto de mantener el control financiero de un proyecto.</p>
@@ -151,7 +173,7 @@ export default function LandingPage() {
                                     <p>No nos detenemos en la automatización de catálogos y calendarios. Estamos construyendo el ecosistema donde la gestión del conocimiento de tus obras pasadas sirva para predecir, optimizar y asegurar el éxito de tus proyectos futuros. Creamos una comunidad de constructores innovadores —los Early Builders de una nueva era tecnológica— que entienden que la eficiencia digital ya no es una opción, sino una ventaja competitiva indispensable.</p>
                                 </div>
 
-                                <p className="border-t border-white/10 pt-6 text-base text-white/80">
+                                <p className="text-[16px] text-white/80">
                                     Somos ingenieros potenciando a ingenieros. Bienvenido a la evolución de la gestión de proyectos. <strong className="text-[#c39767]">Bienvenido a BitacorIA.</strong>
                                 </p>
                             </div>

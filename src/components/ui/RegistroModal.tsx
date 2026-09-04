@@ -137,9 +137,36 @@ function WhatsAppCTA({
     );
 }
 
-const inputCls =
-    "w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-sm text-white placeholder-zinc-500 outline-none transition-colors focus:border-[#c39767]/70";
-const selectCls = inputCls + " appearance-none cursor-pointer";
+/* 16px en móvil evita el zoom automático de iOS al enfocar. */
+const campoCls = "campo-linea text-[16px] sm:text-[15px]";
+const selectCls = `${campoCls} es-select`;
+
+/* Galón mínimo, el mismo del menú del logo: sin él, un select sin
+   control nativo se lee como un botón raro en medio del formulario. */
+const Galon = () => (
+    <svg
+        aria-hidden
+        viewBox="0 0 10 6"
+        className="pointer-events-none absolute right-0 top-1/2 h-[6px] w-[10px] -translate-y-1/2"
+    >
+        <path d="M1 1L5 5L9 1" fill="none" stroke="#c39767" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.75" />
+    </svg>
+);
+
+/* Cabecera de cada dato: número en monoespaciada + la pregunta.
+   La numeración es lo que da ritmo; sustituye a agrupar en bloques y
+   hace que el formulario se lea como una entrada de bitácora. */
+function Renglon({ n, htmlFor, children, nota }: { n: string; htmlFor: string; children: React.ReactNode; nota?: string }) {
+    return (
+        <div className="mb-1 flex items-baseline gap-2.5">
+            <span className="font-mono text-[11px] tracking-[0.18em] text-[#c39767]/70">{n}</span>
+            <label htmlFor={htmlFor} className="text-[13px] text-white/55">
+                {children}
+            </label>
+            {nota && <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.18em] text-white/25">{nota}</span>}
+        </div>
+    );
+}
 
 type OpenOpts = { perfil?: string; interes?: string; email?: string; nombre?: string; avatar?: string };
 type Ctx = { openModal: (opts?: OpenOpts) => void; closeModal: () => void };
@@ -377,10 +404,8 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
                     ×
                 </button>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain" data-lenis-prevent>
-
                 {status === "success" ? (
-                    <div className="py-4 text-center">
+                    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scroll-fino pr-3 py-4 text-center" data-lenis-prevent>
                         <motion.div
                             initial={{ scale: 0, rotate: -25 }}
                             animate={{ scale: 1, rotate: 0 }}
@@ -402,7 +427,7 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
                         >
                             {doneName ? `¡Listo, ${doneName}!` : "¡Estás dentro!"}
                         </motion.h2>
-                        <p className="mb-5 text-sm leading-relaxed text-zinc-400">
+                        <p className="mb-5 text-[15px] leading-relaxed text-white/55">
                             {waUrl
                                 ? "Quedaste en la lista de acceso anticipado. Sigue la conversación por WhatsApp y agendamos tu demo hoy mismo."
                                 : "Quedaste en la lista de acceso anticipado. Te escribimos muy pronto para coordinar tu demo en vivo — revisa tu correo (y la carpeta de spam)."}
@@ -430,18 +455,13 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
 
                         <button
                             onClick={onClose}
+                            /* Si hay WhatsApp, este es el secundario y va como texto;
+                               si no, es el único y toma el mismo relleno crema plano
+                               que el resto de primarios del sitio. */
                             className={
                                 waUrl
-                                    ? "w-full rounded-full py-2.5 font-ui text-xs font-semibold uppercase tracking-widest text-[#e8ddc9]/70 transition-colors hover:text-[#f5f0e8]"
-                                    : "w-full rounded-full py-3 font-ui text-xs font-semibold uppercase tracking-widest text-amber-50 transition-all"
-                            }
-                            style={
-                                waUrl
-                                    ? undefined
-                                    : {
-                                          background: "linear-gradient(180deg,#c39767 0%,#b07a4d 55%,#8b5c3b 100%)",
-                                          boxShadow: "0 8px 22px rgba(139,92,59,0.35), inset 0 1px 0 rgba(255,255,255,0.25)",
-                                      }
+                                    ? "w-full py-2.5 text-[14px] text-white/50 transition-colors hover:text-[#f5f0e8]"
+                                    : "flex h-12 w-full items-center justify-center rounded-xl bg-[#f5f0e8] text-[15px] font-semibold text-[#1a120c] transition-colors duration-200 hover:bg-white"
                             }
                         >
                             {waUrl ? "Ahora no" : "Entendido"}
@@ -449,55 +469,102 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
                     </div>
                 ) : (
                     <>
-                        <div className="mb-1 font-ui text-[11px] uppercase tracking-[0.35em] text-[#c39767]">
-                            Acceso anticipado
+                        {/* La cabecera queda FUERA del área que scrollea: así la barra
+                            empieza por debajo de la × en vez de cruzarla, y el título
+                            sigue a la vista mientras se rellena el formulario.
+                            pr-10 reserva el hueco del botón de cerrar. */}
+                        <div className="shrink-0 pr-10">
+                            <div className="mb-1 font-ui text-[11px] uppercase tracking-[0.35em] text-[#c39767]">
+                                Acceso anticipado
+                            </div>
+                            <h2 className="mb-2 font-display text-2xl font-bold text-white">Solicita tu demo</h2>
+                            <p className="mb-6 text-[15px] leading-relaxed text-white/55">
+                                Déjanos tus datos y te contactamos para mostrarte BitacorIA en vivo.
+                            </p>
                         </div>
-                        <h2 className="mb-2 font-display text-2xl font-bold text-white">Solicita tu demo</h2>
-                        <p className="mb-6 text-sm text-zinc-400">
-                            Déjanos tus datos y te contactamos para mostrarte BitacorIA en vivo.
-                        </p>
 
-                        <form onSubmit={handleSubmit} ref={formRef} className="space-y-3">
-                            <input name="nombre" required defaultValue={hint.nombre ?? ""} placeholder="Nombre completo" className={inputCls} />
-                            <input
-                                name="email"
-                                type="email"
-                                required
-                                defaultValue={hint.email ?? ""}
-                                placeholder="Correo (personal o de trabajo)"
-                                className={inputCls}
-                            />
-                            <select name="perfil" required defaultValue={hint.perfil ?? ""} className={selectCls}>
-                                <option value="" disabled>
-                                    Selecciona tu perfil profesional…
-                                </option>
-                                {PERFILES.map((p) => (
-                                    <option key={p} value={p}>{p}</option>
-                                ))}
-                            </select>
-                            <input
-                                name="obras_activas"
-                                type="number"
-                                min="0"
-                                placeholder="¿Cuántas obras activas tienes? (opcional)"
-                                className={inputCls}
-                            />
-                            <select name="interes_compra" required defaultValue={hint.interes ?? ""} className={selectCls}>
-                                <option value="" disabled>
-                                    ¿Qué tan listo estás?
-                                </option>
-                                {INTERESES.map(([v, l]) => (
-                                    <option key={v} value={v}>{l}</option>
-                                ))}
-                            </select>
-                            <select name="pais" ref={paisRef} required defaultValue="" className={selectCls}>
-                                <option value="" disabled>
-                                    ¿Desde qué país nos escribes?
-                                </option>
-                                {PAISES.map(([v, l]) => (
-                                    <option key={v} value={v}>{l}</option>
-                                ))}
-                            </select>
+                        {/* pr-3: separa el contenido de la barra; sin él, la etiqueta
+                            "opcional" alineada a la derecha queda debajo. */}
+                        <form
+                            onSubmit={handleSubmit}
+                            ref={formRef}
+                            className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain scroll-fino pr-3"
+                            data-lenis-prevent
+                        >
+                            <div>
+                                <Renglon n="01" htmlFor="reg-nombre">Nombre completo</Renglon>
+                                <input id="reg-nombre" name="nombre" required defaultValue={hint.nombre ?? ""} className={campoCls} />
+                            </div>
+
+                            <div>
+                                <Renglon n="02" htmlFor="reg-email">Correo</Renglon>
+                                <input
+                                    id="reg-email"
+                                    name="email"
+                                    type="email"
+                                    required
+                                    autoComplete="email"
+                                    defaultValue={hint.email ?? ""}
+                                    className={campoCls}
+                                />
+                            </div>
+
+                            <div>
+                                <Renglon n="03" htmlFor="reg-perfil">¿A qué te dedicas?</Renglon>
+                                <div className="relative">
+                                    <select id="reg-perfil" name="perfil" required defaultValue={hint.perfil ?? ""} className={selectCls}>
+                                        <option value="" disabled>Elige una opción</option>
+                                        {PERFILES.map((p) => (
+                                            <option key={p} value={p}>{p}</option>
+                                        ))}
+                                    </select>
+                                    <Galon />
+                                </div>
+                            </div>
+
+                            <div>
+                                <Renglon n="04" htmlFor="reg-obras" nota="opcional">Obras activas</Renglon>
+                                <input id="reg-obras" name="obras_activas" type="number" min="0" className={campoCls} />
+                            </div>
+
+                            <div>
+                                <Renglon n="05" htmlFor="reg-interes">¿Qué tan listo estás?</Renglon>
+                                <div className="relative">
+                                    <select id="reg-interes" name="interes_compra" required defaultValue={hint.interes ?? ""} className={selectCls}>
+                                        <option value="" disabled>Elige una opción</option>
+                                        {INTERESES.map(([v, l]) => (
+                                            <option key={v} value={v}>{l}</option>
+                                        ))}
+                                    </select>
+                                    <Galon />
+                                </div>
+                            </div>
+
+                            {/* El país se autodetecta por IP, así que no es una pregunta:
+                                va como metadato al pie. Sigue siendo un select visible
+                                —no oculto— porque un `required` invisible bloquea el
+                                envío sin poder mostrar su aviso. */}
+                            <div className="flex items-center justify-between gap-4 border-t border-white/[0.07] pt-4">
+                                <label htmlFor="reg-pais" className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/30">
+                                    País
+                                </label>
+                                <div className="relative">
+                                    <select
+                                        id="reg-pais"
+                                        name="pais"
+                                        ref={paisRef}
+                                        required
+                                        defaultValue=""
+                                        className={`${selectCls} sin-regla py-0 text-right text-[13px] text-white/70`}
+                                    >
+                                        <option value="" disabled>Elige tu país</option>
+                                        {PAISES.map(([v, l]) => (
+                                            <option key={v} value={v}>{l}</option>
+                                        ))}
+                                    </select>
+                                    <Galon />
+                                </div>
+                            </div>
 
                             {errMsg && (
                                 <div className="space-y-3">
@@ -516,7 +583,7 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
                                                 border: "1px solid rgba(245,240,232,0.10)",
                                             }}
                                         >
-                                            <p className="mb-3 text-[13px] leading-relaxed text-zinc-400">
+                                            <p className="mb-3 text-[13px] leading-relaxed text-white/55">
                                                 No te quedes fuera: escríbenos y te damos acceso
                                                 a mano. Tus datos ya van en el mensaje.
                                             </p>
@@ -570,25 +637,25 @@ function Modal({ hint, onClose }: { hint: OpenOpts; onClose: () => void }) {
                                 </div>
                             )}
 
+                            {/* Único elemento relleno de la pantalla, plano y crema:
+                                el mismo botón que el "Continuar" del hero. El degradado
+                                bronce con brillo interior era del diseño anterior. */}
                             <button
                                 type="submit"
                                 disabled={status === "submitting"}
-                                className="w-full rounded-full py-3 font-ui text-xs font-semibold uppercase tracking-widest text-amber-50 transition-all disabled:opacity-60"
-                                style={{
-                                    background: "linear-gradient(180deg,#c39767 0%,#b07a4d 55%,#8b5c3b 100%)",
-                                    boxShadow:
-                                        "0 8px 22px rgba(139,92,59,0.35), inset 0 1px 0 rgba(255,255,255,0.25)",
-                                }}
+                                className="mt-1 flex h-12 w-full items-center justify-center rounded-xl bg-[#f5f0e8] text-[15px] font-semibold text-[#1a120c] transition-colors duration-200 hover:bg-white disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c39767]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a120c]"
                             >
-                                {status === "submitting" ? "Procesando…" : "Aplicar ahora →"}
+                                {status === "submitting" ? "Procesando…" : "Solicitar demo"}
                             </button>
-                            <p className="text-center text-[11px] text-zinc-600">
+                            {/* Kumbh, no monoespaciada: la mono con mayúsculas y
+                                tracking sirve para etiquetas de una palabra, no
+                                para una frase — se parte en dos líneas y grita. */}
+                            <p className="text-center text-[12px] text-white/35">
                                 Tus datos se usan solo para contactarte. Sin spam.
                             </p>
                         </form>
                     </>
                 )}
-                </div>
             </div>
         </div>
     );

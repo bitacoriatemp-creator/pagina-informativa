@@ -25,29 +25,29 @@ const LEGAL_CONTENT = {
     faq: {
         title: "Preguntas Frecuentes",
         body: (
-            <div className="flex flex-col gap-8 text-[13px] leading-relaxed text-white/70">
+            <div className="divide-y divide-white/[0.07] text-[15px] leading-relaxed text-white/60 [&>*]:py-6 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
                 <div>
-                    <h5 className="font-bold text-white mb-1">¿Qué es BitacorIA y cómo beneficia a mi constructora?</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Qué es BitacorIA y cómo beneficia a mi constructora?</h5>
                     <p>BitacorIA es la primera plataforma de gestión estructurada diseñada específicamente para el sector de la construcción en América Latina. Moderniza el control de obra tradicional reemplazando el papel por procesos digitales ágiles, con flujos de aprobación y firmado diseñados para alinearse a la normativa mexicana (NOM-151), optimizando el tiempo de captura de los residentes de obra.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">¿Mi información de obra está segura?</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Mi información de obra está segura?</h5>
                     <p>Sí. Toda la información, desde los reportes fotográficos hasta los presupuestos, viaja y se almacena cifrada en infraestructura en la nube con respaldos automáticos. Nuestros flujos de firmado y conservación de bitácoras están diseñados para alinearse a la Ley de Firma Electrónica Avanzada y a la NOM-151, de modo que tus registros mantengan trazabilidad e integridad verificable.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">¿BitacorIA utiliza Inteligencia Artificial generativa?</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿BitacorIA utiliza Inteligencia Artificial generativa?</h5>
                     <p>Sí, pero de forma estructurada y guiada, no como un chat abierto de propósito general. El asistente de obra te acompaña en la captura (chatea, adjunta fotos), y tecnologías como &quot;Smart Concepts&quot; funcionan con configuradores guiados que recomiendan los catálogos y conceptos correctos para cada etapa de tu obra. Todo resultado queda en formatos estructurados, editables y validables por ti — la IA propone, tú siempre tienes el control final.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">¿Puedo invitar a subcontratistas y al cliente final a la misma bitácora?</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Puedo invitar a subcontratistas y al cliente final a la misma bitácora?</h5>
                     <p>Sí. Nuestra arquitectura &quot;Team Work&quot; permite establecer roles granulares. El residente (constructor) captura la información bruta, el supervisor la valida, y el cliente puede tener un rol de solo lectura (View-Only) para dar seguimiento visual sin poder alterar los reportes, manteniendo la transparencia total del proyecto.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">¿De qué trata el protocolo &quot;Smart BIM Sync&quot;?</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿De qué trata el protocolo &quot;Smart BIM Sync&quot;?</h5>
                     <p>Smart BIM Sync es nuestro ecosistema avanzado de sincronización de proyectos. En lugar de limitarse a modelos 3D, nuestra tecnología conecta el avance físico real de la obra (registrado en la bitácora) directamente con el presupuesto y el cronograma financiero del proyecto. Esto permite a los gerentes de proyecto y supervisores comparar la planeación teórica contra la realidad ejecutada en tiempo récord, evitando sobrecostos y desviaciones de cronograma de forma predictiva.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">¿Qué pasa con mis datos si decido cancelar la suscripción?</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Qué pasa con mis datos si decido cancelar la suscripción?</h5>
                     <p>Tu información te pertenece. Contamos con un protocolo de &quot;Offboarding Seguro&quot;. Tras la cancelación, tienes 30 días para descargar toda tu base de datos y un empaquetado final de todas las bitácoras en formato PDF con sus respectivos sellos criptográficos. Pasado este periodo de gracia, los datos son purgados permanentemente de nuestros servidores.</p>
                 </div>
             </div>
@@ -56,25 +56,25 @@ const LEGAL_CONTENT = {
     terms: {
         title: "Términos y Condiciones",
         body: (
-            <div className="flex flex-col gap-8 text-[13px] leading-relaxed text-white/70">
+            <div className="divide-y divide-white/[0.07] text-[15px] leading-relaxed text-white/60 [&>*]:py-6 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
                 <div>
                     <p><strong className="text-white">Última actualización:</strong> Junio 2026</p>
                     <p className="mt-2">Bienvenido a BitacorIA (&quot;La Plataforma&quot;). Estos Términos y Condiciones (&quot;Términos&quot;) constituyen un contrato legalmente vinculante entre el usuario (y su empresa constructora) y BitacorIA. Al crear una cuenta, usted declara tener la autoridad legal para comprometer a la entidad que representa. Si no acepta estos Términos, absténgase de utilizar la Plataforma.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">1. Objeto del Servicio y Licenciamiento</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">1. Objeto del Servicio y Licenciamiento</h5>
                     <p>BitacorIA otorga al cliente una licencia limitada, no exclusiva, intransferible y revocable, bajo la modalidad de Software como Servicio (SaaS), para acceder a la plataforma y utilizar sus herramientas de administración de obra, control de costos, cronogramas y asistencia por Inteligencia Artificial, exclusivamente para la duración de su plan de facturación activo.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">2. Inteligencia Artificial, Privacidad y Entrenamiento de Modelos</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">2. Inteligencia Artificial, Privacidad y Entrenamiento de Modelos</h5>
                     <p>Nuestra plataforma utiliza motores de Inteligencia Artificial para el procesamiento de planos, catálogos en PDF y análisis fotográfico. Toda la información capturada por el cliente sigue siendo de su propiedad. Al utilizar el servicio, el cliente otorga a BitacorIA una licencia técnica para procesar y, de forma anonimizada y agregada, utilizar estos datos con el fin de <strong className="text-white">refinar y mejorar nuestros algoritmos y funciones</strong> (como Smart Concepts y Smart Calendar). Para operar estas funciones podemos apoyarnos en proveedores de servicios de IA e infraestructura en la nube, bajo acuerdos que prohíben el uso de su información para entrenar modelos públicos. Su información confidencial <strong className="text-white">nunca</strong> será vendida a terceros.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">3. Disposiciones de Firmas Electrónicas (NOM-151)</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">3. Disposiciones de Firmas Electrónicas (NOM-151)</h5>
                     <p>La Plataforma proporciona infraestructura técnica e integraciones para generar sellos de tiempo y recabar Firmas Electrónicas Avanzadas (FIEL/e.firma). El cliente asume total responsabilidad sobre el resguardo de sus claves privadas y la designación formal (ante notario si aplica) de los residentes de obra autorizados a asentar firmas. BitacorIA actúa como proveedor tecnológico, no como perito ni certificador directo.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">4. Disponibilidad del Sistema y Respaldos</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">4. Disponibilidad del Sistema y Respaldos</h5>
                     <p>BitacorIA se esfuerza por mantener la mayor disponibilidad posible del servicio, sin que ello constituya una garantía contractual de tiempo de actividad. Toda la información y documentos generados en el ecosistema &quot;Smart BIM Sync&quot; cuentan con respaldos en la nube para prevenir pérdida de datos, cuidando que su fuente única de verdad esté disponible.</p>
                 </div>
             </div>
@@ -83,29 +83,29 @@ const LEGAL_CONTENT = {
     privacy: {
         title: "Aviso de Privacidad",
         body: (
-            <div className="flex flex-col gap-8 text-[13px] leading-relaxed text-white/70">
+            <div className="divide-y divide-white/[0.07] text-[15px] leading-relaxed text-white/60 [&>*]:py-6 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
                 <div>
                     <p><strong className="text-white">Última actualización:</strong> Junio 2026</p>
                     <p className="mt-2">En cumplimiento a lo dispuesto por la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (en adelante, &quot;La Ley&quot;) y su Reglamento, <strong className="text-white">BitacorIA</strong> (&quot;Nosotros&quot; o &quot;La Plataforma&quot;) hace de su conocimiento la presente normativa sobre cómo es tratada, protegida y almacenada su información como contratista, residente, supervisor o director de obra al operar en nuestra infraestructura.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">I. Datos que Recabamos</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">I. Datos que Recabamos</h5>
                     <p>Para la plena ejecución del aplicativo constructivo, recabamos los siguientes datos personales y corporativos: (a) Datos de Identificación (Nombre completo, cargo, RFC de representantes legales para contratos de suscripción), (b) Datos de Contacto (correos electrónicos institucionales, teléfonos), (c) Credenciales de Autenticación, y (d) <strong className="text-white">Metadatos y Geolocalización</strong>, provenientes exclusivamente de las fotografías y evidencias cargadas a la Bitácora para auditar la ejecución de trabajos in-situ. No recabamos datos biométricos.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">II. Finalidades del Tratamiento</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">II. Finalidades del Tratamiento</h5>
                     <p>Los datos arriba mencionados son de tratamiento primario y necesarios para la prestación del servicio de BitacorIA. Se utilizan específicamente para: habilitar el acceso al ecosistema &quot;Smart BIM Sync&quot;, facturación y cobro de planes (Draft, Resident, Site Manager, Executive), envío de alertas automáticas sobre desviaciones o retrasos en el cronograma, y la generación de reportes en PDF listos para procesos de auditoría y firma.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">III. Tratamiento por Inteligencia Artificial</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">III. Tratamiento por Inteligencia Artificial</h5>
                     <p>La información ingresada a la plataforma (reportes fotográficos, catálogos de conceptos, interacciones en el chat) es procesada por motores de Inteligencia Artificial para automatizar la gestión de obra. Al utilizar BitacorIA, el usuario acepta que estos datos sean utilizados, de forma anonimizada y agregada, para <strong className="text-white">refinar y mejorar nuestros algoritmos y funciones</strong> (Smart Concepts y Smart Calendar). Para estas funciones podemos apoyarnos en proveedores de servicios de IA e infraestructura en la nube, bajo acuerdos que <strong className="text-white">prohíben el uso de su información para entrenar modelos públicos</strong>. Su propiedad intelectual no se vende ni se comparte para fines ajenos a la prestación del servicio.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">IV. Transferencias a Terceros</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">IV. Transferencias a Terceros</h5>
                     <p>BitacorIA solo transferirá información bajo obligación procesal dictaminada y con orden ejecutoria a las autoridades competentes. Asimismo, para el cumplimiento técnico y fiscal, podremos trabajar con Proveedores Autorizados de Certificación (PACs) y servicios de sellado de tiempo (NOM-151) bajo estrictos convenios de confidencialidad y no diseminación.</p>
                 </div>
                 <div>
-                    <h5 className="font-bold text-white mb-1">V. Ejercicio de los Derechos ARCO</h5>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">V. Ejercicio de los Derechos ARCO</h5>
                     <p>Usted, o quien funja como responsable dentro de la empresa cliente, tendrá siempre el derecho al Acceso, Rectificación, Cancelación u Oposición del manejo de estos datos. Deberá iniciar contacto formal con el responsable de datos de BitacorIA escribiendo a <strong className="text-white">bitacoria.temp@gmail.com</strong>, presentando acreditación de identidad o representación legal para que la solicitud sea procesada en los plazos que marca La Ley.</p>
                 </div>
             </div>
@@ -486,14 +486,16 @@ export default function FooterSection() {
                                 <X size={16} strokeWidth={2} />
                             </button>
 
-                            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1" data-lenis-prevent>
-                                {/* Título */}
-                                <h3 className="font-display text-xl font-bold tracking-wide text-white mb-6 border-b border-white/10 pb-4 pr-10">
-                                    {LEGAL_CONTENT[activeModal].title}
-                                </h3>
+                            {/* El título va fuera del área que scrollea: la barra
+                                empieza por debajo de la × en vez de cruzarla, y el
+                                documento se sigue sabiendo cuál es al bajar. */}
+                            <h3 className="shrink-0 font-display text-xl font-bold tracking-wide text-white mb-6 border-b border-white/10 pb-4 pr-10">
+                                {LEGAL_CONTENT[activeModal].title}
+                            </h3>
 
+                            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scroll-fino pr-3" data-lenis-prevent>
                                 {/* 3. CONTENIDO (Preguntas y respuestas) */}
-                                <div className="flex flex-col gap-8 mt-4">
+                                <div className="flex flex-col gap-8">
                                     {LEGAL_CONTENT[activeModal].body}
                                 </div>
                             </div>

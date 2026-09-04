@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight, FolderPlus, Upload, MessageSquareText, ChevronRight, ChevronDown, User } from "lucide-react";
-import { assetPath } from "@/lib/assetPath";
+import { ArrowRight, FolderPlus, Upload, MessageSquareText, type LucideIcon } from "lucide-react";
+import LogoMenu from "./LogoMenu";
 import { useAccount, clearStoredAccount } from "@/lib/account";
 import { signOut } from "@/lib/socialAuth";
-import AccountMenu, { AccountRowMobile } from "./AccountMenu";
+import { AccountRowMobile } from "./AccountMenu";
 
 /* ══════════════════════════════════════════════════════════════
    GlobalNavbar — two-state morphing navbar
@@ -27,6 +26,36 @@ const NAV_LINKS = [
     { label: "Cómo Funciona", href: "#como-funciona" },
     { label: "Planes de Pago", href: "#soluciones" },
     { label: "Contacto", href: "#contacto" },
+];
+
+/* Los tres pasos del modal "Cómo funciona", como datos: repetir el mismo
+   bloque tres veces escondía las diferencias entre ellos. */
+const PASOS: {
+    n: string;
+    Icon: LucideIcon;
+    titulo: string;
+    nota?: string;
+    texto: string;
+}[] = [
+    {
+        n: "01",
+        Icon: FolderPlus,
+        titulo: "Nuevo proyecto",
+        texto: "Crea tu proyecto. Solo necesitas el nombre de la obra.",
+    },
+    {
+        n: "02",
+        Icon: Upload,
+        titulo: "Contextualiza",
+        nota: "(opcional)",
+        texto: "Carga tu catálogo de conceptos o tu calendario de obra. Si no tienes, inicia una bitácora en blanco.",
+    },
+    {
+        n: "03",
+        Icon: MessageSquareText,
+        titulo: "Habla con tu obra",
+        texto: "Empieza a interactuar. La IA audita la información, cruza los datos y te da todo masticado.",
+    },
 ];
 
 const REGISTER_URL = "/registro";
@@ -138,10 +167,11 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                 STATE 1: HERO PILL NAVBAR (scrollY < threshold)
                 ══════════════════════════════════════════════ */}
             <motion.nav
-                /* El contenedor cambia de modo en el mismo punto que su contenido:
-                   si la pill pasa a ancho completo en tablet pero el nav sigue
-                   centrado y sin ancho, el hijo w-full se queda sin referencia. */
-                className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 lg:left-1/2 lg:right-auto lg:top-6 lg:px-0 lg:-translate-x-1/2"
+                /* Sin pastilla: la marca va suelta sobre el hero, alineada con el
+                   titular. Toda la navegación vive dentro del menú del logo. */
+                /* Mismo padding que .hero-grid (px-6 / md:px-10 / lg:px-16) para
+                   que la marca quede a plomo con el titular. */
+                className="fixed top-4 left-0 right-0 z-50 px-6 md:px-10 lg:top-6 lg:px-16"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{
                     opacity: isScrolled ? 0 : 1,
@@ -152,84 +182,15 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                 style={{ pointerEvents: isScrolled ? "none" : "auto" }}
                 aria-hidden={isScrolled}
             >
-                <div
-                    /* El menú completo entra a partir de lg, no de md: en tablet
-                       (768–1023) la pill se salía de la pantalla por la derecha. */
-                    className="flex items-center justify-between lg:justify-start gap-3 lg:gap-5 rounded-full px-4 py-2 lg:px-5 lg:py-2 w-full lg:w-auto"
-                    style={{
-                        background: "rgba(12, 6, 4, 0.55)",
-                        backdropFilter: "blur(18px)",
-                        WebkitBackdropFilter: "blur(18px)",
-                        border: "1px solid rgba(195, 151, 103, 0.15)",
-                        boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
-                    }}
-                >
-                    {/* Logo image (existente) */}
-                    {/* width/height 1:1 = ratio intrínseco real del asset (1182x1182):
-                        evita el salto de altura (CLS) del pill navbar al decodificar. */}
-                    <Image
-                        src={assetPath("/images/logo-bitacoria.webp")}
-                        alt="BitacorIA"
-                        width={64}
-                        height={64}
-                        priority
-                        className="shrink-0 w-12 lg:w-[54px] h-auto"
-                        style={{
-                            filter:
-                                "brightness(0) invert(1) sepia(1) saturate(0.3) hue-rotate(350deg) brightness(0.85)",
-                        }}
+                <div className="flex w-full items-center justify-end gap-3">
+                    {/* El logo ES la navegación: enlaces, cuenta y todo lo demás
+                        viven dentro de su menú (ver LogoMenu). */}
+                    <LogoMenu
+                        onQuienesSomos={handleQuienes}
+                        onComoFunciona={handleComoFunciona}
+                        account={account}
+                        onSignOut={handleSignOut}
                     />
-
-                    <div
-                        className="hidden xl:block h-5 w-px shrink-0"
-                        style={{ background: "rgba(195, 151, 103, 0.2)" }}
-                    />
-
-                    <div className="hidden lg:flex items-center gap-5 xl:gap-7">
-                        {NAV_LINKS.map((link) =>
-                            renderNavLink(
-                                link,
-                                "whitespace-nowrap font-ui text-xs uppercase tracking-widest transition-colors duration-300 cursor-pointer bg-transparent border-none",
-                                { color: "rgba(255,255,255,0.5)" },
-                            )
-                        )}
-                    </div>
-
-                    <div
-                        className="hidden xl:block h-5 w-px shrink-0"
-                        style={{ background: "rgba(195, 151, 103, 0.2)" }}
-                    />
-
-                    {/* ACCEDER button desktop */}
-                    {account ? (
-                        <AccountMenu account={account} onSignOut={handleSignOut} variant="pill" />
-                    ) : (
-                        <a
-                            href={REGISTER_URL}
-                            aria-label="Acceder o registrarte"
-                            title="Acceder"
-                            className="hidden lg:flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-300"
-                            style={{
-                                background: "rgba(195, 151, 103, 0.12)",
-                                border: "1px solid rgba(195, 151, 103, 0.4)",
-                                color: "#c39767",
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = "rgba(195, 151, 103, 0.22)";
-                                e.currentTarget.style.borderColor = "rgba(195, 151, 103, 0.65)";
-                                e.currentTarget.style.color = "#f0d9b5";
-                                e.currentTarget.style.boxShadow = "0 0 14px rgba(195, 151, 103, 0.25)";
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = "rgba(195, 151, 103, 0.12)";
-                                e.currentTarget.style.borderColor = "rgba(195, 151, 103, 0.4)";
-                                e.currentTarget.style.color = "#c39767";
-                                e.currentTarget.style.boxShadow = "none";
-                            }}
-                        >
-                            <User size={16} strokeWidth={2} />
-                        </a>
-                    )}
 
                     {/* HAMBURGER mobile (hero state) */}
                     <button
@@ -314,7 +275,7 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                 aria-hidden={!isScrolled}
             >
                 <div
-                    className="flex items-center justify-between h-12 md:h-14 px-4 md:px-8 lg:px-12"
+                    className="flex items-center justify-end gap-3 h-12 md:h-14 px-6 md:px-10 lg:px-16"
                     style={{
                         background: "rgba(8, 4, 2, 0.88)",
                         backdropFilter: "blur(20px)",
@@ -322,74 +283,15 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                         borderBottom: "1px solid rgba(195, 151, 103, 0.12)",
                     }}
                 >
-                    {/* Logo: imagen horizontal BitacorIA filtrada a blanco puro */}
-                    <a
-                        href="#hero-or-chaos"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            window.scrollTo({ top: 0, behavior: "smooth" });
-                        }}
-                        className="flex items-center shrink-0 transition-opacity hover:opacity-80"
-                        aria-label="BitacorIA — ir arriba"
-                    >
-                        <Image
-                            src={assetPath("/images/logo-bitacoria-horizontal.png")}
-                            alt="BitacorIA"
-                            width={40}
-                            height={40}
-                            className="h-8 md:h-10 w-auto"
-                            style={{
-                                // Filtro a blanco puro — el PNG tiene alpha, así que invert(1)
-                                // sobre el dark logo lo convierte en blanco translúcido.
-                                filter: "brightness(0) invert(1)",
-                            }}
-                        />
-                    </a>
-
-                    {/* Nav links — slim center desktop */}
-                    {/* lg, no md: AccountMenu solo aparece desde 1024px, así que con
-                        el corte en md la barra slim se quedaba sin avatar Y sin
-                        hamburguesa entre 768 y 1023 — con sesión iniciada no había
-                        forma de ver la cuenta ni cerrar sesión. Ahora coincide con
-                        la pill. */}
-                    <div className="hidden lg:flex items-center gap-6 lg:gap-8">
-                        {NAV_LINKS.map((link) =>
-                            renderNavLink(
-                                link,
-                                "whitespace-nowrap font-ui text-[11px] uppercase tracking-widest transition-colors duration-300 cursor-pointer bg-transparent border-none",
-                                { color: "rgba(255,255,255,0.55)" },
-                            )
-                        )}
-                    </div>
-
-                    {/* Acceder slim — desktop */}
-                    {account ? (
-                        <AccountMenu account={account} onSignOut={handleSignOut} variant="slim" />
-                    ) : (
-                        <a
-                            href={REGISTER_URL}
-                            aria-label="Acceder o registrarte"
-                            title="Acceder"
-                            className="hidden lg:flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-300"
-                            style={{
-                                background: "rgba(195, 151, 103, 0.12)",
-                                border: "1px solid rgba(195, 151, 103, 0.4)",
-                                color: "#c39767",
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = "rgba(195, 151, 103, 0.22)";
-                                e.currentTarget.style.borderColor = "rgba(195, 151, 103, 0.65)";
-                                e.currentTarget.style.color = "#f0d9b5";
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = "rgba(195, 151, 103, 0.12)";
-                                e.currentTarget.style.borderColor = "rgba(195, 151, 103, 0.4)";
-                                e.currentTarget.style.color = "#c39767";
-                            }}
-                        >
-                            <User size={15} strokeWidth={2} />
-                        </a>
-                    )}
+                    {/* Mismo menú del logo, en tamaño reducido: al bajar no reaparece
+                        una barra de enlaces distinta de la del hero. */}
+                    <LogoMenu
+                        onQuienesSomos={handleQuienes}
+                        onComoFunciona={handleComoFunciona}
+                        account={account}
+                        onSignOut={handleSignOut}
+                        variant="slim"
+                    />
 
                     {/* HAMBURGER mobile (slim state) */}
                     <button
@@ -478,7 +380,7 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                             ×
                         </button>
 
-                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1" data-lenis-prevent>
+                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scroll-fino pr-3" data-lenis-prevent>
                         <p className="mb-1 text-center font-ui text-[10px] uppercase tracking-[0.3em] text-[#d8c4a8]">
                             El Flujo de
                         </p>
@@ -486,81 +388,35 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                             BitacorIA
                         </h2>
 
-                        {/* Flujo: 3 pasos con iconos + flechas (→ en desktop, ↓ en móvil) */}
-                        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                            {/* Paso 1 */}
-                            <div className="group relative flex flex-1 flex-col rounded-xl border border-[#f5f0e8]/[0.12] bg-[#f5f0e8]/[0.04] p-6 transition-colors hover:border-[#d8c4a8]/[0.4]">
-                                <span className="pointer-events-none absolute right-4 top-3 font-display text-6xl font-extrabold leading-none text-[#f5f0e8]/[0.06] select-none">
-                                    01
-                                </span>
-                                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-[#d8c4a8]/[0.25] bg-[#d8c4a8]/[0.1] text-[#e8ddc9]">
-                                    <FolderPlus size={20} strokeWidth={1.6} />
+                        {/* Tres pasos como entradas de bitácora: número en
+                            monoespaciada, icono desnudo y una regla que separa.
+                            Antes eran tres tarjetas con borde, relleno y flechas
+                            entre ellas — cajas dentro de una caja, y el mismo
+                            aspecto genérico que quitamos de la encuesta. */}
+                        <div className="divide-y divide-[#f5f0e8]/[0.08]">
+                            {PASOS.map(({ n, Icon, titulo, nota, texto }) => (
+                                <div key={n} className="flex gap-5 py-6 first:pt-0 last:pb-0">
+                                    <div className="flex shrink-0 flex-col items-center gap-3 pt-0.5">
+                                        <span className="font-mono text-[12px] tracking-[0.18em] text-[#c39767]/70">
+                                            {n}
+                                        </span>
+                                        <Icon size={19} strokeWidth={1.5} className="text-[#c39767]/55" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h3 className="mb-2 font-display text-[15px] font-bold uppercase tracking-wide text-[#f5f0e8]">
+                                            {titulo}
+                                            {nota && (
+                                                <span className="ml-2 font-sans text-[12px] font-normal normal-case tracking-normal text-[#f5f0e8]/35">
+                                                    {nota}
+                                                </span>
+                                            )}
+                                        </h3>
+                                        <p className="text-[15px] leading-relaxed text-[#f5f0e8]/55">
+                                            {texto}
+                                        </p>
+                                    </div>
                                 </div>
-                                <p className="mb-2 font-ui text-[9px] uppercase tracking-[0.25em] text-[#d8c4a8]/[0.8]">
-                                    Paso 1
-                                </p>
-                                <h3 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-[#f5f0e8]/[0.9]">
-                                    Nuevo Proyecto
-                                </h3>
-                                <p className="text-[12px] leading-relaxed text-[#f5f0e8]/[0.55]">
-                                    Crea tu proyecto. Solo necesitas el nombre de la obra.
-                                </p>
-                            </div>
-
-                            {/* Flecha 1 → 2 */}
-                            <div className="flex shrink-0 items-center justify-center text-[#d8c4a8]/[0.5]">
-                                <ChevronRight className="hidden h-6 w-6 sm:block" strokeWidth={2} />
-                                <ChevronDown className="h-5 w-5 sm:hidden" strokeWidth={2} />
-                            </div>
-
-                            {/* Paso 2 */}
-                            <div className="group relative flex flex-1 flex-col rounded-xl border border-[#f5f0e8]/[0.12] bg-[#f5f0e8]/[0.04] p-6 transition-colors hover:border-[#d8c4a8]/[0.4]">
-                                <span className="pointer-events-none absolute right-4 top-3 font-display text-6xl font-extrabold leading-none text-[#f5f0e8]/[0.06] select-none">
-                                    02
-                                </span>
-                                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-[#d8c4a8]/[0.25] bg-[#d8c4a8]/[0.1] text-[#e8ddc9]">
-                                    <Upload size={20} strokeWidth={1.6} />
-                                </div>
-                                <p className="mb-2 font-ui text-[9px] uppercase tracking-[0.25em] text-[#d8c4a8]/[0.8]">
-                                    Paso 2
-                                </p>
-                                <h3 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-[#f5f0e8]/[0.9]">
-                                    Contextualiza{" "}
-                                    <span className="text-[#f5f0e8]/[0.35] text-[10px] normal-case tracking-normal">
-                                        (opcional)
-                                    </span>
-                                </h3>
-                                <p className="text-[12px] leading-relaxed text-[#f5f0e8]/[0.55]">
-                                    Carga tu catálogo de conceptos o tu calendario de obra. Si no tienes,
-                                    inicia una bitácora en blanco.
-                                </p>
-                            </div>
-
-                            {/* Flecha 2 → 3 */}
-                            <div className="flex shrink-0 items-center justify-center text-[#d8c4a8]/[0.5]">
-                                <ChevronRight className="hidden h-6 w-6 sm:block" strokeWidth={2} />
-                                <ChevronDown className="h-5 w-5 sm:hidden" strokeWidth={2} />
-                            </div>
-
-                            {/* Paso 3 */}
-                            <div className="group relative flex flex-1 flex-col rounded-xl border border-[#f5f0e8]/[0.12] bg-[#f5f0e8]/[0.04] p-6 transition-colors hover:border-[#d8c4a8]/[0.4]">
-                                <span className="pointer-events-none absolute right-4 top-3 font-display text-6xl font-extrabold leading-none text-[#f5f0e8]/[0.06] select-none">
-                                    03
-                                </span>
-                                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-[#d8c4a8]/[0.25] bg-[#d8c4a8]/[0.1] text-[#e8ddc9]">
-                                    <MessageSquareText size={20} strokeWidth={1.6} />
-                                </div>
-                                <p className="mb-2 font-ui text-[9px] uppercase tracking-[0.25em] text-[#d8c4a8]/[0.8]">
-                                    Paso 3
-                                </p>
-                                <h3 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-[#f5f0e8]/[0.9]">
-                                    Habla con tu Obra
-                                </h3>
-                                <p className="text-[12px] leading-relaxed text-[#f5f0e8]/[0.55]">
-                                    Empieza a interactuar. La IA audita la información, cruza los datos
-                                    y te da todo masticado.
-                                </p>
-                            </div>
+                            ))}
                         </div>
 
                         <p className="mt-8 text-center text-[11px] text-[#f5f0e8]/[0.35]">
