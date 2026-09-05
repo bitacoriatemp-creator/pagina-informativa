@@ -36,6 +36,19 @@ export default function LenisProvider({
 
     const isDashboard = pathname.startsWith("/dashboard");
 
+    /* Al recargar, el navegador devuelve al usuario a donde estaba
+       (history.scrollRestoration = "auto"). En una landing con animaciones de
+       entrada eso deja a media página y con las animaciones ya gastadas: se
+       recarga esperando ver el principio. En el dashboard no se toca, ahí
+       recuperar la posición sí es lo útil. */
+    useEffect(() => {
+        if (isDashboard || !("scrollRestoration" in history)) return;
+        history.scrollRestoration = "manual";
+        // Con ancla en la URL manda el ancla, no nosotros.
+        if (!window.location.hash) window.scrollTo(0, 0);
+        return () => { history.scrollRestoration = "auto"; };
+    }, [isDashboard]);
+
     useEffect(() => {
         // ── Do NOT create Lenis on dashboard routes ──
         if (isDashboard) {

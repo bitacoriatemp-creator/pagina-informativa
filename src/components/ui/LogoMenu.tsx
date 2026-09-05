@@ -2,10 +2,10 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, LogOut } from "lucide-react";
 import { assetPath } from "@/lib/assetPath";
-import { mostrarDemo } from "@/lib/eventos";
 import type { Account } from "@/lib/account";
 
 /* ══════════════════════════════════════════════════════════════
@@ -27,55 +27,61 @@ type Elemento = {
     label: string;
     /* Destinos reales, todos existentes hoy. */
     href?: string;
-    /* Los tres demos comparten el ancla del hero: además de subir,
-       hay que decirle al showcase cuál mostrar. */
-    demo?: number;
-    accion?: "quienes" | "comoFunciona";
+    accion?: "comoFunciona";
 };
 
+/* Anclas con "/" delante: desde una página que no es la home, un href
+   "#soluciones" no lleva a ninguna parte porque esa sección no existe ahí.
+   Con "/#soluciones" el navegador vuelve a la home y salta; estando ya en
+   la home no recarga, solo desplaza. */
 const COLUMNAS: { titulo: string; elementos: Elemento[] }[] = [
     {
         titulo: "Producto",
         elementos: [
-            { label: "Smart Concepts", href: "#hero-or-chaos", demo: 0 },
-            { label: "Bitácora", href: "#hero-or-chaos", demo: 1 },
-            { label: "Smart Calendar", href: "#hero-or-chaos", demo: 2 },
-            { label: "Smart BIM", href: "#bim-sync" },
+            { label: "Smart Concepts", href: "/smart-concepts" },
+            { label: "Smart Log", href: "/smart-log" },
+            { label: "Smart Calendar", href: "/smart-calendar" },
+            { label: "Smart BIM", href: "/smart-bim" },
+            { label: "Smart Island", href: "/smart-island" },
         ],
     },
     {
         titulo: "Descubre",
         elementos: [
             { label: "Cómo funciona", accion: "comoFunciona" },
-            { label: "Alcance global", href: "#alcance-global" },
-            { label: "Planes y precios", href: "#soluciones" },
+            { label: "El problema", href: "/el-problema" },
+            { label: "Alcance global", href: "/alcance-global" },
+            { label: "Planes y precios", href: "/#soluciones" },
         ],
     },
     {
         titulo: "Compañía",
         elementos: [
-            { label: "Quiénes somos", accion: "quienes" },
-            { label: "Contacto", href: "#contacto" },
+            { label: "Quiénes somos", href: "/nosotros" },
+            { label: "Contacto", href: "/#contacto" },
         ],
     },
 ];
 
 interface Props {
-    onQuienesSomos: () => void;
     onComoFunciona: () => void;
     account: Account | null;
     onSignOut: () => void;
     /* El hero lo lleva más grande que la barra delgada del scroll. */
     variant?: "pill" | "slim";
+    /* En qué borde se apoya la marca. Manda todo lo demás: de qué lado abre
+       el panel, dónde va la flecha y hacia dónde apunta en reposo. */
+    lado?: "izquierda" | "derecha";
 }
 
 export default function LogoMenu({
-    onQuienesSomos,
     onComoFunciona,
     account,
     onSignOut,
     variant = "pill",
+    lado = "izquierda",
 }: Props) {
+    const aLaDerecha = lado === "derecha";
     const [abierto, setAbierto] = useState(false);
     const [encima, setEncima] = useState(false);
     const [habilitado, setHabilitado] = useState(false);
@@ -106,18 +112,17 @@ export default function LogoMenu({
 
     useEffect(() => () => { if (cierre.current) clearTimeout(cierre.current); }, []);
 
-    /* El panel cuelga del logo y ahora abre hacia la izquierda, así que el
-       borde que se puede salir es el IZQUIERDO. Se mide al abrir y se corrige;
-       con JS y no con un ancho fijo, para que siga valiendo cuando el menú
-       crezca con más secciones. */
+    /* El panel cuelga del logo, así que el borde que se puede salir es el
+       contrario al que abre. Se mide al abrir y se corrige; con JS y no con un
+       ancho fijo, para que siga valiendo cuando el menú crezca. */
     useLayoutEffect(() => {
         if (!abierto) { setAjusteX(0); return; }
         const el = panel.current;
         if (!el) return;
         const r = el.getBoundingClientRect();
-        const exceso = 16 - r.left;
+        const exceso = aLaDerecha ? 16 - r.left : r.right - (window.innerWidth - 16);
         if (exceso > 0) setAjusteX(-exceso);
-    }, [abierto]);
+    }, [abierto, aLaDerecha]);
 
     const abrir = () => {
         setEncima(true);
@@ -141,22 +146,20 @@ export default function LogoMenu({
         const alTeclear = (e: KeyboardEvent) => {
             if (e.key !== "Escape") return;
             cerrarYa();
-            contenedor.current?.querySelector("button")?.focus();
+            contenedor.current?.querySelector("a")?.focus();
         };
         window.addEventListener("keydown", alTeclear);
         return () => window.removeEventListener("keydown", alTeclear);
     }, [abierto]);
 
     const alElegir = (el: Elemento) => {
-        if (el.accion === "quienes") onQuienesSomos();
         if (el.accion === "comoFunciona") onComoFunciona();
-        if (el.demo !== undefined) mostrarDemo(el.demo);
         cerrarYa();
     };
 
-    /* "En grande": la marca es ahora lo único que hay arriba. */
-    /* En slim el logo debe caber en una barra de 48/56px de alto. */
-    const tamLogo = variant === "pill" ? "w-16 lg:w-24" : "w-9 lg:w-10";
+    /* Lockup horizontal (500x191): se mide por ancho y el alto sale solo.
+       En slim debe caber en una barra de 48/56px de alto. */
+    const tamLogo = variant === "pill" ? "w-36 lg:w-44" : "w-20 lg:w-24";
     const visible = encima || abierto;
 
     return (
@@ -168,28 +171,47 @@ export default function LogoMenu({
             onFocus={abrir}
             onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) cerrarConGracia(); }}
         >
-            <button
-                type="button"
-                onClick={() => puedeAbrir() && setAbierto((o) => !o)}
+            {/* Enlace, no botón: pulsar la marca lleva al inicio, que es lo que
+                todo el mundo espera de un logo. El menú no depende del clic —se
+                abre al acercar el ratón y, con teclado, al recibir el foco—, así
+                que ambas cosas conviven sin pisarse. */}
+            <Link
+                href="/"
                 aria-haspopup={habilitado ? "true" : undefined}
                 aria-expanded={habilitado ? abierto : undefined}
                 aria-controls={habilitado ? idPanel : undefined}
-                aria-label={habilitado ? "BitacorIA — abrir menú" : "BitacorIA"}
+                aria-label={habilitado ? "BitacorIA — ir al inicio y abrir menú" : "BitacorIA — ir al inicio"}
+                onClick={cerrarYa}
                 className="flex items-center gap-2.5 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c39767]/60"
             >
-                {/* Va antes del logo: con la marca pegada al borde derecho, la
+                <Image
+                    src={assetPath("/images/logo_horizontal-removebg-preview.png")}
+                    alt="BitacorIA"
+                    width={500}
+                    height={191}
+                    priority
+                    className={`shrink-0 h-auto ${tamLogo}`}
+                    style={{
+                        filter:
+                            "brightness(0) invert(1) sepia(1) saturate(0.3) hue-rotate(350deg) brightness(0.85)",
+                    }}
+                />
+                {/* Va DESPUÉS del logo: con la marca pegada al borde izquierdo, la
                     flecha queda por dentro y apunta hacia el contenido.
-                    El trazo dibuja un galón hacia ABAJO; en reposo se gira 90°
-                    (apunta a la izquierda) y al acercar el ratón vuelve a 0°.
+                    El trazo dibuja un galón hacia ABAJO; en reposo se gira -90°
+                    (apunta a la derecha) y al acercar el ratón vuelve a 0°.
                     El giro dura lo mismo que el fundido para que aparecer y
                     girar se lean como un solo gesto, no como dos. */}
                 <svg
                     aria-hidden
                     viewBox="0 0 10 6"
-                    className="hidden lg:block h-[6px] w-[10px] shrink-0"
+                    className={`hidden lg:block h-[6px] w-[10px] shrink-0 ${aLaDerecha ? "order-first" : ""}`}
                     style={{
                         opacity: visible ? 1 : 0,
-                        transform: visible ? "rotate(0deg)" : "rotate(90deg)",
+                        /* Siempre queda por dentro y apunta hacia el contenido:
+                           a la izquierda si la marca está pegada al borde
+                           derecho, a la derecha si está pegada al izquierdo. */
+                        transform: visible ? "rotate(0deg)" : `rotate(${aLaDerecha ? 90 : -90}deg)`,
                         transition: `${REVELADO}, transform 1000ms cubic-bezier(0.33,0,0.2,1)`,
                     }}
                 >
@@ -202,19 +224,7 @@ export default function LogoMenu({
                         strokeLinejoin="round"
                     />
                 </svg>
-                <Image
-                    src={assetPath("/images/logo-bitacoria.webp")}
-                    alt="BitacorIA"
-                    width={128}
-                    height={128}
-                    priority
-                    className={`shrink-0 h-auto ${tamLogo}`}
-                    style={{
-                        filter:
-                            "brightness(0) invert(1) sepia(1) saturate(0.3) hue-rotate(350deg) brightness(0.85)",
-                    }}
-                />
-            </button>
+            </Link>
 
             <AnimatePresence>
                 {abierto && habilitado && (
@@ -227,8 +237,12 @@ export default function LogoMenu({
                         id={idPanel}
                         /* pt-3 en el envoltorio, no margen: deja un puente sin hueco
                            entre el logo y el panel para que el ratón no se salga. */
-                        className="absolute right-0 top-full z-50 hidden pt-3 lg:block"
-                        style={{ transformOrigin: "top right", marginRight: ajusteX }}
+                        className={`absolute top-full z-50 hidden pt-3 lg:block ${aLaDerecha ? "right-0" : "left-0"}`}
+                        style={
+                            aLaDerecha
+                                ? { transformOrigin: "top right", marginRight: ajusteX }
+                                : { transformOrigin: "top left", marginLeft: ajusteX }
+                        }
                     >
                         <div
                             className="rounded-2xl px-7 py-6"

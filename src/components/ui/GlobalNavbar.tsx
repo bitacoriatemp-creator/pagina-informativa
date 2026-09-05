@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, FolderPlus, Upload, MessageSquareText, type LucideIcon } from "lucide-react";
 import LogoMenu from "./LogoMenu";
@@ -22,10 +23,10 @@ import { AccountRowMobile } from "./AccountMenu";
    ══════════════════════════════════════════════════════════════ */
 
 const NAV_LINKS = [
-    { label: "Quiénes Somos", href: "#quienes" },
+    { label: "Quiénes Somos", href: "/nosotros" },
     { label: "Cómo Funciona", href: "#como-funciona" },
-    { label: "Planes de Pago", href: "#soluciones" },
-    { label: "Contacto", href: "#contacto" },
+    { label: "Planes de Pago", href: "/#soluciones" },
+    { label: "Contacto", href: "/#contacto" },
 ];
 
 /* Los tres pasos del modal "Cómo funciona", como datos: repetir el mismo
@@ -61,11 +62,13 @@ const PASOS: {
 const REGISTER_URL = "/registro";
 const SCROLL_THRESHOLD = 100; // px — después de esto cambia a slim
 
-interface Props {
-    onOpenQuienesSomos: () => void;
-}
+export default function GlobalNavbar() {
+    /* La marca va a la derecha SOLO en la home: allí el hero deja libre ese
+       lado. En las demás páginas la foto ocupa la derecha, así que pasa a la
+       izquierda —y con ella la flecha y el lado por el que abre el panel. */
+    const enHome = usePathname() === "/";
+    const lado = enHome ? "derecha" : "izquierda";
 
-export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
     const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
@@ -113,10 +116,6 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
     }, []);
 
     /* ── Handlers compartidos ── */
-    const handleQuienes = () => {
-        onOpenQuienesSomos();
-        setIsMenuOpen(false);
-    };
     const handleComoFunciona = () => {
         setIsHowItWorksOpen(true);
         setIsMenuOpen(false);
@@ -140,13 +139,6 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                 (e.currentTarget as HTMLElement).style.color = style.color as string;
             },
         };
-        if (link.href === "#quienes") {
-            return (
-                <button {...baseProps} onClick={() => { handleQuienes(); onItemClick?.(); }}>
-                    {link.label}
-                </button>
-            );
-        }
         if (link.href === "#como-funciona") {
             return (
                 <button {...baseProps} onClick={() => { handleComoFunciona(); onItemClick?.(); }}>
@@ -171,7 +163,7 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                    titular. Toda la navegación vive dentro del menú del logo. */
                 /* Mismo padding que .hero-grid (px-6 / md:px-10 / lg:px-16) para
                    que la marca quede a plomo con el titular. */
-                className="fixed top-4 left-0 right-0 z-50 px-6 md:px-10 lg:top-6 lg:px-16"
+                className={`fixed top-4 left-0 right-0 z-50 px-6 md:px-10 lg:top-6 ${enHome ? "lg:px-16" : "lg:px-10"}`}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{
                     opacity: isScrolled ? 0 : 1,
@@ -182,14 +174,14 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                 style={{ pointerEvents: isScrolled ? "none" : "auto" }}
                 aria-hidden={isScrolled}
             >
-                <div className="flex w-full items-center justify-end gap-3">
+                <div className={`flex w-full items-center gap-3 ${enHome ? "justify-end" : "justify-between"}`}>
                     {/* El logo ES la navegación: enlaces, cuenta y todo lo demás
                         viven dentro de su menú (ver LogoMenu). */}
                     <LogoMenu
-                        onQuienesSomos={handleQuienes}
                         onComoFunciona={handleComoFunciona}
                         account={account}
                         onSignOut={handleSignOut}
+                        lado={lado}
                     />
 
                     {/* HAMBURGER mobile (hero state) */}
@@ -275,7 +267,7 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                 aria-hidden={!isScrolled}
             >
                 <div
-                    className="flex items-center justify-end gap-3 h-12 md:h-14 px-6 md:px-10 lg:px-16"
+                    className={`flex items-center gap-3 h-12 md:h-14 px-6 md:px-10 ${enHome ? "lg:px-16 justify-end" : "lg:px-10 justify-between"}`}
                     style={{
                         background: "rgba(8, 4, 2, 0.88)",
                         backdropFilter: "blur(20px)",
@@ -286,11 +278,11 @@ export default function GlobalNavbar({ onOpenQuienesSomos }: Props) {
                     {/* Mismo menú del logo, en tamaño reducido: al bajar no reaparece
                         una barra de enlaces distinta de la del hero. */}
                     <LogoMenu
-                        onQuienesSomos={handleQuienes}
                         onComoFunciona={handleComoFunciona}
                         account={account}
                         onSignOut={handleSignOut}
                         variant="slim"
+                        lado={lado}
                     />
 
                     {/* HAMBURGER mobile (slim state) */}

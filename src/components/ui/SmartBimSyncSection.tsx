@@ -270,7 +270,11 @@ export default function SmartBimSyncSection() {
             style={{ backgroundColor: "#050505", height: "auto" }}
         >
             {/* ── STICKY WRAPPER ── */}
-            <div className="sticky top-0 minh-100dvh h-auto md:h-screen w-full flex items-center justify-center pt-32 md:pt-0 pb-32 md:pb-0">
+            {/* md:pt-28 — el contenido va centrado en una caja de alto de pantalla:
+                en pantallas cortas (p.ej. 1920x908 con el escalado del 125% de
+                Windows = 1536x726 CSS) subía hasta meterse bajo la marca fija.
+                El relleno superior le reserva ese carril. */}
+            <div className="sticky top-0 minh-100dvh h-auto md:h-screen w-full flex items-center justify-center pt-32 md:pt-28 pb-32 md:pb-0">
 
                 {/* ── ATMOSPHERIC LAYER 1: Deep purple glow ── */}
                 <div

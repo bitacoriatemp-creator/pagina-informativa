@@ -1,10 +1,8 @@
 "use client";
 
-import { mostrarDemo } from "@/lib/eventos";
-
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, LayoutGroup, useAnimationFrame, useSpring, useMotionValue } from "framer-motion";
-import { useLenis } from "./LenisProvider";
 import {
     TableProperties,
     Book,
@@ -29,9 +27,7 @@ import {
    DOM node and the animation never re-played.
    ══════════════════════════════════════════════════════════════ */
 
-/* Smart Concepts / Bitácora / Smart Calendar ahora viven dentro del Hero
-   (HeroDemoShowcase) en vez de secciones aparte — sus módulos regresan
-   arriba al hero. */
+/* Cada módulo tiene su propia página: el clic navega, ya no desplaza. */
 export const modules = [
     {
         id: "concepts",
@@ -39,17 +35,15 @@ export const modules = [
         Icon: TableProperties,
         color: "#00D26A",
         activeColor: "#000000",
-        targetId: "hero-or-chaos",
-        demo: 0,
+        href: "/smart-concepts",
     },
     {
         id: "bitacora",
-        label: "Bitácora",
+        label: "Smart Log",
         Icon: Book,
         color: "#C39767",
         activeColor: "#1a0e08",
-        targetId: "hero-or-chaos",
-        demo: 1,
+        href: "/smart-log",
     },
     {
         id: "calendar",
@@ -57,8 +51,7 @@ export const modules = [
         Icon: CalendarDays,
         color: "#3B82F6",
         activeColor: "#000000",
-        targetId: "hero-or-chaos",
-        demo: 2,
+        href: "/smart-calendar",
     },
     {
         id: "bim",
@@ -66,7 +59,7 @@ export const modules = [
         Icon: Box,
         color: "#A855F7",
         activeColor: "#ffffff",
-        targetId: "bim-sync",
+        href: "/smart-bim",
     },
 ];
 
@@ -86,6 +79,7 @@ interface SmartIslandProps {
 }
 
 export default function SmartIsland({ islandState = "hidden", triggerPop, isBimSectionActive = false, forceExpand = false, hideIsland = false, showcaseResetCount = 0 }: SmartIslandProps) {
+    const router = useRouter();
     const [hoveredId, setHoveredId] = useState<string | null>(null);
     const [popKey, setPopKey] = useState<Record<string, number>>({});
     const [isExpanded, setIsExpanded] = useState(false);
@@ -143,17 +137,6 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
     // Single source of truth: the IntersectionObserver state machine in page.tsx
     // controls all visibility transitions. No secondary scroll guard needed.
     const effectiveState = islandState;
-
-    const lenisRef = useLenis();
-    const handleScroll = (id: string) => {
-        const lenis = lenisRef.current;
-        if (lenis) {
-            lenis.scrollTo(`#${id}`); // desktop: respeta el motor de scroll de Lenis
-        } else {
-            // móvil/touch: scroll nativo (la opción 'smooth' funciona aunque html sea 'auto')
-            document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-        }
-    };
 
     // ── ANIMATION VARIANTS ──
     // x: "-50%" is owned by Framer, NOT Tailwind, to prevent transform clobbering.
@@ -366,11 +349,8 @@ export default function SmartIsland({ islandState = "hidden", triggerPop, isBimS
                                         e.stopPropagation(); // evita bug de click en contenedor padre
                                         setActiveTabId(mod.id); // actualiza el ícono del colapsado
                                         if (isMobile) setIsExpanded(false); // colapsa al navegar
-                                        handleScroll(mod.targetId);
-                                        // Los tres módulos del hero comparten ancla: sin esto
-                                        // "Bitácora" subía al hero pero seguía el demo que
-                                        // estuviera puesto. Smart BIM no tiene demo: solo baja.
-                                        if (mod.demo !== undefined) mostrarDemo(mod.demo);
+                                        // Cada módulo tiene ahora su propia página.
+                                        router.push(mod.href);
                                     }}
                                     onKeyDown={(e) => {
                                         if (e.key !== "Enter" && e.key !== " ") return;

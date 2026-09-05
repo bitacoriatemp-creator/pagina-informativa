@@ -5,8 +5,8 @@ import { useEffect, useRef } from "react";
 type DemoPlayerProps = {
     src: string;
     poster: string;
+    /* Ya no se pinta: se conserva para el nombre accesible del <video>. */
     label: string;
-    accent?: string;
 };
 
 /**
@@ -16,7 +16,7 @@ type DemoPlayerProps = {
  * hasta que está por verse: preload="none" + play() disparado por el
  * IntersectionObserver, así la carga inicial de la landing sigue ligera.
  */
-export default function DemoPlayer({ src, poster, label, accent = "#f5f0e8" }: DemoPlayerProps) {
+export default function DemoPlayer({ src, poster, label }: DemoPlayerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
@@ -65,14 +65,6 @@ export default function DemoPlayer({ src, poster, label, accent = "#f5f0e8" }: D
                 aria-label={`Demo: ${label}`}
                 className="aspect-video w-full bg-black"
             />
-
-            {/* Chip "Demo real" — etiqueta no interactiva */}
-            <span className="pointer-events-none absolute bottom-4 left-4 flex items-center gap-2 rounded-full bg-black/55 px-3 py-1.5 backdrop-blur-sm">
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: accent }} />
-                <span className="font-ui text-[11px] font-medium uppercase tracking-wider text-white/85">
-                    Demo real · {label}
-                </span>
-            </span>
         </div>
     );
 }

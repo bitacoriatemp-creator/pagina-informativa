@@ -29,7 +29,7 @@ const DEMOS: Demo[] = [
     {
         src: assetPath("/videos/demo-bitacora.mp4"),
         poster: assetPath("/videos/demo-bitacora-poster.jpg"),
-        label: "Bitácora",
+        label: "Smart Log",
         accent: "#C39767",
     },
     {
@@ -246,7 +246,7 @@ export default function HeroDemoShowcase() {
         }
     };
 
-    /* La isla flotante pide un demo concreto ("Bitácora" → índice 1). goTo
+    /* La isla flotante pide un demo concreto ("Smart Log" → índice 1). goTo
        cambia en cada render, así que el listener lee la versión vigente por ref
        y se suscribe una sola vez. */
     const goToRef = useRef(goTo);
