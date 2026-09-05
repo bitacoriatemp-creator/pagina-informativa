@@ -87,9 +87,11 @@ export default function NosotrosPage() {
                         pantalla sin recortar. El límite va al ANCHO y no con
                         max-h, para que el hueco quede reservado antes de que la
                         foto cargue y la maqueta no salte.
-                        Sin marco ni sombra: el degradado la funde con el fondo
-                        por la izquierda, y un borde a medio desvanecer delataría
-                        el truco. La máscara no recorta — la foto sigue entera. */}
+                        El degradado hacia la izquierda y la ausencia de marco
+                        viven en .foto-portada (globals.css) y solo desde lg: en
+                        una columna la máscara se comía al fundador de ese lado,
+                        porque no hay titular con el que fundirse. La máscara no
+                        recorta — la foto sigue entera. */}
                     <Revelar delay={0.12} className="mx-auto w-full max-w-[75vh]">
                         <Image
                             src={assetPath("/images/nosotros/fundadores.webp")}
@@ -98,13 +100,7 @@ export default function NosotrosPage() {
                             height={2667}
                             priority
                             sizes="(max-width: 1024px) 92vw, 52vw"
-                            className="h-auto w-full rounded-2xl"
-                            style={{
-                                WebkitMaskImage:
-                                    "linear-gradient(to left, #000 58%, rgba(0,0,0,0.45) 82%, transparent 100%)",
-                                maskImage:
-                                    "linear-gradient(to left, #000 58%, rgba(0,0,0,0.45) 82%, transparent 100%)",
-                            }}
+                            className="foto-portada h-auto w-full rounded-2xl"
                         />
                     </Revelar>
                 </div>

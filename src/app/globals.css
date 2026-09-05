@@ -973,4 +973,27 @@ input[type="number"].campo-linea {
 }
 
 
+
+/* ── Portada de /nosotros ───────────────────────────────────────────
+   En dos columnas la foto va a la derecha del titular y se funde con el
+   fondo por la izquierda; por eso ahí no lleva marco, que delataría el
+   corte a medio desvanecer.
+   En una sola columna no hay nada a la izquierda con lo que fundirse: la
+   máscara se comía al fundador de ese lado. Así que abajo de lg la foto
+   va entera y con el mismo marco que las de los fundadores, para que las
+   tres se lean igual. */
+.foto-portada {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.9);
+}
+
+@media (min-width: 1024px) {
+  .foto-portada {
+    border: 0;
+    box-shadow: none;
+    -webkit-mask-image: linear-gradient(to left, #000 58%, rgba(0, 0, 0, 0.45) 82%, transparent 100%);
+    mask-image: linear-gradient(to left, #000 58%, rgba(0, 0, 0, 0.45) 82%, transparent 100%);
+  }
+}
+
 /* Force Rebuild */
