@@ -129,6 +129,24 @@ export default function FooterSection() {
     const [montado, setMontado] = useState(false);
     useEffect(() => setMontado(true), []);
 
+    /* Llegada desde /registro con ?legal=privacy. Esa página no tiene pie —es
+       solo el alta— así que su enlace legal no puede disparar el evento del
+       hero: navega aquí y abre el documento al aterrizar. Se lee de
+       window.location y no con useSearchParams porque ese hook obliga a un
+       límite de Suspense y sacaría la home del prerenderizado estático. */
+    useEffect(() => {
+        let doc: string | null = null;
+        try { doc = new URLSearchParams(window.location.search).get("legal"); } catch { /* */ }
+        if (doc === "faq" || doc === "terms" || doc === "privacy") {
+            setActiveModal(doc);
+            /* Limpia la URL: al compartirla o recargar, el aviso no debe
+               reaparecer solo. */
+            try {
+                window.history.replaceState(null, "", window.location.pathname + window.location.hash);
+            } catch { /* */ }
+        }
+    }, []);
+
     // ── NEWSLETTER STATE ──
     const [email, setEmail] = useState("");
     const [status, setStatus] = useState<SubscribeStatus>("idle");

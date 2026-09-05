@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { 
     Building2, Layers, Users, FileText, 
@@ -235,9 +236,18 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                 {/* All content above image */}
                 <div className="relative z-10 flex flex-col h-full">
 
-                    {/* STICKY HEADER (Title, Price, CTA) — sticky solo en desktop; en móvil estático para evitar repaints/jank */}
+                    {/* STICKY HEADER (Title, Price, CTA) — sticky solo en desktop; en móvil estático para evitar repaints/jank.
+                        top-[57px] y no top-0: la barra delgada es fixed, mide h-14
+                        (56px) desde md y va en z-50, así que con top-0 la cabecera se
+                        pegaba DEBAJO de ella y el nombre del plan —que ocupa los
+                        primeros 40px— quedaba tapado. Al comparar filas de la tabla ya
+                        no se sabía de qué columna era cada precio.
+                        Y exactamente 56, ni uno más: la barra ya incluye su borde de
+                        1px dentro de esos 56 (box-border), así que este valor la deja
+                        a ras. Con 64 quedaba una rendija de 8px por la que se veían
+                        pasar las filas de la tabla entre la barra y el nombre. */}
                     <div
-                        className="relative md:sticky md:top-0 z-30 pt-5 pb-5 -mx-5 px-5 -mt-5"
+                        className="relative md:sticky md:top-14 z-30 pt-5 pb-5 -mx-5 px-5 -mt-5"
                         style={{ 
                             backgroundColor: plan.featured ? "#121008" : "#0f0f0f",
                             borderBottom: "1px solid rgba(255,255,255,0.05)",
@@ -288,7 +298,7 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                             {plan.dualCta ? (
                                 /* Dual buttons — Executive Plan */
                                 <div className="flex gap-2">
-                                    <a
+                                    <Link
                                         href="/registro"
                                         className="relative flex-1 py-3 rounded-lg font-bold text-sm tracking-wide transition-colors duration-200 active:scale-[0.98] md:transition-all md:duration-300 md:hover:scale-[1.02] md:hover:brightness-110 flex items-center justify-center text-center"
                                         style={{
@@ -299,8 +309,8 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                         }}
                                     >
                                         Comenzar
-                                    </a>
-                                    <a
+                                    </Link>
+                                    <Link
                                         href="/registro"
                                         className="relative flex-1 py-3 rounded-lg font-semibold text-sm tracking-wide transition-colors duration-200 active:scale-[0.98] md:transition-all md:duration-300 md:hover:scale-[1.02] md:hover:brightness-125 flex items-center justify-center text-center"
                                         style={{
@@ -311,11 +321,11 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                         }}
                                     >
                                         Contactar
-                                    </a>
+                                    </Link>
                                 </div>
                             ) : (
                                 /* Single CTA */
-                                <a
+                                <Link
                                     href="/registro"
                                     className="relative w-full py-3 rounded-lg font-bold text-sm tracking-wide transition-colors duration-200 active:scale-[0.98] md:transition-all md:duration-300 md:hover:scale-[1.02] md:hover:brightness-110 flex items-center justify-center text-center"
                                     style={plan.featured ? {
@@ -331,7 +341,7 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                     }}
                                 >
                                     {plan.cta}
-                                </a>
+                                </Link>
                             )}
                         </div>
 

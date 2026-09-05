@@ -941,4 +941,36 @@
   .lg-blob { animation: none !important; }
 }
 
+
+/* ── Renglones sin caja: dos arreglos del navegador ─────────────────
+   Los campos de /registro y de la encuesta son una línea, no una caja,
+   y el navegador dibuja encima dos cosas que rompen esa línea. */
+
+/* 1. Las flechitas de <input type="number"> flotan sobre la regla del
+      campo "Obras activas" y se leen como suciedad. Fuera. */
+input[type="number"].campo-linea::-webkit-inner-spin-button,
+input[type="number"].campo-linea::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"].campo-linea {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* 2. El autorrelleno pinta el campo de azul claro con texto oscuro: sobre
+      chocolate, dos barras luminosas en medio de la hoja. No hay forma de
+      quitar ese fondo, así que se sustituye por una sombra interior del
+      color de la página y se congela la transición. */
+.campo-linea:-webkit-autofill,
+.campo-linea:-webkit-autofill:hover,
+.campo-linea:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f5f0e8;
+  -webkit-box-shadow: 0 0 0 1000px #0c0604 inset;
+  box-shadow: 0 0 0 1000px #0c0604 inset;
+  transition: background-color 9999s ease-in-out 0s;
+  caret-color: #f5f0e8;
+}
+
+
 /* Force Rebuild */

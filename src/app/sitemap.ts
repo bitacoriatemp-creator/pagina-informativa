@@ -9,6 +9,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 1,
         },
         {
+            url: "https://bitacoria.com/registro",
+            lastModified: new Date(),
+            changeFrequency: "monthly",
+            priority: 0.9,
+        },
+        {
             url: "https://bitacoria.com/nosotros",
             lastModified: new Date(),
             changeFrequency: "monthly",

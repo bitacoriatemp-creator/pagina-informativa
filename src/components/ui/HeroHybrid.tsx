@@ -3,9 +3,10 @@
 import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { useRegistroModal } from "./RegistroModal";
+import { useRouter } from "next/navigation";
 import HeroLiquidGlass from "./HeroLiquidGlass";
 import { irALegal } from "@/lib/eventos";
+import { HANDOFF_EMAIL } from "@/lib/registro";
 
 /* Apple Sign-In requiere cuenta Apple Developer ($99/año).
    El botón ya está construido abajo — cambia a `true` cuando el
@@ -63,13 +64,23 @@ const stagger = {
 };
 
 export default function HeroHybrid() {
-    /* ── Registro inline: Google OAuth o correo → modal pre-llenado ── */
-    const { openModal } = useRegistroModal();
+    /* ── Registro: el hero solo recoge el correo y lleva a /registro ──
+       El alta completa vive en su propia página. Lo que se teclee aquí viaja
+       por sessionStorage y no por la URL: no queremos correos en el historial
+       del navegador ni en los referrers. */
+    const router = useRouter();
     const [heroEmail, setHeroEmail] = useState("");
+
+    const irARegistro = (email?: string) => {
+        try {
+            if (email) sessionStorage.setItem(HANDOFF_EMAIL, email);
+        } catch { /* modo privado: se pedirá el correo en la página */ }
+        router.push("/registro");
+    };
 
     const handleHeroSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        openModal({ email: heroEmail.trim() });
+        irARegistro(heroEmail.trim());
     };
 
     /* Todo acceso pasa por la encuesta y de ahí a WhatsApp: es el canal donde
@@ -77,7 +88,7 @@ export default function HeroHybrid() {
        sin contexto. Nada de OAuth aquí: sin proveedor configurado, intentarlo
        solo añadía una petición muerta y un parpadeo de "Conectando…" antes de
        abrir la misma encuesta. socialAuth.ts sigue disponible si se retoma. */
-    const handleGoogle = () => openModal({});
+    const handleGoogle = () => irARegistro();
 
     /* minh-100dvh en vez de min-h-screen: en iOS Safari la barra de
        direcciones hace que 100vh sea mayor que la pantalla visible. */

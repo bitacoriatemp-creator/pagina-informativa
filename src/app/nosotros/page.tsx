@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import MarketingShell from "@/components/ui/MarketingShell";
 import Revelar from "@/components/ui/Revelar";
 import { assetPath } from "@/lib/assetPath";
@@ -165,14 +166,12 @@ export default function NosotrosPage() {
                     <p className="mb-10 text-[15px] leading-relaxed text-white/55">
                         La IA propone, el ingeniero firma. Nunca al revés.
                     </p>
-                    {/* href="/registro" lo intercepta RegistroModalProvider y abre la
-                        encuesta sin navegar (ver RegistroModal). */}
-                    <a
+                    <Link
                         href="/registro"
                         className="inline-flex h-12 items-center justify-center rounded-xl bg-[#f5f0e8] px-8 text-[15px] font-semibold text-[#1a120c] transition-colors duration-200 hover:bg-white"
                     >
                         Solicitar demo
-                    </a>
+                    </Link>
                 </Revelar>
             </section>
         </MarketingShell>

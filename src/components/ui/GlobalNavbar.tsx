@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, FolderPlus, Upload, MessageSquareText, type LucideIcon } from "lucide-react";
@@ -236,7 +237,7 @@ export default function GlobalNavbar() {
                             {account ? (
                                 <AccountRowMobile account={account} onSignOut={handleSignOut} />
                             ) : (
-                                <a
+                                <Link
                                     href={REGISTER_URL}
                                     className="flex items-center justify-between font-ui text-xs uppercase tracking-widest px-6 py-3.5 transition-colors duration-200"
                                     style={{ color: "#c39767", background: "rgba(195, 151, 103, 0.08)" }}
@@ -244,7 +245,7 @@ export default function GlobalNavbar() {
                                 >
                                     <span className="leading-none">Acceder</span>
                                     <ArrowRight className="w-3.5 h-3.5 shrink-0" strokeWidth={2.2} />
-                                </a>
+                                </Link>
                             )}
                         </nav>
                     </div>
@@ -331,7 +332,7 @@ export default function GlobalNavbar() {
                             {account ? (
                                 <AccountRowMobile account={account} onSignOut={handleSignOut} />
                             ) : (
-                                <a
+                                <Link
                                     href={REGISTER_URL}
                                     className="flex items-center justify-between font-ui text-xs uppercase tracking-widest px-5 py-3 transition-colors duration-200"
                                     style={{ color: "#c39767", background: "rgba(195, 151, 103, 0.08)" }}
@@ -339,7 +340,7 @@ export default function GlobalNavbar() {
                                 >
                                     <span className="leading-none">Acceder</span>
                                     <ArrowRight className="w-3.5 h-3.5 shrink-0" strokeWidth={2.2} />
-                                </a>
+                                </Link>
                             )}
                         </nav>
                     </div>

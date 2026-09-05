@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import { motion, useInView } from "framer-motion";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { assetPath } from "@/lib/assetPath";
 
@@ -589,7 +590,7 @@ export default function WorldAdaptiveSection() {
                         animate={inView ? "visible" : "hidden"}
                         className="w-full flex justify-center"
                     >
-                        <a
+                        <Link
                             href="/registro"
                             className="group inline-flex items-center gap-2 rounded-full px-5 py-2.5 font-ui text-[11px] uppercase tracking-[0.25em] transition-all duration-300"
                             style={{
@@ -613,7 +614,7 @@ export default function WorldAdaptiveSection() {
                                 className="w-3.5 h-3.5 shrink-0 transition-transform duration-300 group-hover:translate-x-1"
                                 strokeWidth={2.2}
                             />
-                        </a>
+                        </Link>
                     </motion.div>
                 </div>
             </motion.div>

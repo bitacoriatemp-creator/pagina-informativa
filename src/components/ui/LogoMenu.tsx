@@ -12,16 +12,21 @@ import type { Account } from "@/lib/account";
    LogoMenu — el logo ES la navegación
    ──────────────────────────────────────────────────────────────
    Ya no hay pastilla ni enlaces sueltos: solo la marca. La flecha
-   está oculta y se revela al acercar el ratón con el mismo fundido
-   de 1s que el control de volumen del hero, para que el gesto de
-   "aquí hay más" se sienta igual en toda la página.
+   se ve SIEMPRE, atenuada: es el único aviso de que ahí hay un menú.
+   Escondida hasta el hover, quien no pasara el ratón por encima no
+   llegaba nunca al resto del sitio. Al abrirse, sube a plena tinta y
+   gira a la vez que baja el panel.
    Solo escritorio con ratón: por debajo de lg manda la hamburguesa,
    que lista lo mismo. Un menú de hover en táctil no se puede cerrar
    sin un segundo toque a ciegas.
    ══════════════════════════════════════════════════════════════ */
 
-/* Misma curva y duración que el icono de sonido (HeroDemoShowcase). */
-const REVELADO = "opacity 1000ms cubic-bezier(0.33,0,0.2,1)";
+/* Exactamente la misma curva y duración con la que entra el panel (ver el
+   <motion.div> del final). Antes la flecha tardaba 1s, heredado del fundido
+   del icono de sonido: giraba mucho después de que el menú ya estuviera
+   abajo y se leían como dos gestos sueltos. Con la misma cifra, girar y
+   desplegar son uno solo. */
+const CURVA_MENU = "220ms cubic-bezier(0.22,1,0.36,1)";
 
 type Elemento = {
     label: string;
@@ -199,20 +204,21 @@ export default function LogoMenu({
                 {/* Va DESPUÉS del logo: con la marca pegada al borde izquierdo, la
                     flecha queda por dentro y apunta hacia el contenido.
                     El trazo dibuja un galón hacia ABAJO; en reposo se gira -90°
-                    (apunta a la derecha) y al acercar el ratón vuelve a 0°.
-                    El giro dura lo mismo que el fundido para que aparecer y
-                    girar se lean como un solo gesto, no como dos. */}
+                    (apunta a la derecha) y al abrirse vuelve a 0°.
+                    En reposo se queda al 55%: suficiente para que se vea que hay
+                    algo, sin competir con la marca. No baja de ahí ni desaparece,
+                    porque es la única señal de que existe el menú. */}
                 <svg
                     aria-hidden
                     viewBox="0 0 10 6"
-                    className={`hidden lg:block h-[6px] w-[10px] shrink-0 ${aLaDerecha ? "order-first" : ""}`}
+                    className={`hidden lg:block h-[7px] w-[12px] shrink-0 ${aLaDerecha ? "order-first" : ""}`}
                     style={{
-                        opacity: visible ? 1 : 0,
+                        opacity: visible ? 1 : 0.55,
                         /* Siempre queda por dentro y apunta hacia el contenido:
                            a la izquierda si la marca está pegada al borde
                            derecho, a la derecha si está pegada al izquierdo. */
                         transform: visible ? "rotate(0deg)" : `rotate(${aLaDerecha ? 90 : -90}deg)`,
-                        transition: `${REVELADO}, transform 1000ms cubic-bezier(0.33,0,0.2,1)`,
+                        transition: `opacity ${CURVA_MENU}, transform ${CURVA_MENU}`,
                     }}
                 >
                     <path
@@ -310,7 +316,7 @@ export default function LogoMenu({
                                         </button>
                                     </div>
                                 ) : (
-                                    <a
+                                    <Link
                                         href="/registro"
                                         onClick={cerrarYa}
                                         className="group flex items-center justify-between gap-6 text-[15px] font-medium text-[#c39767] transition-colors hover:text-[#e8c9a0]"
@@ -321,7 +327,7 @@ export default function LogoMenu({
                                             strokeWidth={2}
                                             className="transition-transform duration-300 group-hover:translate-x-1"
                                         />
-                                    </a>
+                                    </Link>
                                 )}
                             </div>
                         </div>
