@@ -4,12 +4,13 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { 
-    Building2, Layers, Users, FileText, 
+import {
+    Building2, Layers, Users, FileText,
     CalendarDays, Table, Box, ShieldCheck,
-    PenTool, Headset, Palette
+    PenTool, Headset, Palette, ArrowRight
 } from "lucide-react";
 import { assetPath } from "@/lib/assetPath";
+import { registerUrl, type BillingCycle } from "@/lib/appUrl";
 
 /* ══════════════════════════════════════════════════════════════
    PlanesSection — Compact Premium Dark Pricing Grid
@@ -28,10 +29,14 @@ const cardVariants = {
     }),
 };
 
+/* `planKey` es la clave que entiende la app al dar de alta (ver appUrl.ts):
+   DRAFT → draft, THE RESIDENT → resident, THE SITE MANAGER → manager,
+   EXECUTIVE → executive. `id` sigue siendo solo la key de React. */
 const PLANS = [
     /* ─── 1. DRAFT ─────────────────────────────────────────── */
     {
         id: "draft",
+        planKey: "draft",
         title: "DRAFT",
         subtitle: "Para Estudiantes y Pruebas.",
         priceMonthly: "0",
@@ -64,6 +69,7 @@ const PLANS = [
     /* ─── 2. THE RESIDENT ───────────────────────────────────── */
     {
         id: "resident",
+        planKey: "resident",
         title: "THE RESIDENT",
         subtitle: "Para Arquitectos e Ingenieros Independientes.",
         priceMonthly: "2,499",
@@ -96,6 +102,7 @@ const PLANS = [
     /* ─── 3. THE SITE MANAGER (⭐ FEATURED) ─────────────────── */
     {
         id: "site-manager",
+        planKey: "manager",
         title: "THE SITE MANAGER",
         subtitle: "El estándar para Constructores y PyMES.",
         priceMonthly: "3,899",
@@ -132,6 +139,7 @@ const PLANS = [
     /* ─── 4. EXECUTIVE PLAN ─────────────────────────────────── */
     {
         id: "executive",
+        planKey: "executive",
         title: "EXECUTIVE PLAN",
         subtitle: "Control total y escala ilimitada.",
         priceMonthly: "12,999",
@@ -179,6 +187,9 @@ const FEATURE_EXPLANATIONS: Record<string, string> = {
 /* ── PLAN CARD ── */
 const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan: typeof PLANS[number]; index: number; isAnnual: boolean }) {
     const [hovered, setHovered] = useState(false);
+    /* El ciclo viaja con el enlace: lo que marque el conmutador Mensual/Anual
+       de la sección es lo que la app llevará al pago. */
+    const billing: BillingCycle = isAnnual ? "annual" : "monthly";
 
     return (
         <div className="relative pt-4">
@@ -293,13 +304,17 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                             </div>
                         </div>
 
-                        {/* CTA */}
+                        {/* CTA — "Empezar Gratis" y los "Comenzar" abren el alta en la
+                            app con el plan y el ciclo ya elegidos; solo "Contactar" sigue
+                            en la encuesta de /registro, que es ventas. Son <a> y no
+                            <Link> porque cruzan de origen: misma pestaña, sin prefetch. */}
                         <div className="mt-4">
                             {plan.dualCta ? (
                                 /* Dual buttons — Executive Plan */
                                 <div className="flex gap-2">
-                                    <Link
-                                        href="/registro"
+                                    <a
+                                        href={registerUrl(plan.planKey, billing)}
+                                        rel="noopener"
                                         className="relative flex-1 py-3 rounded-lg font-bold text-sm tracking-wide transition-colors duration-200 active:scale-[0.98] md:transition-all md:duration-300 md:hover:scale-[1.02] md:hover:brightness-110 flex items-center justify-center text-center"
                                         style={{
                                             background: "linear-gradient(180deg, #442485 0%, #201140 100%)",
@@ -309,7 +324,7 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                         }}
                                     >
                                         Comenzar
-                                    </Link>
+                                    </a>
                                     <Link
                                         href="/registro"
                                         className="relative flex-1 py-3 rounded-lg font-semibold text-sm tracking-wide transition-colors duration-200 active:scale-[0.98] md:transition-all md:duration-300 md:hover:scale-[1.02] md:hover:brightness-125 flex items-center justify-center text-center"
@@ -325,8 +340,9 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                 </div>
                             ) : (
                                 /* Single CTA */
-                                <Link
-                                    href="/registro"
+                                <a
+                                    href={registerUrl(plan.planKey, billing)}
+                                    rel="noopener"
                                     className="relative w-full py-3 rounded-lg font-bold text-sm tracking-wide transition-colors duration-200 active:scale-[0.98] md:transition-all md:duration-300 md:hover:scale-[1.02] md:hover:brightness-110 flex items-center justify-center text-center"
                                     style={plan.featured ? {
                                         background: "linear-gradient(180deg, #322511 0%, #181208 100%)",
@@ -341,7 +357,7 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                     }}
                                 >
                                     {plan.cta}
-                                </Link>
+                                </a>
                             )}
                         </div>
 
@@ -395,6 +411,16 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                 {plan.note.pill}
                             </p>
                             <p className="text-[10px] leading-relaxed text-white/40">{plan.note.detail}</p>
+                            {/* La licencia también se compra sola: alta en la app con
+                                plan=project_license (pago único, sin ciclo). */}
+                            <a
+                                href={registerUrl("project_license")}
+                                rel="noopener"
+                                className="mt-2.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#c5a880] underline-offset-4 transition-colors duration-200 hover:text-[#e8d5b8] hover:underline"
+                            >
+                                Comprar licencia
+                                <ArrowRight size={11} strokeWidth={2.2} />
+                            </a>
                         </div>
                     )}
                 </div>

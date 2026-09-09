@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, LogOut } from "lucide-react";
 import { assetPath } from "@/lib/assetPath";
 import type { Account } from "@/lib/account";
+import { loginUrl } from "@/lib/appUrl";
 
 /* ══════════════════════════════════════════════════════════════
    LogoMenu — el logo ES la navegación
@@ -316,18 +317,21 @@ export default function LogoMenu({
                                         </button>
                                     </div>
                                 ) : (
-                                    <Link
-                                        href="/registro"
+                                    /* Antes "Acceder" → /registro (la encuesta). Iniciar sesión
+                                       es en la app: <a> porque cruza de origen. */
+                                    <a
+                                        href={loginUrl()}
+                                        rel="noopener"
                                         onClick={cerrarYa}
                                         className="group flex items-center justify-between gap-6 text-[15px] font-medium text-[#c39767] transition-colors hover:text-[#e8c9a0]"
                                     >
-                                        Acceder
+                                        Iniciar sesión
                                         <ArrowRight
                                             size={15}
                                             strokeWidth={2}
                                             className="transition-transform duration-300 group-hover:translate-x-1"
                                         />
-                                    </Link>
+                                    </a>
                                 )}
                             </div>
                         </div>

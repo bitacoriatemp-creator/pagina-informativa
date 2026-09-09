@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, FolderPlus, Upload, MessageSquareText, type LucideIcon } from "lucide-react";
 import LogoMenu from "./LogoMenu";
 import { useAccount, clearStoredAccount } from "@/lib/account";
-import { signOut } from "@/lib/socialAuth";
 import { AccountRowMobile } from "./AccountMenu";
+import { loginUrl, registerUrl } from "@/lib/appUrl";
 
 /* ══════════════════════════════════════════════════════════════
    GlobalNavbar — two-state morphing navbar
@@ -60,8 +59,72 @@ const PASOS: {
     },
 ];
 
-const REGISTER_URL = "/registro";
 const SCROLL_THRESHOLD = 100; // px — después de esto cambia a slim
+const BRONCE = "#C39767";
+
+/* ── Acceso a la app: "Iniciar sesión" y "Empezar gratis" ──
+   El sitio ya no da de alta a nadie: cuenta, pago y primera obra viven en
+   la app (ver src/lib/appUrl.ts). Antes aquí había un único "Acceder" que
+   abría la encuesta de /registro. Son <a> y no <Link> porque cruzan de
+   origen: misma pestaña, sin prefetch. En escritorio van sueltos en la
+   barra, a la derecha del logo; por debajo de lg viven al pie del menú
+   hamburguesa, en ambos estados (pill y slim). */
+function AccesoDesktop({ variant = "pill" }: { variant?: "pill" | "slim" }) {
+    const tam = variant === "pill" ? "h-9 px-4" : "h-8 px-3.5";
+    return (
+        <div className="hidden shrink-0 items-center gap-2 lg:flex">
+            <a
+                href={loginUrl()}
+                rel="noopener"
+                className={`flex items-center rounded-full font-ui text-xs uppercase tracking-widest transition-colors duration-200 ${tam}`}
+                style={{ color: BRONCE, border: `1px solid ${BRONCE}40` }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = `${BRONCE}1a`; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+            >
+                Iniciar sesión
+            </a>
+            <a
+                href={registerUrl("draft")}
+                rel="noopener"
+                className={`flex items-center rounded-full font-ui text-xs font-semibold uppercase tracking-widest transition-[filter] duration-200 hover:brightness-110 ${tam}`}
+                style={{ background: BRONCE, color: "#1a120c" }}
+            >
+                Empezar gratis
+            </a>
+        </div>
+    );
+}
+
+/* Mismas dos acciones para el menú hamburguesa. `compacto` sigue el padding
+   de la barra delgada (px-5 / py-3) frente al del pill (px-6 / py-3.5). */
+function AccesoMobile({ compacto = false, onClick }: { compacto?: boolean; onClick: () => void }) {
+    const px = compacto ? "px-5" : "px-6";
+    return (
+        <>
+            <a
+                href={loginUrl()}
+                rel="noopener"
+                className={`flex items-center justify-between font-ui text-xs uppercase tracking-widest ${px} ${compacto ? "py-3" : "py-3.5"} transition-colors duration-200`}
+                style={{ color: BRONCE, background: "rgba(195, 151, 103, 0.08)" }}
+                onClick={onClick}
+            >
+                <span className="leading-none">Iniciar sesión</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0" strokeWidth={2.2} />
+            </a>
+            <div className={`${px} ${compacto ? "pb-2 pt-3" : "pb-2 pt-4"}`}>
+                <a
+                    href={registerUrl("draft")}
+                    rel="noopener"
+                    className="flex h-11 w-full items-center justify-center rounded-full font-ui text-xs font-semibold uppercase tracking-widest transition-[filter] duration-200 hover:brightness-110"
+                    style={{ background: BRONCE, color: "#1a120c" }}
+                    onClick={onClick}
+                >
+                    Empezar gratis
+                </a>
+            </div>
+        </>
+    );
+}
 
 export default function GlobalNavbar() {
     /* La marca va a la derecha SOLO en la home: allí el hero deja libre ese
@@ -75,8 +138,9 @@ export default function GlobalNavbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const account = useAccount();
 
-    const handleSignOut = async () => {
-        await signOut();
+    /* "Cerrar sesión" solo olvida el registro local del lead: www no tiene
+       sesión propia (la de la app vive en app.bitacoria.com). */
+    const handleSignOut = () => {
         clearStoredAccount();
         setIsMenuOpen(false);
     };
@@ -185,6 +249,11 @@ export default function GlobalNavbar() {
                         lado={lado}
                     />
 
+                    {/* Acceso a la app (solo lg+; en móvil va en el desplegable). En la
+                        home, con justify-end, queda a la derecha del logo; en las demás,
+                        con justify-between, en el borde derecho. */}
+                    <AccesoDesktop />
+
                     {/* HAMBURGER mobile (hero state) */}
                     <button
                         className="flex lg:hidden items-center justify-center w-9 h-9 rounded-full shrink-0 transition-colors"
@@ -234,19 +303,10 @@ export default function GlobalNavbar() {
                                     () => setIsMenuOpen(false),
                                 )
                             )}
-                            {account ? (
-                                <AccountRowMobile account={account} onSignOut={handleSignOut} />
-                            ) : (
-                                <Link
-                                    href={REGISTER_URL}
-                                    className="flex items-center justify-between font-ui text-xs uppercase tracking-widest px-6 py-3.5 transition-colors duration-200"
-                                    style={{ color: "#c39767", background: "rgba(195, 151, 103, 0.08)" }}
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    <span className="leading-none">Acceder</span>
-                                    <ArrowRight className="w-3.5 h-3.5 shrink-0" strokeWidth={2.2} />
-                                </Link>
-                            )}
+                            {/* La cuenta local (lead de /registro o Google del sitio) no es
+                                sesión de la app: el acceso se ofrece siempre, con o sin ella. */}
+                            {account && <AccountRowMobile account={account} onSignOut={handleSignOut} />}
+                            <AccesoMobile onClick={() => setIsMenuOpen(false)} />
                         </nav>
                     </div>
                 )}
@@ -285,6 +345,8 @@ export default function GlobalNavbar() {
                         variant="slim"
                         lado={lado}
                     />
+
+                    <AccesoDesktop variant="slim" />
 
                     {/* HAMBURGER mobile (slim state) */}
                     <button
@@ -329,19 +391,8 @@ export default function GlobalNavbar() {
                                     () => setIsMenuOpen(false),
                                 )
                             )}
-                            {account ? (
-                                <AccountRowMobile account={account} onSignOut={handleSignOut} />
-                            ) : (
-                                <Link
-                                    href={REGISTER_URL}
-                                    className="flex items-center justify-between font-ui text-xs uppercase tracking-widest px-5 py-3 transition-colors duration-200"
-                                    style={{ color: "#c39767", background: "rgba(195, 151, 103, 0.08)" }}
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    <span className="leading-none">Acceder</span>
-                                    <ArrowRight className="w-3.5 h-3.5 shrink-0" strokeWidth={2.2} />
-                                </Link>
-                            )}
+                            {account && <AccountRowMobile account={account} onSignOut={handleSignOut} />}
+                            <AccesoMobile compacto onClick={() => setIsMenuOpen(false)} />
                         </nav>
                     </div>
                 )}

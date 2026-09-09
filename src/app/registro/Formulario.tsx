@@ -17,10 +17,10 @@ import Link from "next/link";
 import { motion, MotionConfig } from "framer-motion";
 import { ArrowLeft, Check, ChevronDown, Facebook, Instagram } from "lucide-react";
 import { assetPath } from "@/lib/assetPath";
-import { getSessionUser } from "@/lib/socialAuth";
 import { getStoredAccount, setStoredAccount, type Account } from "@/lib/account";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { HANDOFF_EMAIL, REGISTERED_FLAG } from "@/lib/registro";
+import { registerUrl } from "@/lib/appUrl";
 
 const REGISTER_ENDPOINT =
     "https://epjfqcndxoyrtrmasuvt.supabase.co/functions/v1/register-participant";
@@ -199,12 +199,11 @@ export default function Formulario() {
     const formRef = useRef<HTMLFormElement>(null);
 
     /* ── Prellenado y estado de la persona ──
-       1. El correo que se tecleó en el hero (sessionStorage, un solo uso).
-       2. La sesión de Google, si alguien volvió de OAuth.
-       Y de paso, si ya se dio de alta desde este navegador, se le saluda en
-       vez de volver a pedirle los seis datos. */
+       El correo que se tecleó en el hero (sessionStorage, un solo uso). Y de
+       paso, si ya se dio de alta desde este navegador, se le saluda en vez de
+       volver a pedirle los seis datos. www no autentica: no hay sesión de
+       Google que leer (eso vive en la app). */
     useEffect(() => {
-        let vivo = true;
         let email: string | undefined;
         try {
             email = sessionStorage.getItem(HANDOFF_EMAIL) || undefined;
@@ -215,19 +214,6 @@ export default function Formulario() {
         let registrado = false;
         try { registrado = localStorage.getItem(REGISTERED_FLAG) === "true"; } catch { /* */ }
         setYaDentro(registrado ? getStoredAccount() ?? { email: "" } : null);
-
-        getSessionUser()
-            .then((u) => {
-                if (!vivo || !u?.email) return;
-                const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
-                setPrefill((p) => ({
-                    email: p.email ?? u.email,
-                    nombre: p.nombre ?? ((meta.full_name || meta.name || "") as string),
-                }));
-            })
-            .catch(() => { /* sin sesión, sin problema */ });
-
-        return () => { vivo = false; };
     }, []);
 
     /* Auto-detección de país por IP (silenciosa, solo pre-selecciona).
@@ -424,6 +410,20 @@ export default function Formulario() {
                     </h1>
                     <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-white/45">
                         {encabezado.entrada}
+                    </p>
+
+                    {/* La demo es opcional: quien no quiera esperar puede crear su
+                        cuenta gratis en la app ahora mismo. Se ofrece en los tres
+                        estados; tras enviar sigue siendo el siguiente paso natural. */}
+                    <p className="mt-4 max-w-sm text-[14px] leading-relaxed text-white/45">
+                        ¿Prefieres empezar ahora?{" "}
+                        <a
+                            href={registerUrl("draft")}
+                            rel="noopener"
+                            className="text-[#c39767] underline decoration-[#c39767]/40 underline-offset-4 transition-colors hover:text-[#e8c9a0]"
+                        >
+                            Crea tu cuenta gratis
+                        </a>
                     </p>
 
                     <QuePasaDespues className="mt-9 hidden lg:block" />
