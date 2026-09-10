@@ -579,7 +579,7 @@ export default function PlanesSection() {
                     transition={{ delay: 0.45, duration: 0.5 }}
                     className="mt-10 text-center text-[10.5px] text-white/18"
                 >
-                    Todos los precios en MXN · IVA no incluido · Cancelación en cualquier momento
+                    Todos los precios en MXN · IVA no incluido · Pago por transferencia o Mercado Pago · Sin permanencia
                 </motion.p>
             </div>
         </section>
