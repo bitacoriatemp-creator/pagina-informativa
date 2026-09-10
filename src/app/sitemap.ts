@@ -15,6 +15,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.9,
         },
         {
+            url: "https://bitacoria.com/planes",
+            lastModified: new Date(),
+            changeFrequency: "monthly",
+            priority: 0.9,
+        },
+        {
             url: "https://bitacoria.com/nosotros",
             lastModified: new Date(),
             changeFrequency: "monthly",

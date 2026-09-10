@@ -1,3 +1,7 @@
+// La app (cuenta, pago, producto). Misma variable que src/lib/appUrl.ts; aquí
+// se lee en build porque los redirects se resuelven en el servidor.
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://app.bitacoria.com").replace(/\/$/, "");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     // Única página activa: la landing, servida en la raíz (bitacoria.com).
@@ -16,6 +20,15 @@ const nextConfig = {
             // /plataforma ya no existe (la landing está en raíz) → a la landing.
             { source: "/plataforma", destination: "/", permanent: false },
             { source: "/plataforma/:path*", destination: "/", permanent: false },
+            // /planes es la página propia de precios; /pricing, su alias en inglés (308).
+            { source: "/pricing", destination: "/planes", permanent: true },
+            // Cuenta y producto viven en la app: el sitio solo vende y enlaza (307).
+            { source: "/login", destination: `${APP_URL}/auth`, permanent: false },
+            { source: "/app", destination: APP_URL, permanent: false },
+            // El /dashboard de este repo es una maqueta con datos de prueba que
+            // respondía 200 en producción. Redirigir mata la maqueta sin romper
+            // enlaces guardados; borrar ese código queda para un PR posterior.
+            { source: "/dashboard/:path*", destination: `${APP_URL}/dashboard/:path*`, permanent: false },
         ];
     },
 };

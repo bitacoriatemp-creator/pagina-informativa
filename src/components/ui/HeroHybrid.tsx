@@ -3,10 +3,10 @@
 import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
 import HeroLiquidGlass from "./HeroLiquidGlass";
 import { irALegal } from "@/lib/eventos";
 import { HANDOFF_EMAIL } from "@/lib/registro";
+import { registerUrl } from "@/lib/appUrl";
 
 /* Apple Sign-In requiere cuenta Apple Developer ($99/año).
    El botón ya está construido abajo — cambia a `true` cuando el
@@ -64,31 +64,40 @@ const stagger = {
 };
 
 export default function HeroHybrid() {
-    /* ── Registro: el hero solo recoge el correo y lleva a /registro ──
-       El alta completa vive en su propia página. Lo que se teclee aquí viaja
-       por sessionStorage y no por la URL: no queremos correos en el historial
-       del navegador ni en los referrers. */
-    const router = useRouter();
+    /* ── Alta: el hero manda a la app (app.bitacoria.com), no a /registro ──
+       La cuenta se crea allá, con el plan gratis (Draft) ya elegido; /registro
+       queda para pedir demo. El correo tecleado se sigue dejando en
+       sessionStorage y no en la URL (historial y referrers): prellena la
+       encuesta si la persona acaba en ella, pero otro origen no lo lee, así
+       que la app lo vuelve a pedir. Navegación completa, no router.push: es
+       otro sitio.
+
+       2026-09-09 (revisión de código, hallazgo MEDIUM HeroHybrid.tsx:80):
+       decisión de Luis, el contrato de enlaces NO lleva el correo en la URL
+       (evita dejarlo en historiales/referrers). El fix entonces no es de
+       transporte sino de expectativa: en vez de prometer continuidad que no
+       se cumple, el campo avisa de una vez que la app lo va a volver a pedir
+       (ver leyenda bajo el input). Se descartó quitar el campo: es un cambio
+       de una sola línea de texto, más chico para la estética que rehacer el
+       bloque de alta sin correo. */
     const [heroEmail, setHeroEmail] = useState("");
 
-    const irARegistro = (email?: string) => {
+    const irALaApp = (email?: string) => {
         try {
             if (email) sessionStorage.setItem(HANDOFF_EMAIL, email);
-        } catch { /* modo privado: se pedirá el correo en la página */ }
-        router.push("/registro");
+        } catch { /* modo privado: se pedirá el correo en la app */ }
+        window.location.assign(registerUrl("draft"));
     };
 
     const handleHeroSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        irARegistro(heroEmail.trim());
+        irALaApp(heroEmail.trim());
     };
 
-    /* Todo acceso pasa por la encuesta y de ahí a WhatsApp: es el canal donde
-       atendemos al lead, hablando con la persona en vez de dar de alta cuentas
-       sin contexto. Nada de OAuth aquí: sin proveedor configurado, intentarlo
-       solo añadía una petición muerta y un parpadeo de "Conectando…" antes de
-       abrir la misma encuesta. socialAuth.ts sigue disponible si se retoma. */
-    const handleGoogle = () => irARegistro();
+    /* www nunca autentica: "Continuar con Google" abre el alta en la app, que
+       es donde vive el botón real de Google. Nada de OAuth aquí (socialAuth.ts
+       se borró; la "cuenta" del navbar es solo el registro local del lead). */
+    const handleGoogle = () => irALaApp();
 
     /* minh-100dvh en vez de min-h-screen: en iOS Safari la barra de
        direcciones hace que 100vh sea mayor que la pantalla visible. */
@@ -175,7 +184,7 @@ export default function HeroHybrid() {
                         relleno (Continuar) fija la jerarquía.
                         Todo en font-sans (Kumbh): Teko es condensada y a este
                         tamaño apretaba los botones y volvía ilegible el aviso.
-                        La lógica no cambia — Google y correo abren la encuesta. */}
+                        Google y correo abren el alta en la app. */}
                     <motion.div
                         custom={3}
                         variants={fadeUp}
@@ -232,6 +241,13 @@ export default function HeroHybrid() {
                                 onChange={(e) => setHeroEmail(e.target.value)}
                                 className="auth-field w-full px-4 text-[16px] outline-none sm:text-[15px]"
                             />
+                            {/* Deja clara la expectativa antes del clic: no prometemos
+                                continuidad que no existe (el correo no viaja en la URL
+                                hacia la app), así que la pantalla vacía del otro lado no
+                                se siente como un dato perdido. */}
+                            <p className="mt-2 text-[12px] leading-snug text-white/35">
+                                Te lo volveremos a pedir al crear tu cuenta en la app.
+                            </p>
                             <button
                                 type="submit"
                                 className="mt-4 flex h-12 w-full items-center justify-center rounded-xl bg-[#f5f0e8] text-[15px] font-semibold text-[#1a120c] transition-colors duration-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c39767]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#060302]"
