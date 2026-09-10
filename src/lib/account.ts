@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
-import { getSessionUser, onAuthChange } from "./socialAuth";
 
 /* ══════════════════════════════════════════════════════════════
    account — "quién está dentro" para el navbar
    ──────────────────────────────────────────────────────────────
-   Dos fuentes, en orden de preferencia:
-     1. Sesión OAuth de Supabase (Google) → trae foto, nombre y correo.
-     2. Registro guardado localmente (correo) → muestra inicial.
-   Reactivo vía evento propio + cambios de sesión de Supabase.
+   Una sola fuente: el registro guardado localmente al pedir demo en
+   /registro (correo y nombre). www no autentica a nadie: la sesión real
+   vive en la app (app.bitacoria.com); esto es solo el saludo al lead que
+   ya dejó sus datos en este navegador.
+   Reactivo vía evento propio (misma pestaña) + `storage` (otras pestañas).
    ══════════════════════════════════════════════════════════════ */
 
+/* `avatar` venía de la sesión de Google, que ya no existe en www; queda
+   opcional para que AccountMenu siga compilando y lo trate como vacío. */
 export type Account = { email: string; nombre?: string; avatar?: string };
 
 const KEY = "bitacoria_account";
@@ -40,34 +42,13 @@ export function useAccount(): Account | null {
     const [account, setAccount] = useState<Account | null>(null);
 
     useEffect(() => {
-        let alive = true;
-        const refresh = () => {
-            getSessionUser()
-                .then((u) => {
-                    if (!alive) return;
-                    if (u?.email) {
-                        const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
-                        setAccount({
-                            email: u.email,
-                            nombre: (meta.full_name || meta.name || "") as string,
-                            avatar: (meta.avatar_url || meta.picture || "") as string,
-                        });
-                    } else {
-                        setAccount(getStoredAccount());
-                    }
-                })
-                .catch(() => { if (alive) setAccount(getStoredAccount()); });
-        };
+        const refresh = () => setAccount(getStoredAccount());
         refresh();
-        const onEvt = () => refresh();
-        window.addEventListener(EVT, onEvt);
-        window.addEventListener("storage", onEvt); // cross-tab
-        const unsubAuth = onAuthChange(onEvt);
+        window.addEventListener(EVT, refresh);
+        window.addEventListener("storage", refresh); // cross-tab
         return () => {
-            alive = false;
-            window.removeEventListener(EVT, onEvt);
-            window.removeEventListener("storage", onEvt);
-            unsubAuth();
+            window.removeEventListener(EVT, refresh);
+            window.removeEventListener("storage", refresh);
         };
     }, []);
 
