@@ -9,7 +9,10 @@ const ACCENT = "#C4A484";
 
 const FEATURES = [
     { Icon: MessageSquare, title: "Habla con tu obra", body: "Escribe o dicta desde campo. La IA redacta el registro técnico por ti al instante." },
-    { Icon: Paperclip, title: "Análisis multimodal", body: "Sube fotos o PDFs. El sistema entiende estimaciones y planos automáticamente." },
+    // 2026-09-11: decía "entiende estimaciones y planos automáticamente". Lee
+    // fotos y PDFs, eso es cierto; los planos NO se convierten solos en
+    // catálogo (el catálogo entra por PDF, Excel o CSV).
+    { Icon: Paperclip, title: "Fotos y documentos", body: "Sube una foto de la obra o un PDF. La IA lo lee y lo suma al registro del día." },
     { Icon: FileText, title: "Reportes en un clic", body: "Exporta resúmenes diarios estructurados y listos para firma electrónica." },
 ];
 

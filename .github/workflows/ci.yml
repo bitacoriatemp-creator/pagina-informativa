@@ -1,0 +1,44 @@
+name: CI
+
+# El sitio publica desde `main` con autodespliegue de Vercel: lo que se mergea sale
+# a www.bitacoria.com sin gate. Este workflow es ese gate (protege `main` con el
+# check `quality`) y congela precios y CTAs para que un cambio de copy no rompa la
+# tabla que comparten sitio, app (src/lib/plans.ts) y backend (TIER_QUOTAS).
+
+on:
+  push:
+    branches: [main, 'feat/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, tipos, pruebas y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # El pie de pagina crea un cliente de Supabase para el boletin; sin URL el
+      # prerender de la home revienta. En CI van placeholders: no se consulta nada.
+      NEXT_PUBLIC_APP_URL: https://app.bitacoria.com
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Tipos
+        run: npm run typecheck
+      - name: Pruebas (vitest)
+        run: npm run test:run
+      - name: Build
+        run: npm run build

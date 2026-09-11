@@ -40,7 +40,7 @@ const LEGAL_CONTENT = {
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Puedo invitar a subcontratistas y al cliente final a la misma bitácora?</h5>
-                    <p>Sí. Nuestra arquitectura &quot;Team Work&quot; permite establecer roles granulares. El residente (constructor) captura la información bruta, el supervisor la valida, y el cliente puede tener un rol de solo lectura (View-Only) para dar seguimiento visual sin poder alterar los reportes, manteniendo la transparencia total del proyecto.</p>
+                    <p>Sí. Invitas a tu equipo por correo con rol de administrador o de miembro, y a cada obra se entra con un código de acceso que tú generas y puedes revocar. Así el residente captura, quien administra aprueba, y sabes en todo momento quién hizo cada cambio.</p>
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿De qué trata el protocolo &quot;Smart BIM Sync&quot;?</h5>
@@ -48,7 +48,7 @@ const LEGAL_CONTENT = {
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Qué pasa con mis datos si decido cancelar la suscripción?</h5>
-                    <p>Tu información te pertenece. Contamos con un protocolo de &quot;Offboarding Seguro&quot;. Tras la cancelación, tienes 30 días para descargar toda tu base de datos y un empaquetado final de todas las bitácoras en formato PDF con sus respectivos sellos criptográficos. Pasado este periodo de gracia, los datos son purgados permanentemente de nuestros servidores.</p>
+                    <p>Tu información te pertenece. Tras la cancelación tienes 30 días para descargar tus bitácoras y reportes en PDF, que es el formato en el que se entregan y se firman. Pasado ese plazo, los datos se eliminan de nuestros servidores.</p>
                 </div>
             </div>
         ),
@@ -434,16 +434,14 @@ export default function FooterSection() {
                     {/* 4. Columna de Espacio o extra features (optional balance in 4 cols) */}
                     <div className="flex flex-col justify-between rounded-xl bg-white/[0.02] border border-white/[0.03] p-6 lg:p-8">
                         <div>
+                            {/* 2026-09-11: aquí decía "Todos los sistemas operativos" con
+                                un punto verde parpadeando. No consultaba nada: era un
+                                adorno fijo que habría seguido en verde con el servicio
+                                caído. Queda dónde encontrarnos, que sí es verdad. */}
                             <p className="mb-3 font-display text-[10px] font-bold uppercase tracking-widest text-white/30">
-                                Estado del Sistema
+                                Dónde estamos
                             </p>
-                            <div className="flex items-center gap-2.5">
-                                <span className="relative flex h-2.5 w-2.5">
-                                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-20"></span>
-                                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500/80"></span>
-                                </span>
-                                <span className="text-[12px] text-white/60">Todos los sistemas operativos</span>
-                            </div>
+                            <p className="text-[12px] text-white/60">Ciudad de México, México</p>
                         </div>
                         <div className="mt-8">
                             <p className="text-[11px] leading-relaxed text-white/30">
