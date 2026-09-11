@@ -56,7 +56,7 @@ const PLANS = [
             { icon: CalendarDays, title: "SMART CALENDAR", desc: "Cronograma predictivo", included: false },
             { icon: Table, title: "SMART CONCEPTS", desc: "Catálogo con IA", included: false },
             { icon: Box, title: "SMART BIM SYNC", desc: "Ecosistema conectado", included: false },
-            { icon: PenTool, title: "FIRMAS DIGITALES", desc: "Aprobación automatizada", included: false },
+            { icon: PenTool, title: "FIRMAS DIGITALES", desc: "Firma en reportes PDF", included: false },
             { icon: Headset, title: "SOPORTE PRO", desc: "Canal prioritario", included: false },
             { icon: Palette, title: "WHITE LABEL", desc: "Sin marcas de agua", included: false },
             { icon: ShieldCheck, title: "AUDIT READY", desc: "Trazabilidad inmutable", included: false },
@@ -89,7 +89,7 @@ const PLANS = [
             { icon: CalendarDays, title: "SMART CALENDAR", desc: "Cronograma predictivo", included: true },
             { icon: Table, title: "SMART CONCEPTS", desc: "Catálogo con IA", included: true },
             { icon: Box, title: "SMART BIM SYNC", desc: "Ecosistema conectado", included: true },
-            { icon: PenTool, title: "FIRMAS DIGITALES", desc: "Aprobación automatizada", included: true },
+            { icon: PenTool, title: "FIRMAS DIGITALES", desc: "Firma en reportes PDF", included: true },
             { icon: Headset, title: "SOPORTE PRO", desc: "Canal prioritario", included: false },
             { icon: Palette, title: "WHITE LABEL", desc: "Sin marcas de agua", included: false },
             { icon: ShieldCheck, title: "AUDIT READY", desc: "Trazabilidad inmutable", included: false },
@@ -122,7 +122,7 @@ const PLANS = [
             { icon: CalendarDays, title: "SMART CALENDAR", desc: "Cronograma predictivo", included: true },
             { icon: Table, title: "SMART CONCEPTS", desc: "Catálogo con IA", included: true },
             { icon: Box, title: "SMART BIM SYNC", desc: "Ecosistema conectado", included: true },
-            { icon: PenTool, title: "FIRMAS DIGITALES", desc: "Aprobación automatizada", included: true },
+            { icon: PenTool, title: "FIRMAS DIGITALES", desc: "Firma en reportes PDF", included: true },
             { icon: Headset, title: "SOPORTE PRO", desc: "Canal prioritario", included: true },
             { icon: Palette, title: "WHITE LABEL", desc: "Sin marcas de agua", included: true },
             { icon: ShieldCheck, title: "AUDIT READY", desc: "Trazabilidad inmutable", included: false },
@@ -154,14 +154,14 @@ const PLANS = [
         features: [
             { icon: Building2, title: "OBRAS ACTIVAS", desc: "Panel Multi-Empresa Global", included: true },
             { icon: Layers, title: "FRENTES", desc: "Gobernanza y Permisos", included: true },
-            { icon: Users, title: "USUARIOS", desc: "Single Sign-On (SSO)", included: true },
+            { icon: Users, title: "USUARIOS", desc: "Usuarios ilimitados", included: true },
             { icon: FileText, title: "SMART LOG", desc: "Bitácora inteligente", included: true },
             { icon: CalendarDays, title: "SMART CALENDAR", desc: "Cronograma predictivo", included: true },
             { icon: Table, title: "SMART CONCEPTS", desc: "Catálogo con IA", included: true },
             { icon: Box, title: "SMART BIM SYNC", desc: "Ecosistema conectado", included: true },
-            { icon: PenTool, title: "FIRMAS DIGITALES", desc: "Aprobación automatizada", included: true },
+            { icon: PenTool, title: "FIRMAS DIGITALES", desc: "Firma en reportes PDF", included: true },
             { icon: Headset, title: "SOPORTE PRO", desc: "Atención dedicada", included: true },
-            { icon: Palette, title: "WHITE LABEL", desc: "Colores de tu empresa", included: true },
+            { icon: Palette, title: "WHITE LABEL", desc: "Tu logo y nombre en los PDF", included: true },
             { icon: ShieldCheck, title: "AUDIT READY", desc: "Trazabilidad inmutable", included: true },
         ],
         cta: "Contactar",
@@ -178,10 +178,10 @@ const FEATURE_EXPLANATIONS: Record<string, string> = {
     "SMART CALENDAR": "Diagramas de Gantt impulsados por IA.",
     "SMART CONCEPTS": "Catálogo inteligente de construcción.",
     "SMART BIM SYNC": "Conexión en tiempo real de tus datos.",
-    "FIRMAS DIGITALES": "Aprobación de documentos con un clic.",
+    "FIRMAS DIGITALES": "Firma tus reportes desde la app.",
     "SOPORTE PRO": "Atención técnica y soporte prioritario.",
-    "WHITE LABEL": "Personalización con logo de tu constructora.",
-    "AUDIT READY": "Respaldo y recuperación de emergencia."
+    "WHITE LABEL": "Tu logo y el nombre de tu empresa en los documentos.",
+    "AUDIT READY": "Registro inmutable de cambios: quién, qué y cuándo."
 };
 
 /* ── PLAN CARD ── */

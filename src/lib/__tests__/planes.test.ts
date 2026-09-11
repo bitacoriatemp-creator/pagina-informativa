@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-import { PLAN_PRICING, PROJECT_LICENSE, PRICING_FOOTER } from "../planes";
+import { PLAN_PRICING, PROJECT_LICENSE, PRICING_FOOTER, PROMESAS_SIN_RESPALDO } from "../planes";
 
 /**
  * Precios y enlaces del sitio: contrato congelado.
@@ -95,5 +95,31 @@ describe("enlaces hacia la app", () => {
         vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://staging.bitacoria.com/");
         const { loginUrl } = await import("../appUrl");
         expect(loginUrl()).toBe("https://staging.bitacoria.com/auth");
+    });
+});
+
+describe("el copy no promete lo que no existe", () => {
+    const SECCIONES = [
+        "src/components/ui/PlanesSection.tsx",
+        "src/components/ui/FooterSection.tsx",
+        "src/components/ui/BitacoraSection.tsx",
+        "src/components/ui/SmartConceptsSection.tsx",
+    ];
+
+    it.each(SECCIONES)("%s no trae ninguna promesa sin respaldo", (ruta) => {
+        const fuente = readFileSync(resolve(process.cwd(), ruta), "utf8");
+        // Se descartan las líneas de comentario: ahí se explica a propósito qué
+        // decía antes cada promesa y por qué se quitó.
+        const SALTO = String.fromCharCode(10);
+        const visible = fuente
+            .split(SALTO)
+            .filter((l) => {
+                const t = l.trim();
+                return !t.startsWith("//") && !t.startsWith("*") && !t.startsWith("/*") && !t.startsWith("{/*");
+            })
+            .join(SALTO);
+
+        const encontradas = PROMESAS_SIN_RESPALDO.filter((p) => visible.includes(p));
+        expect(encontradas).toEqual([]);
     });
 });

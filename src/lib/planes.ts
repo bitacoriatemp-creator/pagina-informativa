@@ -51,3 +51,27 @@ export const PROJECT_LICENSE = {
 /** Pie de la seccion de planes: como se paga. */
 export const PRICING_FOOTER =
     "Todos los precios en MXN · IVA no incluido · Pago por transferencia o Mercado Pago · Sin permanencia";
+
+/**
+ * Lo que NO se puede decir en la tabla de planes, porque hoy no existe.
+ *
+ * Cada entrada es una promesa que estuvo publicada y no tenía respaldo en el
+ * producto. `planes.test.ts` revisa que ninguna vuelva al copy: si una de estas
+ * funciones llega a existir de verdad, se quita de aquí en el mismo cambio que
+ * la construye.
+ */
+export const PROMESAS_SIN_RESPALDO: readonly string[] = [
+    // No hay SSO empresarial. Lo real en Executive es el cupo sin límite.
+    "Single Sign-On",
+    "SSO",
+    // Las firmas son dibujadas dentro del PDF, no un flujo de aprobación.
+    "Aprobación automatizada",
+    // No hay exportación total de la base ni empaquetado final al cancelar.
+    "toda tu base de datos",
+    // El indicador de estado era un adorno fijo, no consultaba nada.
+    "Todos los sistemas operativos",
+    // El rol de solo lectura no existe: hay administrador y miembro.
+    "View-Only",
+    // Los planos no se convierten solos en catálogo.
+    "planos automáticamente",
+];
