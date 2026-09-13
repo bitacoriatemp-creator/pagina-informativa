@@ -1,0 +1,47 @@
+name: Ataque www
+
+# Playwright de solo lectura contra la pagina publicada (www.bitacoria.com).
+# Vive fuera de `quality` (ci.yml) a proposito: no protege `main`, vigila
+# produccion. Se lanza a mano o entre semana a las 09:00 UTC. Un solo worker:
+# nada de paralelismo contra el sitio publicado.
+#
+# Los hallazgos conocidos van con test.fail() en las specs: el job queda verde
+# hoy y revienta (XPASS) cuando se arreglen sin quitar la marca.
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 9 * * 1-5"
+
+concurrency:
+  group: ataque-www
+  cancel-in-progress: false
+
+jobs:
+  ataque:
+    name: Playwright contra www.bitacoria.com
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - name: Navegador
+        run: npx playwright install --with-deps chromium
+      - name: Tipos de las specs
+        run: npm run typecheck:e2e
+      - name: Specs contra produccion (solo lectura)
+        run: npm run test:e2e:prod
+      - name: Reporte y evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ataque-www-${{ github.run_number }}
+          path: |
+            playwright-report
+            test-results/www
+          if-no-files-found: warn
+          retention-days: 14
