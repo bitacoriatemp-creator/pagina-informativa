@@ -80,10 +80,9 @@ export function registrarEvidencia(page: Page, testInfo: TestInfo): Evidencia {
                 respuestasRotas: rotas,
                 hostsExternos: [...hosts].sort(),
             };
-            void testInfo.attach("evidencia", {
-                body: JSON.stringify(cuerpo, null, 2),
-                contentType: "application/json",
-            });
+            void testInfo
+                .attach("evidencia", { body: JSON.stringify(cuerpo, null, 2), contentType: "application/json" })
+                .catch(() => {});
         },
         resumen() {
             const errores = consola.filter((m) => m.tipo === "error" || m.tipo === "pageerror").length;

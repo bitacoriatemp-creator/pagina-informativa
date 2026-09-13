@@ -30,13 +30,15 @@ const ANCLAS_ROTAS: Record<Pagina, string> = {
 
 for (const pagina of PAGINAS) {
     test(`${pagina}: cada <a href="#..."> apunta a un id de esta misma pagina`, async ({ page }, testInfo) => {
-        const hallazgo = `Hallazgo W3 (ancla rota): ${ANCLAS_ROTAS[pagina]}`;
-        testInfo.annotations.push({ type: "hallazgo", description: hallazgo });
-        test.fail(true, hallazgo);
-
         const ev = registrarEvidencia(page, testInfo);
         const res = await page.goto(pagina, { waitUntil: "load" });
         expect(res?.status(), `GET ${pagina}`).toBe(200);
+
+        // Despues del 200 a proposito: si la pagina cae (404/500), el test falla
+        // de verdad en vez de contar como el fallo esperado del ancla.
+        const hallazgo = `Hallazgo W3 (ancla rota): ${ANCLAS_ROTAS[pagina]}`;
+        testInfo.annotations.push({ type: "hallazgo", description: hallazgo });
+        test.fail(true, hallazgo);
 
         const anclas = await page.locator('a[href^="#"]').evaluateAll((nodos) =>
             nodos.map((a) => ({
