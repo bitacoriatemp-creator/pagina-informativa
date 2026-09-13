@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "target": "es2022",
     "incremental": false,
     "plugins": [],
     "types": ["node"]
