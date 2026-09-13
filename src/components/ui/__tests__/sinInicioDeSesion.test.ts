@@ -4,12 +4,14 @@ import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 /**
- * La landing no tiene "Iniciar sesión" (docs/DECISIONES.md, 2026-09-12).
+ * La landing no tiene "Iniciar sesión" y la barra no enlaza a la app
+ * (docs/DECISIONES.md, 2026-09-12).
  *
- * El 9 de septiembre de 2026 se coló un enlace de inicio de sesión en la barra
- * del hero dentro de un PR de "enlaces a la app", y llegó a producción sin que
- * Luis viera el resultado. Este test es la parte mecánica de la regla: ningún
- * componente importa `loginUrl` ni escribe "Iniciar sesión" como texto visible.
+ * El 9 de septiembre de 2026 se colaron "Iniciar sesión" y "Empezar gratis" en
+ * la barra del hero dentro de un PR de "enlaces a la app", y llegaron a
+ * producción sin que Luis viera el resultado. Este test es la parte mecánica
+ * de la regla: ningún componente importa `loginUrl` ni escribe "Iniciar sesión"
+ * como texto visible, y la barra (GlobalNavbar, LogoMenu) no enlaza a la app.
  * `loginUrl()` sigue existiendo en src/lib/appUrl.ts por si la decisión cambia;
  * lo que se prohíbe es usarlo desde la UI.
  */
@@ -59,6 +61,18 @@ describe("la landing no ofrece inicio de sesión", () => {
         // Con mayúscula: es la etiqueta de un control. La prosa ("...al iniciar
         // sesión desde otro dispositivo") no es un punto de entrada.
         const culpables = archivos.filter((a) => /Iniciar sesi[oó]n/.test(sinComentarios(readFileSync(a, "utf8"))));
+        expect(culpables.map((a) => a.slice(RAIZ.length + 1))).toEqual([]);
+    });
+
+    it("la barra (GlobalNavbar y LogoMenu) no enlaza a la app: ni appUrl ni app.bitacoria.com", () => {
+        // Luis quitó también "Empezar gratis" de la barra (2026-09-12): el embudo
+        // vive en el hero y en los planes, no en un botón suelto arriba a la derecha.
+        const barra = archivos.filter((a) => /GlobalNavbar\.tsx$|LogoMenu\.tsx$/.test(a));
+        expect(barra).toHaveLength(2);
+        const culpables = barra.filter((a) => {
+            const fuente = sinComentarios(readFileSync(a, "utf8"));
+            return /@\/lib\/appUrl|app\.bitacoria\.com|\/auth/.test(fuente);
+        });
         expect(culpables.map((a) => a.slice(RAIZ.length + 1))).toEqual([]);
     });
 
