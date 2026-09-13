@@ -4,10 +4,9 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { assetPath } from "@/lib/assetPath";
 import type { Account } from "@/lib/account";
-import { loginUrl } from "@/lib/appUrl";
 
 /* ══════════════════════════════════════════════════════════════
    LogoMenu — el logo ES la navegación
@@ -295,9 +294,11 @@ export default function LogoMenu({
                                 ))}
                             </div>
 
-                            {/* La cuenta vivía en la pastilla; al desaparecer, baja aquí. */}
-                            <div className="mt-6 border-t border-white/[0.06] pt-5">
-                                {account ? (
+                            {/* La cuenta vivía en la pastilla; al desaparecer, baja aquí. Solo
+                                se muestra si hay cuenta local del sitio: el bloque ya no ofrece
+                                "Iniciar sesión" (la landing no autentica; ver docs/DECISIONES.md). */}
+                            {account && (
+                                <div className="mt-6 border-t border-white/[0.06] pt-5">
                                     <div className="flex items-center justify-between gap-6">
                                         <div className="min-w-0">
                                             <p className="truncate text-[14px] text-white/85">
@@ -316,24 +317,8 @@ export default function LogoMenu({
                                             Cerrar sesión
                                         </button>
                                     </div>
-                                ) : (
-                                    /* Antes "Acceder" → /registro (la encuesta). Iniciar sesión
-                                       es en la app: <a> porque cruza de origen. */
-                                    <a
-                                        href={loginUrl()}
-                                        rel="noopener"
-                                        onClick={cerrarYa}
-                                        className="group flex items-center justify-between gap-6 text-[15px] font-medium text-[#c39767] transition-colors hover:text-[#e8c9a0]"
-                                    >
-                                        Iniciar sesión
-                                        <ArrowRight
-                                            size={15}
-                                            strokeWidth={2}
-                                            className="transition-transform duration-300 group-hover:translate-x-1"
-                                        />
-                                    </a>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 )}
