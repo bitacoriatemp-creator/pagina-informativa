@@ -9,7 +9,10 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "typecheck:e2e": "tsc --noEmit -p tsconfig.e2e.json",
+    "test:e2e": "playwright test",
+    "test:e2e:prod": "cross-env WWW_BASE_URL=https://www.bitacoria.com playwright test --workers=1"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.97.0",

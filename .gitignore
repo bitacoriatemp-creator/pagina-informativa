@@ -42,3 +42,7 @@ next-env.d.ts
 # Herramientas y config local — no pertenecen al repo publico
 .claude/
 tools/
+
+# Playwright (tests/e2e/www)
+/test-results/
+/playwright-report/
