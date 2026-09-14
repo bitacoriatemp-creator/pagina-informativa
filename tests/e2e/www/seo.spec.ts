@@ -33,16 +33,11 @@ const RUTAS_SITEMAP = [
 
 type Ruta = (typeof RUTAS_SITEMAP)[number];
 
-/** Paginas sin <h1> hoy: ruta -> archivo:linea que renderiza el titulo como <h2>. */
-const SIN_H1: Partial<Record<Ruta, string>> = {
-    "/smart-concepts": "src/app/smart-concepts/page.tsx:15 -> src/components/ui/SmartConceptsSection.tsx:59 (h2)",
-    "/smart-log": "src/app/smart-log/page.tsx:15 -> src/components/ui/BitacoraSection.tsx:50 (h2)",
-    "/smart-calendar": "src/app/smart-calendar/page.tsx:15 -> src/components/ui/CronogramaSection.tsx:47 (h2)",
-    "/smart-bim": "src/app/smart-bim/page.tsx:15 -> src/components/ui/SmartBimSyncSection.tsx:541 (h2)",
-    "/smart-island": "src/app/smart-island/page.tsx:15 -> src/components/ui/SmartIslandShowcase.tsx:64 (motion.h2)",
-    "/el-problema": "src/app/el-problema/page.tsx:15 -> src/components/ui/ProblemChaos.tsx:366 (h2, solo cliente)",
-    "/alcance-global": "src/app/alcance-global/page.tsx:15 -> src/components/ui/WorldAdaptiveSection.tsx:479 (motion.h2)",
-};
+/** Paginas sin <h1>: vacio desde W2 (2026-09-13). Las 7 paginas de modulo recibieron
+ *  un <h1 className="sr-only"> en su page.tsx (mismo patron que planes/page.tsx:52), asi
+ *  que la spec ya afirma el h1 en positivo en todas. Si vuelve a faltar en alguna, este
+ *  dict es donde se anota el hallazgo con su archivo:linea. */
+const SIN_H1: Partial<Record<Ruta, string>> = {};
 
 /** Paginas sin og:image hoy: `openGraph` declarado sin `images` pisa el default del layout. */
 const SIN_OG_IMAGE: Partial<Record<Ruta, string>> = {

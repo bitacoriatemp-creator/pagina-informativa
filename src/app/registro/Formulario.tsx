@@ -292,11 +292,17 @@ export default function Formulario() {
                 obras_activas: payload.obras_activas as string | number | null,
             });
 
+        // Timeout duro: sin esto, una Edge Function fría o una señal de obra débil
+        // dejaba el botón en "Procesando…" para siempre y el lead sin salida. A los
+        // 15 s abortamos y caemos al bloque de emergencia con WhatsApp.
+        const ctrl = new AbortController();
+        const timeoutId = setTimeout(() => ctrl.abort(), 15000);
         try {
             const res = await fetch(REGISTER_ENDPOINT, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
+                signal: ctrl.signal,
             });
             // 200 = nuevo, 409 = ya registrado → ambos cuentan como éxito
             if (res.ok || res.status === 409) {
@@ -314,12 +320,16 @@ export default function Formulario() {
             // Si nuestra base falla no bloqueamos al lead: le ofrecemos WhatsApp
             // igual, que es justo el canal donde queremos que acabe.
             setWaUrl(enlace());
-            // fetch lanza TypeError en fallo de red — frecuente en obra con señal débil
+            // AbortError = timeout de 15 s; TypeError = fallo de red (señal débil en obra).
             setErrMsg(
-                err instanceof TypeError
-                    ? "Sin conexión. Verifica tu señal e intenta de nuevo."
-                    : "No pudimos completar tu registro. Revisa los datos e intenta de nuevo."
+                err instanceof DOMException && err.name === "AbortError"
+                    ? "El servidor tardó en responder. Escríbenos por WhatsApp y te atendemos al instante."
+                    : err instanceof TypeError
+                        ? "Sin conexión. Verifica tu señal e intenta de nuevo."
+                        : "No pudimos completar tu registro. Revisa los datos e intenta de nuevo."
             );
+        } finally {
+            clearTimeout(timeoutId);
         }
     }
 
