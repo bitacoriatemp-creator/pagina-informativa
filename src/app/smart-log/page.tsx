@@ -12,6 +12,11 @@ export const metadata: Metadata = {
 export default function SmartLogPage() {
     return (
         <MarketingShell>
+            {/* h1 sr-only: la página vivía sin <h1> propio (huérfana para rastreo
+               y lectores de pantalla). La sección trae su cabecera visual, así
+               que este es solo para el árbol del documento. Mismo patrón que
+               planes/page.tsx:52. */}
+            <h1 className="sr-only">Smart Log: la bitácora de obra inteligente</h1>
             <BitacoraSection />
         </MarketingShell>
     );
