@@ -9,6 +9,8 @@
      /auth?mode=register&plan=<plan>         → crear cuenta con un plan
      /auth?mode=register&plan=<plan>&billing=<monthly|annual>
                                              → plan de pago con su ciclo
+     /dashboard                              → tablero (cuenta abierta)
+     /auth/salir?volver=<origen de www>      → cerrar sesión y volver
 
    `plan`: draft | resident | manager | executive | project_license.
    `billing` solo viaja con los planes de suscripción; Draft es gratis y
@@ -43,6 +45,24 @@ export function appUrl(path: string, params?: Record<string, string | undefined>
 /** Pantalla de inicio de sesión de la app. */
 export function loginUrl(): string {
     return appUrl("/auth");
+}
+
+/**
+ * Tablero de la app: botón "Acceder" de la cuenta en la barra y destino de
+ * "/" en www cuando hay una cuenta abierta (src/middleware.ts).
+ */
+export function dashboardUrl(): string {
+    return appUrl("/dashboard");
+}
+
+/**
+ * Cierre de sesión en la app: /auth/salir revoca la sesión y borra la cookie
+ * de aviso. `volver` es el origen de www (https://www.bitacoria.com); la app
+ * solo regresa ahí si coincide EXACTAMENTE con el sitio que conoce, y si no,
+ * se queda en su /auth.
+ */
+export function salirUrl(volver?: string): string {
+    return appUrl("/auth/salir", { volver });
 }
 
 /**

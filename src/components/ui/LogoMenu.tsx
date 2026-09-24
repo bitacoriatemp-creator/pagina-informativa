@@ -77,6 +77,16 @@ interface Props {
     /* En qué borde se apoya la marca. Manda todo lo demás: de qué lado abre
        el panel, dónde va la flecha y hacia dónde apunta en reposo. */
     lado?: "izquierda" | "derecha";
+    /* Al abrirse el panel: la barra cierra el menú del círculo de cuenta,
+       que en la home queda justo debajo y se encimarían. */
+    onAbrir?: () => void;
+    /* Solo el hero, y solo con la cuenta de la app en la barra: por debajo de
+       360 px el lockup baja de 144 a 96 px para que quepan "Acceder", el
+       círculo y la hamburguesa con holgura (a 112 px, en 320 sobraban 1.6 px:
+       cualquier ajuste de tamaño de letra del teléfono lo desbordaba). Sin
+       cuenta no se pasa y el logo es el de siempre. La barra delgada no lo
+       necesita (su logo ya mide 80 px). */
+    compacto?: boolean;
 }
 
 export default function LogoMenu({
@@ -85,6 +95,8 @@ export default function LogoMenu({
     onSignOut,
     variant = "pill",
     lado = "izquierda",
+    onAbrir,
+    compacto = false,
 }: Props) {
     const aLaDerecha = lado === "derecha";
     const [abierto, setAbierto] = useState(false);
@@ -134,6 +146,7 @@ export default function LogoMenu({
         if (!puedeAbrir()) return;
         if (cierre.current) clearTimeout(cierre.current);
         setAbierto(true);
+        onAbrir?.();
     };
     /* La gracia evita el parpadeo al cruzar el hueco entre el logo y el panel. */
     const cerrarConGracia = () => {
@@ -164,7 +177,8 @@ export default function LogoMenu({
 
     /* Lockup horizontal (500x191): se mide por ancho y el alto sale solo.
        En slim debe caber en una barra de 48/56px de alto. */
-    const tamLogo = variant === "pill" ? "w-36 lg:w-44" : "w-20 lg:w-24";
+    const tamLogo =
+        variant === "pill" ? `w-36 lg:w-44${compacto ? " max-[359px]:w-24" : ""}` : "w-20 lg:w-24";
     const visible = encima || abierto;
 
     return (

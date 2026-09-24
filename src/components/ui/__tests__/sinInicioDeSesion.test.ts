@@ -14,6 +14,16 @@ import { describe, expect, it } from "vitest";
  * como texto visible, y la barra (GlobalNavbar, LogoMenu) no enlaza a la app.
  * `loginUrl()` sigue existiendo en src/lib/appUrl.ts por si la decisión cambia;
  * lo que se prohíbe es usarlo desde la UI.
+ *
+ * Única excepción (2026-09-23, pedido de JC, pendiente del ok de Luis): con una
+ * sesión ya abierta en la app (cookie de aviso `bitacoria_cuenta`), la barra
+ * muestra la cuenta (CuentaSesion.tsx): el botón "Acceder" y el círculo con la
+ * foto o las iniciales, cuyo menú lleva "Cerrar sesión"; y la caja de alta del
+ * hero (HeroHybrid.tsx) se cambia por la de la cuenta: el círculo, "Acceder" y
+ * "Cerrar sesión". Son los dos únicos sitios que usan `dashboardUrl` y
+ * `salirUrl`. Sigue sin haber entrada para quien no tiene sesión: ni "Iniciar
+ * sesión" ni "Empezar gratis" en la barra, y sin sesión el hero sigue con su
+ * alta.
  */
 const RAIZ = resolve(__dirname, "../../..");
 const COMPONENTES = join(RAIZ, "components");
@@ -64,16 +74,53 @@ describe("la landing no ofrece inicio de sesión", () => {
         expect(culpables.map((a) => a.slice(RAIZ.length + 1))).toEqual([]);
     });
 
-    it("la barra (GlobalNavbar y LogoMenu) no enlaza a la app: ni appUrl ni app.bitacoria.com", () => {
+    it("la barra solo enlaza a la app desde la cuenta abierta: Acceder y Cerrar sesión", () => {
         // Luis quitó también "Empezar gratis" de la barra (2026-09-12): el embudo
         // vive en el hero y en los planes, no en un botón suelto arriba a la derecha.
-        const barra = archivos.filter((a) => /GlobalNavbar\.tsx$|LogoMenu\.tsx$/.test(a));
-        expect(barra).toHaveLength(2);
-        const culpables = barra.filter((a) => {
+        // La cuenta de la barra (2026-09-23: botón "Acceder" + círculo con su
+        // menú) solo sale con sesión abierta y solo usa dashboardUrl ("Acceder")
+        // y salirUrl ("Cerrar sesión"). GlobalNavbar y LogoMenu siguen sin tocar
+        // appUrl.
+        const barra = archivos.filter((a) => /GlobalNavbar\.tsx$|LogoMenu\.tsx$|CuentaSesion\.tsx$/.test(a));
+        expect(barra).toHaveLength(3);
+        const culpables: string[] = [];
+        for (const a of barra) {
+            const nombre = a.slice(RAIZ.length + 1);
             const fuente = sinComentarios(readFileSync(a, "utf8"));
-            return /@\/lib\/appUrl|app\.bitacoria\.com|\/auth/.test(fuente);
-        });
+            if (/app\.bitacoria\.com|\/auth|Empezar gratis|registerUrl/.test(fuente)) culpables.push(nombre);
+            if (!/@\/lib\/appUrl/.test(fuente)) continue;
+            if (!a.endsWith("CuentaSesion.tsx")) {
+                culpables.push(`${nombre}: importa appUrl`);
+                continue;
+            }
+            const imports = Array.from(fuente.matchAll(/import\s*\{([^}]*)\}\s*from\s*["']@\/lib\/appUrl["']/g));
+            const nombres = imports.flatMap((m) => m[1].split(",").map((n) => n.trim()).filter(Boolean)).sort();
+            if (imports.length !== 1 || nombres.join(",") !== "dashboardUrl,salirUrl") {
+                culpables.push(`${nombre}: importa ${nombres.join(", ") || "appUrl sin nombres"}`);
+            }
+        }
+        expect(culpables).toEqual([]);
+    });
+
+    it("Acceder y Cerrar sesión (dashboardUrl, salirUrl) solo desde la cuenta abierta: CuentaSesion y el hero", () => {
+        // 2026-09-23: con sesión abierta, el hero (HeroHybrid) cambia su caja de
+        // alta por la de la cuenta, con "Acceder" y "Cerrar sesión". Ningún otro
+        // componente enlaza al tablero ni al cierre de sesión.
+        const permitidos = /(?:^|[\\/])(?:CuentaSesion|HeroHybrid)\.tsx$/;
+        const usan = archivos.filter((a) => /\b(?:dashboardUrl|salirUrl)\b/.test(sinComentarios(readFileSync(a, "utf8"))));
+        const culpables = usan.filter((a) => !permitidos.test(a));
         expect(culpables.map((a) => a.slice(RAIZ.length + 1))).toEqual([]);
+    });
+
+    it("el hero solo toma de appUrl el alta y, con cuenta, Acceder y Cerrar sesión", () => {
+        const [hero] = archivos.filter((a) => a.endsWith("HeroHybrid.tsx"));
+        expect(hero).toBeDefined();
+        const fuente = sinComentarios(readFileSync(hero, "utf8"));
+        const imports = Array.from(fuente.matchAll(/import\s*\{([^}]*)\}\s*from\s*["']@\/lib\/appUrl["']/g));
+        const nombres = imports.flatMap((m) => m[1].split(",").map((n) => n.trim()).filter(Boolean)).sort();
+        expect(imports).toHaveLength(1);
+        expect(nombres).toEqual(["dashboardUrl", "registerUrl", "salirUrl"]);
+        expect(fuente).not.toMatch(/app\.bitacoria\.com|Empezar gratis/);
     });
 
     it("ningún componente enlaza a /auth sin mode=register", () => {

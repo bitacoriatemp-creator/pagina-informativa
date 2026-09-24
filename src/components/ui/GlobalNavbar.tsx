@@ -6,7 +6,9 @@ import { motion } from "framer-motion";
 import { FolderPlus, Upload, MessageSquareText, type LucideIcon } from "lucide-react";
 import LogoMenu from "./LogoMenu";
 import { useAccount, clearStoredAccount } from "@/lib/account";
+import { useCuenta } from "@/hooks/useCuenta";
 import { AccountRowMobile } from "./AccountMenu";
+import { CuentaBarra, CuentaFilaMovil } from "./CuentaSesion";
 
 /* ══════════════════════════════════════════════════════════════
    GlobalNavbar — two-state morphing navbar
@@ -60,17 +62,22 @@ const PASOS: {
 
 const SCROLL_THRESHOLD = 100; // px — después de esto cambia a slim
 
-/* ── Sin botones hacia la app en la barra ──
-   La barra es solo el logo y su menú. El embudo hacia la app vive donde el
+/* ── Sin botones hacia la app en la barra, salvo la cuenta abierta ──
+   La barra es el logo y su menú. El embudo hacia la app vive donde el
    usuario ya está leyendo: "Continuar con Google" y el correo del hero abren
    el alta, y cada plan tiene su botón. Hasta el 5 de septiembre de 2026 hubo
    aquí un "Acceder" (la encuesta de /registro); del 9 al 12, "Iniciar sesión"
    y "Empezar gratis" hacia app.bitacoria.com, puestos dentro del PR de enlaces
    a la app sin que Luis viera el resultado. Los quitó los dos: la landing
    vende, no autentica, y un botón suelto arriba a la derecha competía con el
-   hero. Decisión y regla en docs/DECISIONES.md; el test
-   src/components/ui/__tests__/sinInicioDeSesion.test.ts vigila que la barra
-   no vuelva a enlazar a la app. */
+   hero. Decisión y regla en docs/DECISIONES.md.
+   Única excepción (2026-09-23, pedido de JC, pendiente del ok de Luis): si
+   el navegador ya tiene una sesión abierta en la app (cookie de aviso
+   `bitacoria_cuenta`), aparece la cuenta de CuentaSesion.tsx: el botón
+   "Acceder" y el círculo con la foto o las iniciales, cuyo menú lleva el
+   nombre y "Cerrar sesión". Sin esa cookie la barra es la de siempre. El
+   test src/components/ui/__tests__/sinInicioDeSesion.test.ts vigila que solo
+   eso enlace a la app. */
 
 export default function GlobalNavbar() {
     /* La marca va a la derecha SOLO en la home: allí el hero deja libre ese
@@ -83,6 +90,20 @@ export default function GlobalNavbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const account = useAccount();
+    /* Sesión abierta en la app (cookie de aviso). Manda sobre la cuenta local
+       del lead: con sesión real, el "Cerrar sesión" que vale es el de la app,
+       y dos bloques de cuenta distintos en el mismo menú confundirían. */
+    const cuenta = useCuenta();
+    const cuentaLocal = cuenta ? null : account;
+    /* Adonde vuelve "Cerrar sesión" tras cerrarla en la app. Se lee al montar,
+       igual que la cookie: la cuenta nunca se pinta en el servidor. */
+    const [origen, setOrigen] = useState<string>();
+    useEffect(() => { setOrigen(window.location.origin); }, []);
+    /* El panel del logo y el menú del círculo no conviven (en la home el
+       círculo queda justo debajo del panel): cada apertura del logo cambia
+       esta señal y el menú del círculo se cierra. */
+    const [cierreCuenta, setCierreCuenta] = useState(0);
+    const cerrarCuenta = () => setCierreCuenta((n) => n + 1);
 
     /* "Cerrar sesión" solo olvida el registro local del lead: www no tiene
        sesión propia (la de la app vive en app.bitacoria.com). */
@@ -185,15 +206,37 @@ export default function GlobalNavbar() {
                 style={{ pointerEvents: isScrolled ? "none" : "auto" }}
                 aria-hidden={isScrolled}
             >
-                <div className={`flex w-full items-center gap-3 ${enHome ? "justify-end" : "justify-between"}`}>
+                {/* Con cuenta, en teléfonos (< sm) el hueco entre piezas baja de 12 a
+                    8 px y el logo se encoge por debajo de 360 px (LogoMenu
+                    `compacto`): así logo, Acceder, círculo y hamburguesa caben en
+                    320 px sin encimarse. Sin cuenta, gap-3 y el logo de siempre. */}
+                <div className={`flex w-full items-center ${cuenta ? "gap-2 sm:gap-3" : "gap-3"} ${enHome ? "justify-end" : "justify-between"}`}>
+                    {/* Con sesión abierta, "Acceder" + círculo de cuenta, en todos los
+                        anchos (en teléfonos, compactos). En la home van a la
+                        izquierda del logo, para que la marca siga a plomo con el
+                        borde del hero; lg:mr-3 los separa un poco más del logo que
+                        la flecha de su menú, para que esa flecha se lea como parte
+                        del logo y no del círculo. En las demás páginas, al otro
+                        extremo (ml-auto los empuja junto a la hamburguesa). Sin
+                        sesión no se pinta nada y la barra queda como antes. */}
+                    {cuenta && enHome && (
+                        <CuentaBarra cuenta={cuenta} volver={origen} inactiva={isScrolled} senalCierre={cierreCuenta} onAbrir={() => setIsMenuOpen(false)} className="lg:mr-3" />
+                    )}
+
                     {/* El logo ES la navegación: enlaces, cuenta y todo lo demás
                         viven dentro de su menú (ver LogoMenu). */}
                     <LogoMenu
                         onComoFunciona={handleComoFunciona}
-                        account={account}
+                        account={cuentaLocal}
                         onSignOut={handleSignOut}
                         lado={lado}
+                        onAbrir={cerrarCuenta}
+                        compacto={!!cuenta}
                     />
+
+                    {cuenta && !enHome && (
+                        <CuentaBarra cuenta={cuenta} volver={origen} inactiva={isScrolled} senalCierre={cierreCuenta} onAbrir={() => setIsMenuOpen(false)} className="ml-auto" />
+                    )}
 
                     {/* HAMBURGER mobile (hero state) */}
                     <button
@@ -244,9 +287,13 @@ export default function GlobalNavbar() {
                                     () => setIsMenuOpen(false),
                                 )
                             )}
-                            {/* La cuenta local (lead de /registro o Google del sitio) no es
-                                sesión de la app; solo se muestra si existe. */}
-                            {account && <AccountRowMobile account={account} onSignOut={handleSignOut} />}
+                            {/* Sesión abierta en la app: círculo, nombre y Cerrar
+                                sesión ("Acceder" no se repite: está en la barra, al lado
+                                de la hamburguesa). Si no, la cuenta local (lead de
+                                /registro), que no es sesión de la app; solo se muestra
+                                si existe. */}
+                            {cuenta && <CuentaFilaMovil cuenta={cuenta} volver={origen} px="px-6" />}
+                            {cuentaLocal && <AccountRowMobile account={cuentaLocal} onSignOut={handleSignOut} />}
                         </nav>
                     </div>
                 )}
@@ -276,15 +323,24 @@ export default function GlobalNavbar() {
                         borderBottom: "1px solid rgba(195, 151, 103, 0.12)",
                     }}
                 >
+                    {cuenta && enHome && (
+                        <CuentaBarra cuenta={cuenta} volver={origen} variant="slim" inactiva={!isScrolled} senalCierre={cierreCuenta} onAbrir={() => setIsMenuOpen(false)} className="lg:mr-3" />
+                    )}
+
                     {/* Mismo menú del logo, en tamaño reducido: al bajar no reaparece
                         una barra de enlaces distinta de la del hero. */}
                     <LogoMenu
                         onComoFunciona={handleComoFunciona}
-                        account={account}
+                        account={cuentaLocal}
                         onSignOut={handleSignOut}
                         variant="slim"
                         lado={lado}
+                        onAbrir={cerrarCuenta}
                     />
+
+                    {cuenta && !enHome && (
+                        <CuentaBarra cuenta={cuenta} volver={origen} variant="slim" inactiva={!isScrolled} senalCierre={cierreCuenta} onAbrir={() => setIsMenuOpen(false)} className="ml-auto" />
+                    )}
 
                     {/* HAMBURGER mobile (slim state) */}
                     <button
@@ -329,7 +385,8 @@ export default function GlobalNavbar() {
                                     () => setIsMenuOpen(false),
                                 )
                             )}
-                            {account && <AccountRowMobile account={account} onSignOut={handleSignOut} />}
+                            {cuenta && <CuentaFilaMovil cuenta={cuenta} volver={origen} px="px-5" />}
+                            {cuentaLocal && <AccountRowMobile account={cuentaLocal} onSignOut={handleSignOut} />}
                         </nav>
                     </div>
                 )}

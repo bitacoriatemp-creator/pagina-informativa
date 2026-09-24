@@ -1,12 +1,16 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import { LogOut } from "lucide-react";
 import HeroLiquidGlass from "./HeroLiquidGlass";
+import { Avatar } from "./CuentaSesion";
+import { useCuenta } from "@/hooks/useCuenta";
+import type { Cuenta } from "@/lib/cuenta";
 import { irALegal } from "@/lib/eventos";
 import { HANDOFF_EMAIL } from "@/lib/registro";
-import { registerUrl } from "@/lib/appUrl";
+import { dashboardUrl, registerUrl, salirUrl } from "@/lib/appUrl";
 
 /* Apple Sign-In requiere cuenta Apple Developer ($99/año).
    El botón ya está construido abajo — cambia a `true` cuando el
@@ -43,6 +47,8 @@ const HeroDemoShowcase = dynamic(() => import("./HeroDemoShowcase"), { ssr: fals
    contenido a la derecha):
      Content (tagline, headline, CTAs)
      HeroDemoShowcase (Smart Concepts / Bitácora / Smart Calendar)
+     Caja de alta (Google y correo → alta en la app); con sesión abierta
+       en la app, la caja de la cuenta en su lugar (CajaCuenta)
      Scroll indicator
    NOTA: la navbar fue movida a GlobalNavbar.tsx (fixed, persiste
    en todo el scroll de la landing). El "Cómo Funciona" modal
@@ -62,6 +68,68 @@ const fadeUp = {
 const stagger = {
     visible: { transition: { staggerChildren: 0.1 } },
 };
+
+/* useLayoutEffect avisa en el render de servidor; allí no hay nada que medir. */
+const useLayoutEffectSeguro = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+/* El único botón relleno de la caja: "Continuar" del alta y "Acceder" de la
+   cuenta llevan exactamente el mismo. */
+const BOTON_PRIMARIO =
+    "flex h-12 w-full items-center justify-center rounded-xl bg-[#f5f0e8] text-[15px] font-semibold text-[#1a120c] transition-colors duration-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c39767]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#060302]";
+
+/* Círculo de la cuenta en el hero: 56 px, más grande que el de la barra
+   (36/32) porque aquí es la cabecera de la caja. */
+const AVATAR_HERO = { lado: 56, clase: "h-14 w-14", texto: "text-[18px]" } as const;
+
+/**
+ * La caja del hero con sesión abierta en la app (cookie de aviso
+ * `bitacoria_cuenta`): quien ya tiene cuenta no se vuelve a registrar, así
+ * que en lugar del alta ve su cuenta. Arriba el círculo (la foto, o las
+ * iniciales si no hay o no carga: el mismo Avatar de la barra) con "Sesión
+ * abierta como <nombre>"; debajo "Acceder" al tablero, con el botón relleno
+ * del alta, y "Cerrar sesión" como enlace secundario (la cierra la app en
+ * /auth/salir y vuelve a `volver`). Sin correo ni ids: la cookie no los lleva.
+ * `<a>` y no `<Link>`: los dos cruzan a la app.
+ */
+export function CajaCuenta({ cuenta, volver }: { cuenta: Cuenta; volver?: string }) {
+    return (
+        <>
+            <div className="flex items-center gap-4">
+                {/* El aro café fino es el mismo del círculo de la barra. */}
+                <Avatar
+                    cuenta={cuenta}
+                    lado={AVATAR_HERO.lado}
+                    clase={`${AVATAR_HERO.clase} ring-1 ring-[#c39767]/30`}
+                    texto={AVATAR_HERO.texto}
+                />
+                <p className="min-w-0 text-[14px] leading-snug text-[#f5f0e8]/60">
+                    Sesión abierta como
+                    {/* line-clamp ya es de bloque; dos líneas para los nombres largos. */}
+                    <span className="mt-0.5 line-clamp-2 break-words text-[17px] font-medium text-[#f5f0e8]">
+                        {cuenta.nombre}
+                    </span>
+                </p>
+            </div>
+
+            {/* La misma línea que separa Google del correo en el alta. */}
+            <div className="my-6 h-px w-full bg-white/10" aria-hidden />
+
+            <a href={dashboardUrl()} className={BOTON_PRIMARIO}>
+                Acceder
+            </a>
+
+            <div className="mt-4 flex justify-center">
+                <a
+                    href={salirUrl(volver)}
+                    className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] text-white/60 transition-colors duration-200 hover:text-[#c39767] focus-visible:text-[#c39767] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c39767]/60"
+                >
+                    <LogOut aria-hidden="true" size={15} strokeWidth={1.8} />
+                    Cerrar sesión
+                </a>
+            </div>
+        </>
+    );
+}
 
 export default function HeroHybrid() {
     /* ── Alta: el hero manda a la app (app.bitacoria.com), no a /registro ──
@@ -98,6 +166,62 @@ export default function HeroHybrid() {
        es donde vive el botón real de Google. Nada de OAuth aquí (socialAuth.ts
        se borró; la "cuenta" del navbar es solo el registro local del lead). */
     const handleGoogle = () => irALaApp();
+
+    /* ── Con sesión abierta en la app (2026-09-23, pedido de JC) ──
+       La caja de alta se cambia por la de la cuenta (CajaCuenta). Como en la
+       barra, la cookie se lee DESPUÉS de montar: el primer render (servidor e
+       hidratación) es siempre el alta, y la cuenta entra justo después. Para
+       que ese cambio no mueva lo que hay debajo, la caja de la cuenta conserva
+       el alto que tenía el alta, medido mientras estaba a la vista; el ancho,
+       el fondo (ninguno), el borde (ninguno) y el radio son los de siempre
+       porque es la misma caja. Si después cambia el ancho de la ventana, la
+       reserva se suelta: todo se vuelve a acomodar de todos modos. */
+    const cuenta = useCuenta();
+    const conCuenta = cuenta !== null;
+    const caja = useRef<HTMLDivElement>(null);
+    const [altoAlta, setAltoAlta] = useState<{ alto: number; ancho: number } | null>(null);
+
+    /* Adonde vuelve "Cerrar sesión" tras cerrarla en la app (como en la barra). */
+    const [origen, setOrigen] = useState<string>();
+    useEffect(() => { setOrigen(window.location.origin); }, []);
+
+    useLayoutEffectSeguro(() => {
+        const el = caja.current;
+        if (conCuenta || !el) return;
+        const medir = () => {
+            /* El alto del CONTENIDO del alta (del borde de arriba de la caja al
+               pie de su último bloque), no el de la caja: en lg la caja comparte
+               filas con el demo, y cuando el demo es más alto (1920 px) el grid
+               la estira (307.8 frente a 300.4). Reservar lo estirado cambia el
+               reparto de las filas y la caja subía ~4 px al entrar la cuenta.
+               Con decimales (offsetHeight redondea). La caja y sus bloques se
+               desplazan juntos (y), así que la resta no cambia. */
+            const ultimo = el.lastElementChild;
+            const alto = ultimo
+                ? ultimo.getBoundingClientRect().bottom - el.getBoundingClientRect().top
+                  + (parseFloat(getComputedStyle(ultimo).marginBottom) || 0)
+                : el.getBoundingClientRect().height;
+            const ancho = window.innerWidth;
+            setAltoAlta((m) => (m && m.alto === alto && m.ancho === ancho ? m : { alto, ancho }));
+        };
+        medir();
+        if (typeof ResizeObserver === "undefined") return;
+        const observador = new ResizeObserver(medir);
+        /* También los bloques: estirada, la caja no cambia de tamaño aunque
+           cambie su contenido. */
+        observador.observe(el);
+        for (const bloque of Array.from(el.children)) observador.observe(bloque);
+        return () => observador.disconnect();
+    }, [conCuenta]);
+
+    useEffect(() => {
+        if (!conCuenta) return;
+        const alCambiarTamano = () => setAltoAlta((m) => (m && m.ancho !== window.innerWidth ? null : m));
+        window.addEventListener("resize", alCambiarTamano);
+        return () => window.removeEventListener("resize", alCambiarTamano);
+    }, [conCuenta]);
+
+    const altoReservado = conCuenta && altoAlta ? altoAlta.alto : undefined;
 
     /* minh-100dvh en vez de min-h-screen: en iOS Safari la barra de
        direcciones hace que 100vh sea mayor que la pantalla visible. */
@@ -184,91 +308,102 @@ export default function HeroHybrid() {
                         relleno (Continuar) fija la jerarquía.
                         Todo en font-sans (Kumbh): Teko es condensada y a este
                         tamaño apretaba los botones y volvía ilegible el aviso.
-                        Google y correo abren el alta en la app. */}
+                        Google y correo abren el alta en la app.
+                        Con sesión abierta en la app, esta misma caja lleva la
+                        cuenta (CajaCuenta) y nada del alta; conserva el alto del
+                        alta (altoReservado) para que el cambio no mueva nada. */}
                     <motion.div
+                        ref={caja}
                         custom={3}
                         variants={fadeUp}
                         initial="hidden"
                         animate="visible"
                         className="hero-area-cta pointer-events-auto w-full max-w-[400px] font-sans"
+                        style={altoReservado ? { minHeight: altoReservado } : undefined}
                     >
-                        {/* Social */}
-                        <div className="flex flex-col gap-3">
-                            {/* Icono absoluto + texto centrado: el texto queda
-                                ópticamente centrado en el bloque, como la referencia. */}
-                            <button
-                                type="button"
-                                onClick={handleGoogle}
-                                className="auth-field relative flex w-full items-center justify-center px-12 text-[15px] font-medium"
-                            >
-                                <span className="absolute left-4 flex items-center" aria-hidden>
-                                    <GoogleG />
-                                </span>
-                                Continuar con Google
-                            </button>
+                        {cuenta ? (
+                            <CajaCuenta cuenta={cuenta} volver={origen} />
+                        ) : (
+                            <>
+                                {/* Social */}
+                                <div className="flex flex-col gap-3">
+                                    {/* Icono absoluto + texto centrado: el texto queda
+                                        ópticamente centrado en el bloque, como la referencia. */}
+                                    <button
+                                        type="button"
+                                        onClick={handleGoogle}
+                                        className="auth-field relative flex w-full items-center justify-center px-12 text-[15px] font-medium"
+                                    >
+                                        <span className="absolute left-4 flex items-center" aria-hidden>
+                                            <GoogleG />
+                                        </span>
+                                        Continuar con Google
+                                    </button>
 
-                            {/* Apple — oculto hasta tener Apple Developer (ver APPLE_ENABLED) */}
-                            {APPLE_ENABLED && (
-                                <button
-                                    type="button"
-                                    className="auth-field relative flex w-full items-center justify-center px-12 text-[15px] font-medium"
-                                >
-                                    <span className="absolute left-4 flex items-center" aria-hidden>
-                                        <AppleLogo />
-                                    </span>
-                                    Continuar con Apple
-                                </button>
-                            )}
-                        </div>
+                                    {/* Apple — oculto hasta tener Apple Developer (ver APPLE_ENABLED) */}
+                                    {APPLE_ENABLED && (
+                                        <button
+                                            type="button"
+                                            className="auth-field relative flex w-full items-center justify-center px-12 text-[15px] font-medium"
+                                        >
+                                            <span className="absolute left-4 flex items-center" aria-hidden>
+                                                <AppleLogo />
+                                            </span>
+                                            Continuar con Apple
+                                        </button>
+                                    )}
+                                </div>
 
-                        {/* Divisor: solo la línea. La "o" suelta era un carácter
-                            huérfano entre dos bloques. */}
-                        <div className="my-6 h-px w-full bg-white/10" aria-hidden />
+                                {/* Divisor: solo la línea. La "o" suelta era un carácter
+                                    huérfano entre dos bloques. */}
+                                <div className="my-6 h-px w-full bg-white/10" aria-hidden />
 
-                        {/* Correo — etiqueta encima del campo, no placeholder dentro:
-                            así el campo no se queda "vacío de sentido" al escribir. */}
-                        <form onSubmit={handleHeroSubmit}>
-                            <label htmlFor="hero-email" className="mb-2 block text-[14px] text-[#f5f0e8]/85">
-                                Correo electrónico
-                            </label>
-                            {/* 16px en móvil evita el zoom automático de iOS al enfocar. */}
-                            <input
-                                id="hero-email"
-                                type="email"
-                                required
-                                autoComplete="email"
-                                value={heroEmail}
-                                onChange={(e) => setHeroEmail(e.target.value)}
-                                className="auth-field w-full px-4 text-[16px] outline-none sm:text-[15px]"
-                            />
-                            {/* Deja clara la expectativa antes del clic: no prometemos
-                                continuidad que no existe (el correo no viaja en la URL
-                                hacia la app), así que la pantalla vacía del otro lado no
-                                se siente como un dato perdido. */}
-                            <p className="mt-2 text-[12px] leading-snug text-white/35">
-                                Te lo volveremos a pedir al crear tu cuenta en la app.
-                            </p>
-                            <button
-                                type="submit"
-                                className="mt-4 flex h-12 w-full items-center justify-center rounded-xl bg-[#f5f0e8] text-[15px] font-semibold text-[#1a120c] transition-colors duration-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c39767]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#060302]"
-                            >
-                                Continuar
-                            </button>
-                        </form>
+                                {/* Correo — etiqueta encima del campo, no placeholder dentro:
+                                    así el campo no se queda "vacío de sentido" al escribir. */}
+                                <form onSubmit={handleHeroSubmit}>
+                                    <label htmlFor="hero-email" className="mb-2 block text-[14px] text-[#f5f0e8]/85">
+                                        Correo electrónico
+                                    </label>
+                                    {/* 16px en móvil evita el zoom automático de iOS al enfocar. */}
+                                    <input
+                                        id="hero-email"
+                                        type="email"
+                                        required
+                                        autoComplete="email"
+                                        value={heroEmail}
+                                        onChange={(e) => setHeroEmail(e.target.value)}
+                                        className="auth-field w-full px-4 text-[16px] outline-none sm:text-[15px]"
+                                    />
+                                    {/* Deja clara la expectativa antes del clic: no prometemos
+                                        continuidad que no existe (el correo no viaja en la URL
+                                        hacia la app), así que la pantalla vacía del otro lado no
+                                        se siente como un dato perdido. */}
+                                    <p className="mt-2 text-[12px] leading-snug text-white/35">
+                                        Te lo volveremos a pedir al crear tu cuenta en la app.
+                                    </p>
+                                    <button
+                                        type="submit"
+                                        className={`mt-4 ${BOTON_PRIMARIO}`}
+                                    >
+                                        Continuar
+                                    </button>
+                                </form>
 
-                        <p className="mt-5 text-center text-[13px] leading-snug text-white/45">
-                            Al continuar, aceptas nuestro{" "}
-                            {/* Baja al aviso real, en el pie junto a Términos y FAQ, y lo
-                                resalta al llegar. Antes era un ancla a #contacto: dejaba
-                                al usuario en el pie sin señalar cuál de los tres era. */}
-                            <button
-                                type="button"
-                                onClick={() => irALegal("privacy")}
-                                className="underline underline-offset-4 decoration-white/30 transition-colors hover:text-white/70"
-                            >
-                                Aviso de Privacidad
-                            </button>.
-                        </p>
+                                <p className="mt-5 text-center text-[13px] leading-snug text-white/45">
+                                    Al continuar, aceptas nuestro{" "}
+                                    {/* Baja al aviso real, en el pie junto a Términos y FAQ, y lo
+                                        resalta al llegar. Antes era un ancla a #contacto: dejaba
+                                        al usuario en el pie sin señalar cuál de los tres era. */}
+                                    <button
+                                        type="button"
+                                        onClick={() => irALegal("privacy")}
+                                        className="underline underline-offset-4 decoration-white/30 transition-colors hover:text-white/70"
+                                    >
+                                        Aviso de Privacidad
+                                    </button>.
+                                </p>
+                            </>
+                        )}
                     </motion.div>
                 </div>
             </div>
