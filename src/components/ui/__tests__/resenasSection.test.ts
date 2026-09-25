@@ -909,7 +909,7 @@ describe("ResenasSection: la cinta", () => {
     });
 });
 
-describe("la portada monta la sección entre el hero y los planes", () => {
+describe("la portada monta la sección debajo de los planes (hero → planes → reseñas)", () => {
     const leer = (ruta: string) =>
         readFileSync(join(__dirname, "..", "..", "..", ruta), "utf8")
             .replace(/\/\*[\s\S]*?\*\//g, "")
@@ -923,15 +923,18 @@ describe("la portada monta la sección entre el hero y los planes", () => {
         expect(pagina).toContain("<LandingHome resenas={resenas} />");
     });
 
-    it("LandingHome: hero, luego reseñas solo si hay datos, luego planes", () => {
+    it("LandingHome: hero, luego planes, luego reseñas solo si hay datos, luego el pie", () => {
+        // JC 2026-09-25: JC pidió el orden hero → planes → reseñas.
         const home = leer("components/ui/LandingHome.tsx");
         const hero = home.indexOf("<HeroHybrid");
-        const resenas = home.indexOf("{resenas && <ResenasSection resenas={resenas} />}");
         const planes = home.indexOf("<PlanesSection");
+        const resenas = home.indexOf("{resenas && <ResenasSection resenas={resenas} />}");
+        const pie = home.indexOf("<FooterSection");
 
         expect(hero).toBeGreaterThan(-1);
-        expect(resenas).toBeGreaterThan(hero);
-        expect(planes).toBeGreaterThan(resenas);
+        expect(planes).toBeGreaterThan(hero);
+        expect(resenas).toBeGreaterThan(planes);
+        expect(pie).toBeGreaterThan(resenas);
     });
 
     it("el sobre-título bronce de reseñas y el de planes van con la misma opacidad (D9, cumple AA)", () => {

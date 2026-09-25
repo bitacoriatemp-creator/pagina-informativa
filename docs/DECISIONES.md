@@ -45,8 +45,8 @@ quién va dirigida la página: prospectos, no usuarios.
 
 ## 2026-09-25 — Reseñas reales en la portada
 
-**Decisión (JC; espera el ok de Luis en el Preview).** La portada muestra, entre el hero y los
-planes, una cinta horizontal ("cinta de obra", `ResenasSection`) con reseñas reales de usuarios de
+**Decisión (JC; espera el ok de Luis en el Preview).** La portada muestra, debajo de los planes
+(orden hero → planes → reseñas, pedido de JC), una cinta horizontal ("cinta de obra", `ResenasSection`) con reseñas reales de usuarios de
 la app: foto de Google o iniciales, nombre abreviado ("Ricardo M."), rol y tipo de obra, estrellas,
 el texto tal cual, la respuesta del equipo cuando la hay y el conteo honesto ("4.7 · 12 reseñas").
 La reseña **se pide dentro de la app**, después de la prueba gratis; el sitio solo la muestra.

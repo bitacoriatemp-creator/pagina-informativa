@@ -26,12 +26,13 @@ export default function LandingHome({ resenas }: { resenas: Resenas | null }) {
 
                 <HeroHybrid />
 
-                {/* Entre el hero y los planes: primero qué es, luego quién ya la
-                    usa, y al final cuánto cuesta. Sin datos no existe en el HTML. */}
-                {resenas && <ResenasSection resenas={resenas} />}
-
                 {/* El id="soluciones" lo lleva la <section> interna. */}
                 <PlanesSection />
+
+                {/* JC 2026-09-25: debajo de los planes (hero → planes → reseñas).
+                    Quien ya vio cuánto cuesta lee a quién ya le funcionó antes de
+                    decidir. Sin datos no existe en el HTML. */}
+                {resenas && <ResenasSection resenas={resenas} />}
 
                 <FooterSection />
             </main>
