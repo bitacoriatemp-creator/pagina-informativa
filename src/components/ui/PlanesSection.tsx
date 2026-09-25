@@ -470,7 +470,8 @@ export default function PlanesSection() {
                 >
                     <div className="mb-4 inline-flex items-center gap-2.5">
                         <span className="h-px w-8" style={{ background: `linear-gradient(to right, transparent, ${BRONZE}50)` }} />
-                        <span className="font-ui text-[10px] font-semibold uppercase tracking-[0.32em]" style={{ color: `${BRONZE}65` }}>
+                        {/* JC 2026-09-25: mismo valor que el sobre-título de reseñas (AA sobre #080808). */}
+                        <span className="font-ui text-[10px] font-semibold uppercase tracking-[0.32em]" style={{ color: `${BRONZE}D9` }}>
                             Planes &amp; Precios
                         </span>
                         <span className="h-px w-8" style={{ background: `linear-gradient(to left, transparent, ${BRONZE}50)` }} />
