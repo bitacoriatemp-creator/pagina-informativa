@@ -80,3 +80,12 @@ app, respuesta del equipo, foto o iniciales, flechas y arrastre). Los tests de l
 el DOM falso de `heroDemoShowcase.entorno.ts`, que pertenece al commit del video móvil: **el commit
 de reseñas se sube después (o junto) al del video**; si sube solo, vitest no encuentra el helper y
 el CI queda en rojo aunque el código esté bien.
+
+**Publicación (2026-09-25).** JC publicó a `main` (producción) el video del hero en móvil y esta
+sección **sin la revisión de Luis sobre el Preview**, por decisión suya: Luis estaba ocupado en otras
+tareas. El punto 4 queda así cumplido por JC y no por Luis; Luis puede revisarlo después y pedir
+cambios o revertirlo. Lo que cambia a la vista hoy: el video del hero en móvil (16:9, sin botones
+encima, reproductor nativo al tocar) y la opacidad del sobretítulo de Planes. La sección de reseñas
+no aparece en producción hasta que exista `RESENAS_API_URL` y haya 5 reseñas publicadas.
+Para revertir: en Vercel, "Promote to Production" del deploy anterior (`e5d5277`), o `git revert`
+de estos commits en `main`, sin force.
