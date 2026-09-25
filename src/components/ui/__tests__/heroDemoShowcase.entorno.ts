@@ -492,6 +492,12 @@ export async function montarHeroDemoShowcase({ tactil }: { tactil: boolean }) {
     global.document = documento;
     global.IntersectionObserver = ObservadorFalso;
     global.IS_REACT_ACT_ENVIRONMENT = true;
+    // Node 20 (el del CI) no trae `navigator` global y Node 21+ sí (JC 2026-09-25).
+    // react-dom en desarrollo lo lee al cargar si ve una `window` (el aviso de las
+    // DevTools): sin esto, en CI revienta con "navigator is not defined". Solo se
+    // pone si falta; en Node 21+ es un getter de solo lectura y no se toca.
+    const poneNavigator = typeof global.navigator === "undefined";
+    if (poneNavigator) global.navigator = { userAgent: "node" };
 
     // react-dom se carga DESPUÉS de instalar window/document: decide al cargar
     // si hay DOM y, sin él, no escucharía eventos.
@@ -562,6 +568,7 @@ export async function montarHeroDemoShowcase({ tactil }: { tactil: boolean }) {
                 if (valor === undefined) delete global[clave];
                 else global[clave] = valor;
             }
+            if (poneNavigator) delete global.navigator;
         },
     };
 }
