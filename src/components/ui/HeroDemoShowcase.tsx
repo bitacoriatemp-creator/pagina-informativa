@@ -9,14 +9,13 @@ import { assetPath } from "@/lib/assetPath";
 
 /* ── Los 3 demos reales que antes vivían en secciones aparte
    (Smart Concepts, Bitácora, Smart Calendar) — ahora viven en el Hero.
-   `focus` ajusta el object-position del recorte vertical en móvil, por si
-   el contenido de alguna grabación no está perfectamente centrado. ── */
+   JC 2026-09-24: fuera el campo `focus` (object-position del recorte vertical
+   en móvil): la tarjeta ya es 16:9 como las grabaciones y no recorta nada. ── */
 type Demo = {
     src: string;
     poster: string;
     label: string;
     accent: string;
-    focus?: string;
 };
 
 const DEMOS: Demo[] = [
@@ -50,6 +49,11 @@ const RATE_SOUND = 1;
    desplazamiento— para que se sienta como una sola pieza que se revela. */
 const SOUND_REVEAL = "opacity 1000ms cubic-bezier(0.33,0,0.2,1)";
 
+/* El Safari del iPhone no tiene requestFullscreen sobre elementos: su única
+   pantalla completa es la del reproductor nativo del <video>, y el tipo del DOM
+   no la declara. */
+type VideoConPantallaCompletaIOS = HTMLVideoElement & { webkitEnterFullscreen?: () => void };
+
 /**
  * HeroDemoShowcase — tarjeta de producto del Hero (estilo Claude: imagen
  * contenida a la derecha del copy, no fondo cinematográfico a sangre).
@@ -63,11 +67,9 @@ export default function HeroDemoShowcase() {
     const [hovering, setHovering] = useState(false);
     /* Punto bajo el cursor: muestra un adelanto del módulo antes de hacer clic. */
     const [preselected, setPreselected] = useState<number | null>(null);
-    /* En touch los controles cambian de sitio: el sonido va sobre la tarjeta y
-       aparece el gesto de ampliar. */
+    /* En touch no hay controles propios: la tarjeta entera abre el reproductor
+       nativo del navegador (ver abrirReproductorNativo). */
     const [coarsePointer, setCoarsePointer] = useState(false);
-    /* Oculta la pista "Toca para ampliar" tras el primer uso. */
-    const [yaAmplio, setYaAmplio] = useState(false);
 
     const videoRef0 = useRef<HTMLVideoElement>(null);
     const videoRef1 = useRef<HTMLVideoElement>(null);
@@ -82,6 +84,18 @@ export default function HeroDemoShowcase() {
     const activeRef = useRef(0);
     const mutedRef = useRef(true);
     const volumeRef = useRef(1);
+    /* Índice del video abierto en el reproductor nativo (con controles y
+       sonido), o null si el hero está en su loop mudo. */
+    const reproductorRef = useRef<number | null>(null);
+    /* Ese reproductor está (o está entrando) en pantalla completa. Se marca al
+       pedirla, no al confirmarse: entre la petición y el fullscreenchange el
+       observer ya puede dar la tarjeta por fuera de vista. */
+    const pantallaCompletaRef = useRef(false);
+    /* Turno del encadenado en curso. JC 2026-09-24: playNext deja pendiente el
+       play() del siguiente clip y, si mientras tanto se abre el reproductor, su
+       reveal no debe mutear ni ocultar el video que se está viendo. Abrir el
+       reproductor avanza el turno y ese reveal atrasado ya no hace nada. */
+    const encadenadoRef = useRef(0);
 
     /* Suscrito al media query, no leído una sola vez: una tablet que rota o un
        equipo híbrido (táctil + ratón) cambian de modo en caliente, y con una
@@ -115,8 +129,20 @@ export default function HeroDemoShowcase() {
         const canPlay = () => inView && document.visibilityState === "visible";
         const pauseAll = () => videos.forEach((v) => v!.pause());
 
+        /* JC 2026-09-24: con el reproductor nativo abierto el video es del
+           usuario. Si lo pausó con los controles, el loop no se lo reanuda al
+           volver a la vista. */
         const tryPlay = () => {
+            if (reproductorRef.current !== null) return;
             if (canPlay()) videos[activeRef.current]!.play().catch(() => {});
+        };
+
+        /* JC 2026-09-24: en pantalla completa la tarjeta queda tapada y el
+           observer (o la visibilidad) puede darla por no vista: pausar ahí
+           cortaría el video que el usuario está mirando. Con el reproductor
+           dentro de la tarjeta sí se pausa, como siempre. */
+        const pausarSiNadieMira = () => {
+            if (!pantallaCompletaRef.current) pauseAll();
         };
 
         /* Al terminar un demo encadena el siguiente (y del último vuelve al
@@ -133,7 +159,12 @@ export default function HeroDemoShowcase() {
             next.muted = mutedRef.current;
             next.playbackRate = mutedRef.current ? RATE_MUTED : RATE_SOUND;
 
+            const turno = ++encadenadoRef.current;
             const reveal = () => {
+                /* JC 2026-09-24: un toque mientras el siguiente clip aún carga
+                   abre el reproductor con el clip visible; el encadenado
+                   pendiente se anula para no mutearlo ni ocultarlo por debajo. */
+                if (turno !== encadenadoRef.current || reproductorRef.current !== null) return;
                 videos[currentIdx]!.muted = true;
                 activeRef.current = nextIdx;
                 setActive(nextIdx);
@@ -150,15 +181,25 @@ export default function HeroDemoShowcase() {
             next.play().then(reveal, reveal);
         };
 
+        /* JC 2026-09-24: si el demo termina en pantalla completa no se cambia
+           de video: el reproductor nativo se queda en el último cuadro (con su
+           botón de repetir) y el siguiente entra al salir. Si terminó con el
+           reproductor dentro de la tarjeta, se cierra y el loop sigue. */
         videos.forEach((v, i) => {
-            v!.onended = () => playNext(i);
+            v!.onended = () => {
+                if (reproductorRef.current === i) {
+                    if (pantallaCompletaRef.current) return;
+                    soltarReproductor();
+                }
+                playNext(i);
+            };
         });
 
         const io = new IntersectionObserver(
             ([entry]) => {
                 inView = entry.isIntersecting;
                 if (inView) tryPlay();
-                else pauseAll();
+                else pausarSiNadieMira();
             },
             { threshold: 0.25 }
         );
@@ -169,18 +210,59 @@ export default function HeroDemoShowcase() {
         // pausamos explícitamente en vez de solo reanudar.
         const handleVisibility = () => {
             if (document.visibilityState === "visible") tryPlay();
-            else pauseAll();
+            else pausarSiNadieMira();
+        };
+
+        /* ── Salida del reproductor nativo ──
+           Vuelve el hero: sin controles, mudo y a 1.2x. Si el demo terminó
+           estando en pantalla completa pasa al siguiente; si no, sigue donde el
+           usuario lo dejó. */
+        const alSalirDelReproductor = () => {
+            const i = soltarReproductor();
+            if (i === null) return;
+            if (videos[i]!.ended) playNext(i);
+            else tryPlay();
+        };
+
+        /* Android/Chrome (y iPad): fullscreenchange. Al entrar solo se confirma
+           la marca, que también cubre que el usuario abra la pantalla completa
+           desde los controles del video en la tarjeta. */
+        const alCambiarPantallaCompleta = () => {
+            const enPantalla = document.fullscreenElement;
+            const i = reproductorRef.current;
+            if (enPantalla) {
+                if (i !== null && enPantalla === videos[i]) pantallaCompletaRef.current = true;
+                return;
+            }
+            if (pantallaCompletaRef.current) alSalirDelReproductor();
+        };
+
+        /* iPhone: el reproductor nativo avisa en el propio <video>. JC 2026-09-24:
+           antes solo se escuchaba en el video 0, así que al cerrar Smart Log o
+           Smart Calendar el hero se quedaba con sonido y a 1x. */
+        const alEntrarIOS = (e: Event) => {
+            const i = reproductorRef.current;
+            if (i !== null && e.target === videos[i]) pantallaCompletaRef.current = true;
         };
 
         tryPlay();
         document.addEventListener("visibilitychange", handleVisibility);
+        document.addEventListener("fullscreenchange", alCambiarPantallaCompleta);
+        videos.forEach((v) => {
+            v!.addEventListener("webkitbeginfullscreen", alEntrarIOS);
+            v!.addEventListener("webkitendfullscreen", alSalirDelReproductor);
+        });
 
         return () => {
             videos.forEach((v) => {
-                if (v) v.onended = null;
+                if (!v) return;
+                v.onended = null;
+                v.removeEventListener("webkitbeginfullscreen", alEntrarIOS);
+                v.removeEventListener("webkitendfullscreen", alSalirDelReproductor);
             });
             io.disconnect();
             document.removeEventListener("visibilitychange", handleVisibility);
+            document.removeEventListener("fullscreenchange", alCambiarPantallaCompleta);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -230,6 +312,11 @@ export default function HeroDemoShowcase() {
 
     const goTo = (i: number) => {
         if (i === active) return;
+        // En pantalla completa el demo no cambia por debajo del que se está viendo.
+        if (pantallaCompletaRef.current) return;
+        // Con el reproductor abierto dentro de la tarjeta, cambiar de demo lo
+        // cierra: el siguiente entra en el loop mudo de siempre.
+        soltarReproductor();
         const prev = videoRefs[active].current;
         if (prev) {
             prev.pause();
@@ -260,60 +347,122 @@ export default function HeroDemoShowcase() {
         return () => window.removeEventListener(EVENTO_DEMO, alPedir);
     }, []);
 
-    /* ── Touch: ampliar a pantalla completa ──
-       Recortada, la tarjeta enseña el detalle pero no la interfaz entera. Un
-       toque la abre en fullscreen, donde el 16:9 original sí se lee: es la
-       vista nativa del sistema, no hay UI que diseñar y el gesto ya se conoce.
-       Aprovechamos que el toque es un gesto del usuario para activar el sonido. */
-    const abrirPantallaCompleta = () => {
-        const v = videoRefs[activeRef.current].current;
+    /* ── Touch: reproductor nativo ──
+       JC 2026-09-24: en el móvil no hay nada encima de la tarjeta (el botón de
+       sonido y la pastilla "Toca para ampliar" tapaban el demo). Tocarla abre
+       el reproductor del propio navegador con el demo activo: desde el
+       principio, a 1x, con sonido y con sus controles para pausar, adelantar y
+       retroceder. Es una vista que la gente ya conoce y no hay UI que diseñar. */
+    const abrirReproductorNativo = () => {
+        // Con el reproductor abierto, los toques son de sus controles: en
+        // pantalla completa el <video> sigue siendo hijo de la tarjeta y el
+        // click sube hasta aquí. Reabrirlo reiniciaría el video a cada toque.
+        if (reproductorRef.current !== null) return;
+        const i = activeRef.current;
+        const v = videoRefs[i].current as VideoConPantallaCompletaIOS | null;
         if (!v) return;
-        setYaAmplio(true);
+
+        reproductorRef.current = i;
+        // Anula un encadenado a medio arrancar (ver encadenadoRef) y detiene el
+        // clip que estaba cargando: al salir, el loop sigue desde este video y
+        // no quedan dos sonando a la vez.
+        encadenadoRef.current++;
+        videoRefs.forEach((r, k) => {
+            if (k !== i) r.current?.pause();
+        });
+        // controls ANTES de la pantalla completa: Chrome no añade controles a
+        // un <video> que entra en fullscreen sin ellos.
+        v.controls = true;
+        v.volume = 1;
+        v.currentTime = 0;
+        // Desmuta, pasa a 1x y reproduce: el toque es el gesto que lo permite.
         setSoundEnabled(true);
 
-        type VideoIOS = HTMLVideoElement & { webkitEnterFullscreen?: () => void };
-        const vi = v as VideoIOS;
-        if (v.requestFullscreen) v.requestFullscreen().catch(() => {});
-        // Safari de iPhone solo abre fullscreen sobre el <video>, no sobre un div.
-        else if (vi.webkitEnterFullscreen) vi.webkitEnterFullscreen();
+        // Síncrono, dentro del gesto: después de un await el navegador ya no
+        // concede la pantalla completa. Si no hay API o falla, el video se
+        // queda en la tarjeta con sus controles y sonando.
+        try {
+            if (typeof v.requestFullscreen === "function") {
+                pantallaCompletaRef.current = true;
+                Promise.resolve(v.requestFullscreen()).catch(() => {
+                    pantallaCompletaRef.current = false;
+                });
+            } else if (typeof v.webkitEnterFullscreen === "function") {
+                pantallaCompletaRef.current = true;
+                v.webkitEnterFullscreen();
+            }
+        } catch {
+            pantallaCompletaRef.current = false;
+        }
     };
 
-    /* Al salir de pantalla completa devolvemos mudo y velocidad rápida: en el
-       hero el demo es un vistazo ambiental, no una reproducción. */
-    useEffect(() => {
-        const alSalir = () => {
-            if (!document.fullscreenElement) setSoundEnabled(false);
-        };
-        document.addEventListener("fullscreenchange", alSalir);
-        const v0 = videoRefs[0].current;
-        v0?.addEventListener("webkitendfullscreen", alSalir);
-        return () => {
-            document.removeEventListener("fullscreenchange", alSalir);
-            v0?.removeEventListener("webkitendfullscreen", alSalir);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    /** Cierra el reproductor nativo: fuera controles y de vuelta al vistazo
+        mudo a 1.2x. Devuelve el índice del video que lo tenía (null si no había). */
+    const soltarReproductor = (): number | null => {
+        const i = reproductorRef.current;
+        if (i === null) return null;
+        reproductorRef.current = null;
+        pantallaCompletaRef.current = false;
+        const v = videoRefs[i].current;
+        if (v) {
+            v.controls = false;
+            v.volume = volumeRef.current;
+        }
+        setSoundEnabled(false);
+        return i;
+    };
 
     /* ── Touch: deslizar entre demos ──
        Mantiene la arquitectura de 3 videos con crossfade; solo traduce el gesto
        a goTo(). Solo cuenta si el movimiento es más horizontal que vertical,
        para no robarle el scroll a la página. */
     const swipe = useRef<{ x: number; y: number } | null>(null);
+    /* JC 2026-09-24: el navegador puede disparar el click de la tarjeta después
+       del pointerup de un deslizamiento, y stopPropagation no lo evita (el
+       click es otro evento sobre el mismo elemento). Esta marca hace que ese
+       click no abra el reproductor. */
+    const acabaDeDeslizar = useRef(false);
 
     const onSwipeStart = (e: React.PointerEvent) => {
         swipe.current = { x: e.clientX, y: e.clientY };
+        acabaDeDeslizar.current = false;
     };
 
     const onSwipeEnd = (e: React.PointerEvent) => {
         const ini = swipe.current;
         swipe.current = null;
         if (!ini) return;
+        // Con el reproductor abierto, arrastrar es de sus controles (la barra de
+        // tiempo), no un cambio de demo.
+        if (reproductorRef.current !== null) return;
         const dx = e.clientX - ini.x;
         const dy = e.clientY - ini.y;
-        if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;  // fue scroll
-        e.stopPropagation();                                            // no abras fullscreen
+        if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;  // fue scroll o un toque
+        acabaDeDeslizar.current = true;
         const n = DEMOS.length;
         goTo((activeRef.current + (dx < 0 ? 1 : n - 1)) % n);
+    };
+
+    const onSwipeCancel = () => {
+        swipe.current = null;
+    };
+
+    const alTocarTarjeta = () => {
+        if (acabaDeDeslizar.current) {
+            acabaDeDeslizar.current = false;
+            return;
+        }
+        abrirReproductorNativo();
+    };
+
+    /* La tarjeta hace de botón en touch: Enter y Espacio abren el reproductor.
+       Solo si la tecla es de la tarjeta; con el foco en los controles nativos,
+       el Espacio es suyo (pausar). */
+    const alTeclearTarjeta = (e: React.KeyboardEvent) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();  // el Espacio no desplaza la página
+        abrirReproductorNativo();
     };
 
     /* El botón se revela al pasar el mouse; si el sonido está activo se queda
@@ -326,22 +475,37 @@ export default function HeroDemoShowcase() {
             onMouseEnter={() => setHovering(true)}
             onMouseLeave={() => setHovering(false)}
         >
-            {/* Video + columna de sonido a su derecha. La columna ocupa sitio
-                siempre (aunque esté oculta) para que revelarla no reacomode nada. */}
+            {/* Video + columna de sonido a su derecha. Desde lg la columna ocupa
+                sitio siempre (aunque esté oculta) para que revelarla no reacomode
+                nada; por debajo de lg no existe (hidden lg:flex). */}
             <div className="flex items-center gap-3">
                 <div
                     ref={cardRef}
-                    onClick={coarsePointer ? abrirPantallaCompleta : undefined}
+                    onClick={coarsePointer ? alTocarTarjeta : undefined}
+                    onKeyDown={coarsePointer ? alTeclearTarjeta : undefined}
                     onPointerDown={coarsePointer ? onSwipeStart : undefined}
                     onPointerUp={coarsePointer ? onSwipeEnd : undefined}
-                    /* Recorte, no escala: las grabaciones son de escritorio (16:9) y
-                       a 300px de ancho su interfaz es ilegible. Con un ratio más alto
-                       en móvil, object-cover recorta los lados y lo que queda —el
-                       contenido, que está centrado— se ve ~1.7x más grande.
+                    onPointerCancel={coarsePointer ? onSwipeCancel : undefined}
+                    role={coarsePointer ? "button" : undefined}
+                    tabIndex={coarsePointer ? 0 : undefined}
+                    aria-label={
+                        coarsePointer
+                            ? `Ver el demo de ${DEMOS[active].label} en pantalla completa, con sonido`
+                            : undefined
+                    }
+                    /* JC 2026-09-24: 16:9 en todos los tamaños, como las grabaciones.
+                       En el teléfono el demo se ve entero aunque quede pequeño; el
+                       detalle se ve tocándolo, en el reproductor nativo. Con tarjeta
+                       y video en la misma proporción object-cover ya no recorta.
+                       Radio y sombra van con el tamaño: 28px y 120px de difuminado
+                       son de la tarjeta de escritorio y en una de ~343x193 la
+                       volvían una píldora con halo; desde lg, lo de siempre.
                        touch-pan-y deja pasar el scroll vertical; el swipe es horizontal. */
                     className={
-                        "relative aspect-[4/5] min-w-0 flex-1 touch-pan-y overflow-hidden rounded-[28px] border border-white/10 bg-black shadow-[0_40px_120px_rgba(0,0,0,0.55)] sm:aspect-[4/3] lg:aspect-video" +
-                        (coarsePointer ? " cursor-pointer" : "")
+                        "relative aspect-video min-w-0 flex-1 touch-pan-y overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_18px_48px_rgba(0,0,0,0.5)] sm:rounded-[22px] lg:rounded-[28px] lg:shadow-[0_40px_120px_rgba(0,0,0,0.55)]" +
+                        (coarsePointer
+                            ? " cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                            : "")
                     }
                 >
                     {DEMOS.map((demo, i) => (
@@ -355,59 +519,30 @@ export default function HeroDemoShowcase() {
                             /* En datos móviles no bajamos un MP4 1080p entero de salida:
                                solo la cabecera, suficiente para pintar el primer cuadro. */
                             preload={i === 0 ? (coarsePointer ? "metadata" : "auto") : "none"}
-                            className="absolute inset-0 h-full w-full object-cover"
+                            /* object-cover y no contain: con el borde de 1px la caja no es
+                               16:9 exacto y contain dejaría filetes negros. En pantalla
+                               completa sí va contain: el CSS de autor pisa el contain que
+                               pone el navegador y, con el teléfono en vertical, cover
+                               cortaría medio demo. */
+                            className="absolute inset-0 h-full w-full object-cover [&:fullscreen]:object-contain"
                             style={{
-                                objectPosition: demo.focus ?? "center",
                                 opacity: active === i ? 1 : 0,
+                                /* JC 2026-09-24: los 3 videos están apilados y el último
+                                   se pinta encima aunque tenga opacity 0; sin esto, si la
+                                   pantalla completa falla, los controles nativos del activo
+                                   quedan tapados por un video invisible. */
+                                pointerEvents: active === i ? "auto" : "none",
                                 transition: "opacity 900ms cubic-bezier(0.4,0,0.2,1)",
                             }}
                         />
                     ))}
-
-                    {/* En touch el control de sonido va sobre la tarjeta: la columna
-                        lateral robaba 28px de un ancho de 375. Área de 44px (mínimo
-                        táctil) aunque el icono mida 18. */}
-                    {coarsePointer && (
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.stopPropagation();   // no dispara el fullscreen de la tarjeta
-                                toggleSound();
-                            }}
-                            aria-label={muted ? "Activar sonido del demo" : "Silenciar demo"}
-                            aria-pressed={!muted}
-                            /* lg:hidden además de coarsePointer: en un portátil táctil
-                               (touch y >=1024) si no, saldrían el botón y la columna
-                               lateral a la vez, duplicando el control. */
-                            className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full text-white lg:hidden"
-                            style={{
-                                /* globals.css anula backdrop-filter bajo 768px, así que
-                                   el fondo carga solo con la opacidad. */
-                                background: "rgba(0,0,0,0.55)",
-                                border: "1px solid rgba(255,255,255,0.18)",
-                            }}
-                        >
-                            {muted ? <VolumeX size={18} strokeWidth={2} /> : <Volume2 size={18} strokeWidth={2} />}
-                        </button>
-                    )}
-
-                    {/* Pista de que la tarjeta se puede ampliar. Se retira en cuanto
-                        el usuario toca una vez: ya no hace falta. */}
-                    {coarsePointer && !yaAmplio && (
-                        <span
-                            className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1.5 font-ui text-[11px] font-medium text-white/90 lg:hidden"
-                            style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.14)" }}
-                        >
-                            Toca para ampliar
-                        </span>
-                    )}
                 </div>
 
                 {/* Sonido — al costado derecho del video, centrado en vertical */}
                 {/* Columna de sonido solo con ratón: en un móvil el slider vertical
                     de 6px es inservible (el teléfono ya tiene botones de volumen) y
-                    robaba 28px de un ancho de 375. En touch manda el botón sobre la
-                    tarjeta. */}
+                    robaba 28px de un ancho de 375. En touch el sonido llega al tocar
+                    la tarjeta, en el reproductor nativo. */}
                 <div
                     className="hidden w-7 shrink-0 flex-col items-center gap-2 lg:flex"
                     style={{ pointerEvents: soundVisible ? "auto" : "none" }}
@@ -484,8 +619,10 @@ export default function HeroDemoShowcase() {
 
             {/* Selector de módulo. El ancho del video (flex-1) ya descuenta la
                 columna de sonido, así que compensamos para centrar respecto al
-                video y no respecto al bloque completo. */}
-            <div className="mt-5 flex items-center justify-center pr-8">
+                video y no respecto al bloque completo. JC 2026-09-24: la columna
+                solo existe desde lg (hidden lg:flex), y la compensación también;
+                en el móvil los puntos quedaban 16px corridos a la izquierda. */}
+            <div className="mt-5 flex items-center justify-center lg:pr-8">
                 <div className="flex items-center gap-1">
                     {DEMOS.map((demo, i) => {
                         const isActive = active === i;
