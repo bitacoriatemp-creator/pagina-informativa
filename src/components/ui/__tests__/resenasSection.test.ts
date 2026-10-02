@@ -11,8 +11,8 @@ import { CUADRO_MS, ElementoDesplazable, montarResenasSection, type Montado } fr
 /**
  * Cinta de reseñas de la portada (JC 2026-09-25).
  *
- * Lo que JC pidió y no puede perderse en un refactor: se pinta solo con cinco
- * o más reseñas, con foto de Google o iniciales, nombre abreviado, rol y tipo
+ * Lo que JC pidió y no puede perderse en un refactor: se pinta desde la
+ * primera reseña publicada (JC 2026-10-02; antes pedía cinco), con foto de Google o iniciales, nombre abreviado, rol y tipo
  * de obra, estrellas tal cual, respuesta del equipo y conteo honesto; sin
  * ningún enlace a la app (la reseña se pide dentro de la app); flechas en
  * escritorio que desaparecen cuando no hay más, arrastre con el ratón que no
@@ -93,8 +93,22 @@ describe("ResenasSection: cuándo existe", () => {
         expect(texto).toContain("Las reseñas se escriben desde la app, con cuenta de Google verificada. Publicamos todas salvo spam o abuso.");
     });
 
-    it("con menos de cinco publicadas no pinta nada, aunque lleguen tarjetas", async () => {
-        const m = await montar(cinco(4));
+    // JC 2026-10-02: la caja aparece desde la primera reseña publicada (antes cinco).
+    it("con una sola publicada se pinta, con el conteo en singular", async () => {
+        const m = await montar({ resumen: { promedio: 4, total: 1 }, resenas: [resena({ id: "unica", estrellas: 4 })] });
+        const texto = m.contenedor.textContent;
+
+        expect(m.porAtributo("id", "resenas")).toHaveLength(1);
+        expect(m.tarjetas()).toHaveLength(1);
+        expect(texto).toContain("4.0");
+        expect(texto).toContain("1 reseña · solo usuarios con cuenta en BitacorIA");
+        expect(texto).not.toContain("1 reseñas");
+        // Una tarjeta cabe en pantalla: no hay flechas.
+        expect(m.porEtiqueta("button")).toHaveLength(0);
+    });
+
+    it("con 0 publicadas no pinta nada, aunque lleguen tarjetas", async () => {
+        const m = await montar(cinco(0));
         expect(m.contenedor.childNodes).toHaveLength(0);
     });
 

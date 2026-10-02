@@ -20,8 +20,11 @@ import { RESENAS_DEMO } from "../resenasDemo";
  *
  * La portada lee GET /api/v1/public/reviews del lado del servidor y solo
  * pinta la sección cuando lo que llega cumple el contrato y hay al menos
- * cinco publicadas. Estos tests fijan esa regla y las funciones puras de la
+ * una publicada. Estos tests fijan esa regla y las funciones puras de la
  * tarjeta: nombre abreviado, iniciales, fecha relativa y promedio.
+ *
+ * JC 2026-10-02: cada reseña se publica sola al enviarse y la caja aparece
+ * desde la primera (antes pedía cinco); la caché bajó de una hora a 5 min.
  */
 
 const AHORA = new Date("2026-09-25T12:00:00Z");
@@ -70,7 +73,7 @@ describe("obtenerResenas", () => {
         expect(fetchFalso).not.toHaveBeenCalled();
     });
 
-    it("pide /api/v1/public/reviews?limit=30 con caché de una hora y tiempo límite", async () => {
+    it("pide /api/v1/public/reviews?limit=30 con caché de 5 minutos y tiempo límite", async () => {
         vi.stubEnv("RESENAS_API_URL", "https://api.ejemplo.test/");
         vi.stubEnv("RESENAS_DEMO", "");
         const fetchFalso = vi.fn(async () => respuestaOk(cuerpo(6, 12)));
@@ -81,17 +84,36 @@ describe("obtenerResenas", () => {
         expect(fetchFalso).toHaveBeenCalledTimes(1);
         const [url, init] = fetchFalso.mock.calls[0] as unknown as [string, RequestInit & { next?: { revalidate?: number } }];
         expect(url).toBe("https://api.ejemplo.test/api/v1/public/reviews?limit=30");
-        expect(init.next?.revalidate).toBe(3600);
+        // JC 2026-10-02: 300 s (antes 3600) para que una reseña nueva salga en minutos.
+        expect(init.next?.revalidate).toBe(300);
         expect(init.signal).toBeInstanceOf(AbortSignal);
         expect(resultado?.resumen).toEqual({ promedio: 4.7, total: 12 });
         expect(resultado?.resenas).toHaveLength(6);
     });
 
-    it("con menos de cinco publicadas devuelve null aunque la respuesta sea válida", async () => {
+    // JC 2026-10-02: la caja aparece desde la primera reseña publicada (antes cinco).
+    it("el mínimo es una reseña publicada", () => {
+        expect(MINIMO_RESENAS).toBe(1);
+    });
+
+    it("con una sola publicada ya devuelve la reseña", async () => {
         vi.stubEnv("RESENAS_API_URL", "https://api.ejemplo.test");
         vi.stubEnv("RESENAS_DEMO", "");
-        vi.stubGlobal("fetch", vi.fn(async () => respuestaOk(cuerpo(4))));
+        vi.stubGlobal("fetch", vi.fn(async () => respuestaOk(cuerpo(1))));
 
+        const resultado = await obtenerResenas();
+        expect(resultado?.resumen).toEqual({ promedio: 4.7, total: 1 });
+        expect(resultado?.resenas).toHaveLength(1);
+    });
+
+    it("con 0 publicadas devuelve null, aunque lleguen tarjetas o la lista venga vacía", async () => {
+        vi.stubEnv("RESENAS_API_URL", "https://api.ejemplo.test");
+        vi.stubEnv("RESENAS_DEMO", "");
+
+        vi.stubGlobal("fetch", vi.fn(async () => respuestaOk(cuerpo(0))));
+        expect(await obtenerResenas()).toBeNull();
+
+        vi.stubGlobal("fetch", vi.fn(async () => respuestaOk(cuerpo(2, 0))));
         expect(await obtenerResenas()).toBeNull();
     });
 

@@ -25,7 +25,8 @@ import {
    ──────────────────────────────────────────────────────────────
    Reseñas reales de usuarios de la app, en una cinta horizontal entre
    el hero y los planes. Se pinta solo cuando page.tsx trae datos
-   (obtenerResenas() devolvió algo con 5 o más publicadas).
+   (obtenerResenas() devolvió al menos una publicada; JC 2026-10-02:
+   antes pedía 5, ahora la caja aparece desde la primera reseña).
 
    Lo que la hace creíble, y por eso no se toca a la ligera:
      - foto de Google o iniciales, nombre abreviado, rol y tipo de obra;
@@ -329,7 +330,8 @@ function TarjetaResena({ resena }: { resena: Resena }) {
                     <BadgeCheck size={13} strokeWidth={2} style={{ color: BRONZE }} aria-hidden="true" />
                     Cuenta verificada
                 </span>
-                {/* suppressHydrationWarning: el HTML se genera con caché de una hora y
+                {/* suppressHydrationWarning: el HTML se genera con caché (5 min desde
+                    JC 2026-10-02; antes una hora) y
                     "hace 6 días" puede volverse "hace 1 semana" al hidratar. Es texto
                     grueso a propósito; no vale la pena un aviso en consola por eso. */}
                 {fecha && (
@@ -496,7 +498,8 @@ export default function ResenasSection({ resenas }: { resenas: Resenas }) {
         e.stopPropagation();
     };
 
-    /* Red de seguridad además de obtenerResenas(): con menos de 5 no hay sección. */
+    /* Red de seguridad además de obtenerResenas(): sin reseñas publicadas no hay
+       sección (JC 2026-10-02: el mínimo bajó de 5 a 1, MINIMO_RESENAS). */
     if (resenas.resumen.total < MINIMO_RESENAS || resenas.resenas.length === 0) return null;
 
     const { promedio, total } = resenas.resumen;
@@ -537,7 +540,8 @@ export default function ResenasSection({ resenas }: { resenas: Resenas }) {
                         </span>
                         <Estrellas valor={promedio} tamano={18} etiqueta={`Promedio de ${formatearPromedio(promedio)} de 5 estrellas`} />
                         <span className="text-[13px] text-white/55">
-                            {total} reseñas · solo usuarios con cuenta en BitacorIA
+                            {/* JC 2026-10-02: con la caja desde la primera reseña, "1 reseña" en singular. */}
+                            {total === 1 ? "1 reseña" : `${total} reseñas`} · solo usuarios con cuenta en BitacorIA
                         </span>
                     </div>
                 </motion.div>
