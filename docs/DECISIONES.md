@@ -89,3 +89,20 @@ encima, reproductor nativo al tocar) y la opacidad del sobretítulo de Planes. L
 no aparece en producción hasta que exista `RESENAS_API_URL` y haya 5 reseñas publicadas.
 Para revertir: en Vercel, "Promote to Production" del deploy anterior (`e5d5277`), o `git revert`
 de estos commits en `main`, sin force.
+
+**Cambio (2026-10-02, JC).** JC decidió desplegar ya las reseñas y cambia tres reglas de arriba:
+
+- **Publicación automática.** Cada reseña se publica sola al enviarse desde la app, sin moderación
+  previa; el backend la devuelve con estado "publicada" al crearla o actualizarla. El super admin
+  puede ocultarla después (spam, abuso o datos personales). La nota al pie de la sección sigue
+  siendo cierta: se publican todas salvo spam o abuso, solo que el retiro ahora es posterior.
+- **La caja aparece desde la primera reseña publicada** (`MINIMO_RESENAS = 1`; antes 5). Esto
+  reemplaza el punto 2 ("Mejor nada que tres reseñas"), el "hasta tener cinco" de "Por qué así",
+  el umbral de 5 de "Tests" y la condición de 5 publicadas del párrafo de publicación. La sección deja de existir solo con 0 reseñas publicadas o sin backend
+  (sin `RESENAS_API_URL`, sin respuesta en 4 s o con una respuesta que no cumple el contrato).
+  Con una sola reseña el conteo dice "1 reseña", en singular.
+- **Revalidación de 5 minutos** (antes una hora, punto 3): una reseña nueva, o una que el super
+  admin ocultó, se refleja en la portada en unos minutos.
+
+Tests ajustados: con 1 publicada la sección se pinta, con 0 no; `revalidate` 300; los datos de
+ejemplo cumplen el mínimo.

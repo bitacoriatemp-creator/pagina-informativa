@@ -47,9 +47,13 @@ export interface Resenas {
     resenas: Resena[];
 }
 
-/* Con menos de esto la sección no existe: mejor nada que tres reseñas.
-   Lo aplica obtenerResenas() y, por si acaso, la propia sección. */
-export const MINIMO_RESENAS = 5;
+/* Con menos de esto la sección no existe. Lo aplica obtenerResenas() y,
+   por si acaso, la propia sección.
+   JC 2026-10-02: antes 5 ("mejor nada que tres reseñas"); ahora la caja
+   aparece desde la primera publicada. Cada reseña se publica sola al
+   enviarla (el super admin puede ocultarla después), así que la sección
+   solo deja de existir con 0 publicadas o sin backend. */
+export const MINIMO_RESENAS = 1;
 
 /* Lo que manda el backend cuando el usuario apagó "Mostrar mi nombre". */
 export const NOMBRE_ANONIMO = "Usuario de BitacorIA";

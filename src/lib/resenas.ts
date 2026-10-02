@@ -6,12 +6,17 @@
    habla con la API.
 
      GET {RESENAS_API_URL}/api/v1/public/reviews?limit=30
-     caché de una hora (revalidate), 4 s de espera como máximo
+     caché de 5 minutos (revalidate), 4 s de espera como máximo
 
    La regla es "mejor nada que algo dudoso": sin variable, sin
    endpoint, con red caída, con una respuesta que no cumple el
-   contrato o con menos de MINIMO_RESENAS publicadas, devuelve null y
+   contrato o sin ninguna publicada (MINIMO_RESENAS), devuelve null y
    la sección no existe en el HTML. La portada se ve como hoy.
+
+   JC 2026-10-02: las reseñas se publican solas al enviarse (el super
+   admin puede ocultarlas después) y la caja aparece desde la primera.
+   La caché bajó de una hora a 5 minutos para que una reseña nueva
+   salga en la portada en unos minutos, no en una hora.
 
    RESENAS_API_URL es variable DE SERVIDOR (sin NEXT_PUBLIC_): no se
    inlinea en el cliente. RESENAS_DEMO=true pinta los datos de ejemplo
@@ -35,7 +40,9 @@ export * from "./resenasFormato";
 /** Cuántas se piden: la cinta no necesita más y el contrato topa en 50. */
 const LIMITE = 30;
 const ESPERA_MS = 4000;
-const REVALIDAR_SEGUNDOS = 3600;
+/* JC 2026-10-02: 5 min (antes 3600). Una reseña recién publicada, o una
+   que el super admin ocultó, se refleja en la portada en ese plazo. */
+const REVALIDAR_SEGUNDOS = 300;
 
 function esObjeto(valor: unknown): valor is Record<string, unknown> {
     return typeof valor === "object" && valor !== null && !Array.isArray(valor);
