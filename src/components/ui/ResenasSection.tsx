@@ -238,7 +238,10 @@ function Estrellas({ valor, tamano, etiqueta }: { valor: number; tamano: number;
     const porcentaje = Math.round(Math.max(0, Math.min(100, (valor / 5) * 100)) * 10) / 10;
     const cinco = [0, 1, 2, 3, 4];
     return (
-        <span role="img" aria-label={etiqueta} className="relative inline-flex leading-none">
+        /* w-fit (JC 2026-10-03): en la tarjeta la fila vive en una columna flex que
+           estira a sus hijos; sin ancho propio ocupaba toda la tarjeta y el relleno
+           (porcentaje de ese ancho) tapaba las 5 estrellas: un 4 se veía como 5. */
+        <span role="img" aria-label={etiqueta} className="relative inline-flex w-fit leading-none">
             <span className="flex gap-0.5 text-white/20" aria-hidden="true">
                 {cinco.map((i) => <Star key={i} size={tamano} strokeWidth={1.5} className="shrink-0" />)}
             </span>

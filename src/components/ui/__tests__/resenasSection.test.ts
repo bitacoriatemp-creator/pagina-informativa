@@ -233,6 +233,18 @@ describe("ResenasSection: la tarjeta", () => {
         expect(relleno.style.width).toBe("94%");
     });
 
+    it("cada fila de estrellas mide lo que sus 5 estrellas (w-fit): el relleno de un 4 no tapa la quinta", async () => {
+        // JC 2026-10-03: en la tarjeta la fila vive en una columna flex que estira a
+        // sus hijos. Sin ancho propio ocupaba toda la tarjeta y el 80 % de ese ancho
+        // cubría las 5 estrellas: un 4 se veía como 5 en bitacoria.com.
+        const m = await montar(cinco());
+        for (const fila of m.porAtributo("role", "img")) {
+            expect(fila.className.split(/\s+/)).toEqual(expect.arrayContaining(["relative", "inline-flex", "w-fit"]));
+        }
+        const cuatro = m.porAtributo("role", "img").find((e) => e.getAttribute("aria-label") === "4 de 5 estrellas")!;
+        expect((cuatro.childNodes[1] as typeof cuatro).style.width).toBe("80%");
+    });
+
     it("texto tal cual, sello 'Cuenta verificada' y fecha relativa; sin fecha no hay <time>", async () => {
         const datos = cinco();
         const m = await montar(datos);
