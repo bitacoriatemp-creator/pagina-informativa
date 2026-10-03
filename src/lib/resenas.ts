@@ -6,12 +6,19 @@
    habla con la API.
 
      GET {RESENAS_API_URL}/api/v1/public/reviews?limit=30
-     caché de 5 minutos (revalidate), 4 s de espera como máximo
+     caché de 5 minutos (revalidate), 8 s de espera como máximo
 
    La regla es "mejor nada que algo dudoso": sin variable, sin
    endpoint, con red caída, con una respuesta que no cumple el
    contrato o sin ninguna publicada (MINIMO_RESENAS), devuelve null y
    la sección no existe en el HTML. La portada se ve como hoy.
+
+   JC 2026-10-03: si el backend falla (tiempo agotado, caída, respuesta
+   que no es 2xx) al REGENERAR la página, el error se lanza a propósito:
+   Next conserva la última portada buena, con sus reseñas, y lo reintenta
+   en la siguiente visita. Devolver null ahí borraba la sección 5 minutos
+   cada vez que el servidor pequeño tardaba. En `next build` sí se
+   devuelve null, para que un backend lento no tumbe el despliegue.
 
    JC 2026-10-02: las reseñas se publican solas al enviarse (el super
    admin puede ocultarlas después) y la caja aparece desde la primera.
@@ -39,7 +46,14 @@ export * from "./resenasFormato";
 
 /** Cuántas se piden: la cinta no necesita más y el contrato topa en 50. */
 const LIMITE = 30;
-const ESPERA_MS = 4000;
+/* JC 2026-10-03: 8 s (antes 4). El backend corre en una VM pequeña y la
+   primera petición tras un rato sin uso puede tardar. */
+const ESPERA_MS = 8000;
+
+/** ¿Se está construyendo el sitio (`next build`)? Ahí un backend caído no puede tumbar el despliegue. */
+function enBuild(): boolean {
+    return process.env.NEXT_PHASE === "phase-production-build";
+}
 /* JC 2026-10-02: 5 min (antes 3600). Una reseña recién publicada, o una
    que el super admin ocultó, se refleja en la portada en ese plazo. */
 const REVALIDAR_SEGUNDOS = 300;
@@ -134,11 +148,13 @@ export async function obtenerResenas(): Promise<Resenas | null> {
             next: { revalidate: REVALIDAR_SEGUNDOS },
             signal: AbortSignal.timeout(ESPERA_MS),
         });
-        if (!respuesta.ok) return null;
+        if (!respuesta.ok) throw new Error(`reseñas: el backend respondió ${respuesta.status}`);
         return validarResenas(await respuesta.json());
-    } catch {
-        /* Red caída, tiempo agotado o JSON roto: la portada sale sin la
-           sección y se vuelve a intentar en la siguiente revalidación. */
-        return null;
+    } catch (error) {
+        /* Red caída, tiempo agotado, respuesta no 2xx o JSON roto. En el build,
+           la portada sale sin la sección. Al regenerar, se lanza: Next sigue
+           sirviendo la última portada buena y reintenta en la siguiente visita. */
+        if (enBuild()) return null;
+        throw error;
     }
 }
