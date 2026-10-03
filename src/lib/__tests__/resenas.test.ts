@@ -117,9 +117,10 @@ describe("obtenerResenas", () => {
         expect(await obtenerResenas()).toBeNull();
     });
 
-    it("si la red falla, la respuesta no es 2xx o el JSON está roto, devuelve null", async () => {
+    it("en next build, si la red falla, la respuesta no es 2xx o el JSON está roto, devuelve null (no tumba el despliegue)", async () => {
         vi.stubEnv("RESENAS_API_URL", "https://api.ejemplo.test");
         vi.stubEnv("RESENAS_DEMO", "");
+        vi.stubEnv("NEXT_PHASE", "phase-production-build");
 
         vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("tiempo agotado"); }));
         expect(await obtenerResenas()).toBeNull();
@@ -128,6 +129,30 @@ describe("obtenerResenas", () => {
         expect(await obtenerResenas()).toBeNull();
 
         vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError("json"); } })));
+        expect(await obtenerResenas()).toBeNull();
+    });
+
+    it("al regenerar la página, un fallo del backend se lanza para que Next conserve la última portada buena", async () => {
+        // JC 2026-10-03: devolver null borraba la sección 5 minutos cada vez que la VM tardaba.
+        vi.stubEnv("RESENAS_API_URL", "https://api.ejemplo.test");
+        vi.stubEnv("RESENAS_DEMO", "");
+        vi.stubEnv("NEXT_PHASE", "");
+
+        vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("tiempo agotado"); }));
+        await expect(obtenerResenas()).rejects.toThrow("tiempo agotado");
+
+        vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 503, json: async () => ({}) })));
+        await expect(obtenerResenas()).rejects.toThrow("503");
+
+        vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError("json"); } })));
+        await expect(obtenerResenas()).rejects.toThrow(SyntaxError);
+    });
+
+    it("una respuesta válida sin publicadas no es un fallo: devuelve null y la sección no existe", async () => {
+        vi.stubEnv("RESENAS_API_URL", "https://api.ejemplo.test");
+        vi.stubEnv("RESENAS_DEMO", "");
+        vi.stubEnv("NEXT_PHASE", "");
+        vi.stubGlobal("fetch", vi.fn(async () => respuestaOk(cuerpo(0))));
         expect(await obtenerResenas()).toBeNull();
     });
 
