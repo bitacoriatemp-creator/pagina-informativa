@@ -8,7 +8,7 @@ import DemoPlayer from "./DemoPlayer";
 const ACCENT = "#3B82F6";
 
 const FEATURES = [
-    { Icon: RefreshCw, title: "Sincronización BIM y Bitácora", body: "Si la bitácora reporta un retraso por lluvia, el cronograma completo recalcula las dependencias automáticamente. Adiós a los Excels rotos." },
+    { Icon: RefreshCw, title: "Bitácora y cronograma conectados", body: "Si reportas un retraso por lluvia, BitacorIA te propone cómo se recorren las tareas que dependen de la afectada y, con tu sí, actualiza el cronograma. Adiós a los Excels rotos." },
     { Icon: GanttChartSquare, title: "Visualización clara", body: "Controla tareas programadas, completadas y retrasadas en una interfaz fluida y moderna que todo tu equipo puede entender de un vistazo." },
     { Icon: HardHat, title: "Staging & Producción", body: "Juega con escenarios en modo 'Borrador' antes de hacer Commit y afectar la línea base de tu obra real." },
 ];
