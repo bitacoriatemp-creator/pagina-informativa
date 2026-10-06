@@ -53,7 +53,8 @@ export const PRICING_FOOTER =
     "Todos los precios en MXN · IVA no incluido · Pago por transferencia o Mercado Pago · Sin permanencia";
 
 /**
- * Lo que NO se puede decir en la tabla de planes, porque hoy no existe.
+ * Lo que NO se puede decir en el sitio (planes, pie, módulos), porque hoy no
+ * existe.
  *
  * Cada entrada es una promesa que estuvo publicada y no tenía respaldo en el
  * producto. `planes.test.ts` revisa que ninguna vuelva al copy: si una de estas
@@ -74,4 +75,19 @@ export const PROMESAS_SIN_RESPALDO: readonly string[] = [
     "View-Only",
     // Los planos no se convierten solos en catálogo.
     "planos automáticamente",
+    // 2026-10-05 (Luis): no hay firma electrónica avanzada ni sello NOM-151.
+    "NOM-151",
+    "Electrónica Avanzada",
+    "Electrónicas Avanzadas",
+    // 2026-10-05 (Luis): no se venden usuarios extra a $299.
+    "+$299",
+    // 2026-10-05 (Luis): BIM Sync es "catálogo y cronograma conectados": el
+    // avance confirmado mueve lo ejecutado, pero un cambio en el catálogo no
+    // mueve el cronograma.
+    "siempre en sincronía",
+    "se refleja en el otro",
+    // 2026-10-05 (Luis): hoy solo se trabaja con la normativa de México.
+    "8 países",
+    // No hay alertas automáticas: el programador de tareas está apagado.
+    "alertas automáticas",
 ];

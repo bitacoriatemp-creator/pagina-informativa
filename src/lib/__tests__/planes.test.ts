@@ -104,6 +104,11 @@ describe("el copy no promete lo que no existe", () => {
         "src/components/ui/FooterSection.tsx",
         "src/components/ui/BitacoraSection.tsx",
         "src/components/ui/SmartConceptsSection.tsx",
+        "src/components/ui/SmartBimSyncSection.tsx",
+        "src/components/ui/CronogramaSection.tsx",
+        "src/components/ui/WorldAdaptiveSection.tsx",
+        "src/app/smart-bim/page.tsx",
+        "src/app/alcance-global/page.tsx",
     ];
 
     it.each(SECCIONES)("%s no trae ninguna promesa sin respaldo", (ruta) => {
