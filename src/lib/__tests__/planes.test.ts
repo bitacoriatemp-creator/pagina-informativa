@@ -150,6 +150,25 @@ describe("la tarjeta del plan gratis dice lo que trae la prueba guiada", () => {
     });
 });
 
+describe("las tarjetas de pago dicen lo que hace el cronograma", () => {
+    // 2026-10-08 (Luis): "Cronograma predictivo" pasa a "Cronograma con avance
+    // real" en los tres planes de pago.
+    const inicio = SECTION.indexOf('id: "resident"');
+    const fin = SECTION.indexOf("] as const;", inicio);
+    const pago = SECTION.slice(inicio, fin);
+
+    it("las tres filas de SMART CALENDAR dicen 'Cronograma con avance real'", () => {
+        expect(inicio).toBeGreaterThan(-1);
+        expect(fin).toBeGreaterThan(inicio);
+        const filas = pago.split(String.fromCharCode(10)).filter((l) => l.includes('title: "SMART CALENDAR"'));
+        expect(filas).toHaveLength(3);
+        for (const fila of filas) {
+            expect(fila).toContain('desc: "Cronograma con avance real"');
+            expect(fila).toContain("included: true");
+        }
+    });
+});
+
 describe("el pie dice lo que de verdad pasa", () => {
     const PIE = readFileSync(resolve(process.cwd(), "src/components/ui/FooterSection.tsx"), "utf8");
 
@@ -175,5 +194,14 @@ describe("el pie dice lo que de verdad pasa", () => {
 
     it("los términos conservan la obligación del cliente de cuidar sus claves", () => {
         expect(PIE).toContain("resguardo de sus claves");
+    });
+
+    it("el aviso nombra a quién le llegan los datos", () => {
+        // Sección IV: antes decía que solo se transfería por orden judicial y a
+        // PACs. Lista del borrador del Aviso (cláusula 6).
+        for (const quien of ["Supabase", "Google Cloud", "Vercel", "Resend", "Sentry", "ipapi.co", "Mercado Pago", "portal del SAT"]) {
+            expect(PIE).toContain(quien);
+        }
+        expect(PIE).toContain("No vendemos ni rentamos tus datos");
     });
 });

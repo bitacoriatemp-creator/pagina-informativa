@@ -106,4 +106,12 @@ export const PROMESAS_SIN_RESPALDO: readonly string[] = [
     // 2026-10-07 (Luis): al vencer o cancelar, 30 días en solo lectura con PDF
     // y nada se borra solo.
     "se eliminan de nuestros servidores",
+    // 2026-10-08 (Luis): no hay nada predictivo en el cronograma. Lo real es el
+    // cronograma doble (programado contra real) con el avance que se confirma.
+    "predictiv",
+    // El Aviso decía que solo se transfería información por orden judicial y a
+    // PACs. Los proveedores del servicio reciben datos, y las facturas se
+    // emiten a mano en el portal del SAT, sin PAC.
+    "solo transferirá",
+    "Proveedores Autorizados de Certificación",
 ];
