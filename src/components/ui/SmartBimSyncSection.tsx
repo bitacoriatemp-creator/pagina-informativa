@@ -77,6 +77,8 @@ const FEATURES = [
         title: "Avance y presupuesto conectados",
         body: "Sube una foto y BitacorIA te propone a qué tarea del cronograma pertenece. Tú confirmas el avance y se actualiza lo ejecutado de su concepto en el catálogo.",
     },
+    // Verdad cuando esté publicado el envío de la Fase 1 (toda la empresa ve
+    // todas sus obras): www se publica después. Si saliera antes, se quita.
     {
         Icon: Users,
         title: "Todo el equipo, los mismos datos",

@@ -600,7 +600,7 @@ export default function WorldAdaptiveSection() {
                                 e.currentTarget.style.color = "#c39767";
                             }}
                         >
-                            <span className="leading-none">¿Construyes en otro país? Lo agregamos</span>
+                            <span className="leading-none">¿Construyes en otro país? Cuéntanos</span>
                             <ArrowRight
                                 className="w-3.5 h-3.5 shrink-0 transition-transform duration-300 group-hover:translate-x-1"
                                 strokeWidth={2.2}

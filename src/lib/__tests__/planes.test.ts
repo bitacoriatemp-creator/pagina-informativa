@@ -108,6 +108,7 @@ describe("el copy no promete lo que no existe", () => {
         "src/components/ui/CronogramaSection.tsx",
         "src/components/ui/WorldAdaptiveSection.tsx",
         "src/app/smart-bim/page.tsx",
+        "src/app/smart-calendar/page.tsx",
         "src/app/alcance-global/page.tsx",
     ];
 
@@ -124,7 +125,55 @@ describe("el copy no promete lo que no existe", () => {
             })
             .join(SALTO);
 
-        const encontradas = PROMESAS_SIN_RESPALDO.filter((p) => visible.includes(p));
+        // Sin distinguir mayúsculas: "Alertas automáticas" o "firma electrónica
+        // avanzada" en minúsculas tampoco deben pasar.
+        const visibleMin = visible.toLowerCase();
+        const encontradas = PROMESAS_SIN_RESPALDO.filter((p) => visibleMin.includes(p.toLowerCase()));
         expect(encontradas).toEqual([]);
+    });
+});
+
+describe("la tarjeta del plan gratis dice lo que trae la prueba guiada", () => {
+    // La prueba gratis trae 1 catálogo y 1 cronograma, y con los dos la isla se
+    // pone morada (BIM Sync). Las tres filas van parejas: si solo BIM Sync
+    // estuviera encendido, la tarjeta diría que conecta dos cosas que no trae.
+    const inicio = SECTION.indexOf('id: "draft"');
+    const fin = SECTION.indexOf('id: "resident"');
+    const draft = SECTION.slice(inicio, fin);
+
+    it.each(["SMART CALENDAR", "SMART CONCEPTS", "SMART BIM SYNC"])("%s va como incluido en la prueba", (modulo) => {
+        expect(inicio).toBeGreaterThan(-1);
+        expect(fin).toBeGreaterThan(inicio);
+        const fila = draft.split(String.fromCharCode(10)).find((l) => l.includes(`title: "${modulo}"`)) ?? "";
+        expect(fila).toContain('desc: "Incluido en la prueba"');
+        expect(fila).toContain("included: true");
+    });
+});
+
+describe("el pie dice lo que de verdad pasa", () => {
+    const PIE = readFileSync(resolve(process.cwd(), "src/components/ui/FooterSection.tsx"), "utf8");
+
+    it("la pregunta del equipo explica que toda la empresa ve todas las obras", () => {
+        // Desde el 2026-10-04 (Luis) toda persona de la empresa ve y trabaja todas
+        // sus obras; el código por obra se quitó. Invitar al cliente final le
+        // abriría todas las obras de la constructora.
+        expect(PIE).toContain("todavía no hay acceso por obra");
+    });
+
+    it("al vencer o cancelar no se borra nada solo", () => {
+        // Decisión de Luis 2026-10-07: 30 días en solo lectura con PDF; nada se
+        // borra solo, solo si el cliente lo pide.
+        expect(PIE).toContain("nada se borra");
+        expect(PIE).toContain("solo lectura");
+    });
+
+    it("el aviso dice a dónde va la ubicación de la obra", () => {
+        // El botón de geolocalización de la app manda la coordenada a
+        // OpenStreetMap desde el navegador para llenar ciudad y estado.
+        expect(PIE).toContain("OpenStreetMap");
+    });
+
+    it("los términos conservan la obligación del cliente de cuidar sus claves", () => {
+        expect(PIE).toContain("resguardo de sus claves");
     });
 });

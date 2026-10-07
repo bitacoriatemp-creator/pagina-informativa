@@ -28,10 +28,11 @@ const LEGAL_CONTENT = {
             <div className="divide-y divide-white/[0.07] text-[15px] leading-relaxed text-white/60 [&>*]:py-6 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Qué es BitacorIA y cómo beneficia a mi constructora?</h5>
-                    <p>BitacorIA es la primera plataforma de gestión estructurada diseñada específicamente para el sector de la construcción en América Latina. Moderniza el control de obra tradicional reemplazando el papel por procesos digitales ágiles y optimizando el tiempo de captura de los residentes de obra.</p>
+                    <p>BitacorIA es la primera plataforma de gestión estructurada diseñada específicamente para el sector de la construcción en México. Moderniza el control de obra tradicional reemplazando el papel por procesos digitales ágiles y optimizando el tiempo de captura de los residentes de obra.</p>
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Mi información de obra está segura?</h5>
+                    {/* "Respaldos automáticos" de fotos y documentos es verdad cuando corre la copia semanal de fotos (Fase 3 del plan de lanzamiento): www se publica después. */}
                     <p>Sí. Toda la información, desde los reportes fotográficos hasta los presupuestos, viaja y se almacena cifrada en infraestructura en la nube con respaldos automáticos.</p>
                 </div>
                 <div>
@@ -39,8 +40,9 @@ const LEGAL_CONTENT = {
                     <p>Sí, pero de forma estructurada y guiada, no como un chat abierto de propósito general. El asistente de obra te acompaña en la captura (chatea, adjunta fotos), y tecnologías como &quot;Smart Concepts&quot; funcionan con configuradores guiados que recomiendan los catálogos y conceptos correctos para cada etapa de tu obra. Todo resultado queda en formatos estructurados, editables y validables por ti — la IA propone, tú siempre tienes el control final.</p>
                 </div>
                 <div>
-                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Puedo invitar a subcontratistas y al cliente final a la misma bitácora?</h5>
-                    <p>Sí. Invitas a tu equipo por correo con rol de administrador o de miembro, y a cada obra se entra con un código de acceso que tú generas y puedes revocar. Así el residente captura, quien administra aprueba, y sabes en todo momento quién hizo cada cambio.</p>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Puedo invitar a mi equipo a la misma bitácora?</h5>
+                    {/* Verdad cuando esté publicado el envío del servidor y la app de la Fase 1 (toda la empresa ve todas sus obras, decisión de Luis 2026-10-04): www se publica después. */}
+                    <p>Sí, en los planes con más de un usuario. Invitas a tu equipo por correo, como administrador o como miembro, y puedes darlo de baja cuando quieras. Toda tu empresa ve y trabaja todas sus obras: todavía no hay acceso por obra, así que invita solo a quien deba verlas todas.</p>
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Qué es Smart BIM Sync?</h5>
@@ -48,7 +50,8 @@ const LEGAL_CONTENT = {
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Qué pasa con mis datos si decido cancelar la suscripción?</h5>
-                    <p>Tu información te pertenece. Tras la cancelación tienes 30 días para descargar tus bitácoras y reportes en PDF, que es el formato en el que se entregan y se firman. Pasado ese plazo, los datos se eliminan de nuestros servidores.</p>
+                    {/* Decisión de Luis 2026-10-07; verdad cuando esté publicada la Fase 5 (plan vencido en solo lectura): www se publica después. */}
+                    <p>Tu información te pertenece. Si tu plan vence o cancelas, durante 30 días puedes verla en solo lectura y descargar tus bitácoras y reportes en PDF. Después tu cuenta pasa al plan gratis y nada se borra, salvo que nos lo pidas.</p>
                 </div>
             </div>
         ),
@@ -71,10 +74,11 @@ const LEGAL_CONTENT = {
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">3. Disposiciones de Firmas Electrónicas</h5>
-                    <p>El cliente asume total responsabilidad sobre la designación formal (ante notario si aplica) de los residentes de obra autorizados a asentar firmas. BitacorIA actúa como proveedor tecnológico, no como perito ni certificador directo.</p>
+                    <p>El cliente asume total responsabilidad sobre el resguardo de sus claves y la designación formal (ante notario si aplica) de los residentes de obra autorizados a asentar firmas. BitacorIA actúa como proveedor tecnológico, no como perito ni certificador directo.</p>
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">4. Disponibilidad del Sistema y Respaldos</h5>
+                    {/* Los respaldos de documentos y fotos son verdad cuando corre su copia semanal (Fase 3 del plan de lanzamiento): www se publica después. */}
                     <p>BitacorIA se esfuerza por mantener la mayor disponibilidad posible del servicio, sin que ello constituya una garantía contractual de tiempo de actividad. Toda la información y documentos generados en La Plataforma cuentan con respaldos en la nube para prevenir pérdida de datos, cuidando que su fuente única de verdad esté disponible.</p>
                 </div>
             </div>
@@ -90,7 +94,7 @@ const LEGAL_CONTENT = {
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">I. Datos que Recabamos</h5>
-                    <p>Para la plena ejecución del aplicativo constructivo, recabamos los siguientes datos personales y corporativos: (a) Datos de Identificación (Nombre completo, cargo, RFC de representantes legales para contratos de suscripción), (b) Datos de Contacto (correos electrónicos institucionales, teléfonos), (c) Credenciales de Autenticación, y (d) <strong className="text-white">Metadatos y Geolocalización</strong>: la ubicación de la obra, solo si activas la geolocalización, y los datos internos que traigan los archivos que subes. No recabamos datos biométricos.</p>
+                    <p>Para la plena ejecución del aplicativo constructivo, recabamos los siguientes datos personales y corporativos: (a) Datos de Identificación (Nombre completo, cargo, RFC de representantes legales para contratos de suscripción), (b) Datos de Contacto (correos electrónicos institucionales, teléfonos), (c) Credenciales de Autenticación, y (d) <strong className="text-white">Metadatos y Geolocalización</strong>: la ubicación de la obra, solo si activas la geolocalización (para llenar la ciudad y el estado, tu navegador manda esa ubicación a OpenStreetMap), y los datos internos que traigan los archivos que subes. No recabamos datos biométricos.</p>
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">II. Finalidades del Tratamiento</h5>

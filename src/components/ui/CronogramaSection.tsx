@@ -8,7 +8,7 @@ import DemoPlayer from "./DemoPlayer";
 const ACCENT = "#3B82F6";
 
 const FEATURES = [
-    { Icon: RefreshCw, title: "Bitácora y cronograma conectados", body: "Si reportas un retraso por lluvia, BitacorIA te propone cómo se recorren las tareas que dependen de la afectada y, con tu sí, actualiza el cronograma. Adiós a los Excels rotos." },
+    { Icon: RefreshCw, title: "Bitácora y cronograma conectados", body: "Si reportas un retraso por lluvia en una tarea, BitacorIA te propone registrarlo y, con tu sí, recorre las tareas que dependen de ella. Adiós a los Excels rotos." },
     { Icon: GanttChartSquare, title: "Visualización clara", body: "Controla tareas programadas, completadas y retrasadas en una interfaz fluida y moderna que todo tu equipo puede entender de un vistazo." },
     { Icon: HardHat, title: "Staging & Producción", body: "Juega con escenarios en modo 'Borrador' antes de hacer Commit y afectar la línea base de tu obra real." },
 ];
@@ -51,8 +51,8 @@ export default function CronogramaSection() {
                         Cronograma <span style={{ color: ACCENT }}>vivo.</span>
                     </h2>
                     <p className="max-w-xl text-[15px] leading-relaxed text-white/45">
-                        Gantt inteligente que se ajusta solo.{" "}
-                        <span className="font-medium text-white/65">Cuando algo cambia en obra, el calendario lo sabe antes que tú.</span>
+                        Gantt inteligente que ajustas desde el chat.{" "}
+                        <span className="font-medium text-white/65">Cuando reportas un cambio en obra, el cronograma te propone cómo ajustarse.</span>
                     </p>
                 </motion.div>
 

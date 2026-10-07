@@ -79,6 +79,7 @@ export const PROMESAS_SIN_RESPALDO: readonly string[] = [
     "NOM-151",
     "Electrónica Avanzada",
     "Electrónicas Avanzadas",
+    "e.firma",
     // 2026-10-05 (Luis): no se venden usuarios extra a $299.
     "+$299",
     // 2026-10-05 (Luis): BIM Sync es "catálogo y cronograma conectados": el
@@ -88,6 +89,21 @@ export const PROMESAS_SIN_RESPALDO: readonly string[] = [
     "se refleja en el otro",
     // 2026-10-05 (Luis): hoy solo se trabaja con la normativa de México.
     "8 países",
-    // No hay alertas automáticas: el programador de tareas está apagado.
+    "ocho países",
+    "América Latina",
+    "Lo agregamos",
+    // No hay alertas automáticas: el programador de tareas está apagado. El
+    // cronograma tampoco se ajusta solo: un retraso se propone y se aplica con
+    // el sí del residente.
     "alertas automáticas",
+    "lo sabe antes que tú",
+    "avisa de las desviaciones",
+    "se ajusta solo",
+    // 2026-10-04 (Luis): toda la empresa ve todas sus obras y el código por
+    // obra se quitó. Invitar al cliente final le abriría todas las obras.
+    "código de acceso",
+    "cliente final",
+    // 2026-10-07 (Luis): al vencer o cancelar, 30 días en solo lectura con PDF
+    // y nada se borra solo.
+    "se eliminan de nuestros servidores",
 ];
