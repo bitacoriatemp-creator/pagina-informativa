@@ -23,6 +23,22 @@ const SECTION = readFileSync(
     "utf-8",
 );
 
+/**
+ * Lo que se ve en pantalla, sin comentarios. En los comentarios se explica a
+ * propósito qué decía antes un texto y por qué cambió: si las pruebas los
+ * leyeran, una frase borrada de la pantalla seguiría "encontrándose" en su
+ * comentario. Quita los bloques /* ... *\/ (también los {/* ... *\/} de JSX,
+ * aunque ocupen varias líneas) y las líneas que empiezan con //.
+ */
+function textoVisible(fuente: string): string {
+    const SALTO = String.fromCharCode(10);
+    return fuente
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .split(SALTO)
+        .filter((l) => !l.trim().startsWith("//"))
+        .join(SALTO);
+}
+
 describe("tabla de precios", () => {
     it("congela los cuatro planes con sus importes en MXN sin IVA", () => {
         expect(PLAN_PRICING).toEqual([
@@ -113,17 +129,9 @@ describe("el copy no promete lo que no existe", () => {
     ];
 
     it.each(SECCIONES)("%s no trae ninguna promesa sin respaldo", (ruta) => {
-        const fuente = readFileSync(resolve(process.cwd(), ruta), "utf8");
-        // Se descartan las líneas de comentario: ahí se explica a propósito qué
-        // decía antes cada promesa y por qué se quitó.
-        const SALTO = String.fromCharCode(10);
-        const visible = fuente
-            .split(SALTO)
-            .filter((l) => {
-                const t = l.trim();
-                return !t.startsWith("//") && !t.startsWith("*") && !t.startsWith("/*") && !t.startsWith("{/*");
-            })
-            .join(SALTO);
+        // Sin comentarios: ahí se explica a propósito qué decía antes cada
+        // promesa y por qué se quitó.
+        const visible = textoVisible(readFileSync(resolve(process.cwd(), ruta), "utf8"));
 
         // Sin distinguir mayúsculas: "Alertas automáticas" o "firma electrónica
         // avanzada" en minúsculas tampoco deben pasar.
@@ -170,7 +178,9 @@ describe("las tarjetas de pago dicen lo que hace el cronograma", () => {
 });
 
 describe("el pie dice lo que de verdad pasa", () => {
-    const PIE = readFileSync(resolve(process.cwd(), "src/components/ui/FooterSection.tsx"), "utf8");
+    // Solo el texto visible: en los comentarios del pie se cita a propósito lo
+    // que decía antes y por qué cambió.
+    const PIE = textoVisible(readFileSync(resolve(process.cwd(), "src/components/ui/FooterSection.tsx"), "utf8"));
 
     it("la pregunta del equipo explica que toda la empresa ve todas las obras", () => {
         // Desde el 2026-10-04 (Luis) toda persona de la empresa ve y trabaja todas
@@ -199,9 +209,38 @@ describe("el pie dice lo que de verdad pasa", () => {
     it("el aviso nombra a quién le llegan los datos", () => {
         // Sección IV: antes decía que solo se transfería por orden judicial y a
         // PACs. Lista del borrador del Aviso (cláusula 6).
-        for (const quien of ["Supabase", "Google Cloud", "Vercel", "Resend", "Sentry", "ipapi.co", "Mercado Pago", "portal del SAT"]) {
+        // El buzón del equipo (Gmail) recibe las solicitudes de plan y de soporte
+        // que manda la app, y WhatsApp (Meta) los mensajes por ese canal: el
+        // borrador lo trae en 6.2.
+        for (const quien of [
+            "Supabase",
+            "Google Cloud",
+            "Vercel",
+            "Resend",
+            "Sentry",
+            "ipapi.co",
+            "Mercado Pago",
+            "portal del SAT",
+            "Gmail",
+            "solicitud de plan o de soporte",
+            "WhatsApp",
+            "Meta procesa el mensaje",
+        ]) {
             expect(PIE).toContain(quien);
         }
-        expect(PIE).toContain("No vendemos ni rentamos tus datos");
+        expect(PIE).toContain("No vendemos ni rentamos sus datos");
+    });
+
+    it("el aviso le habla de usted de principio a fin", () => {
+        // El Aviso de hoy va de usted ("hace de su conocimiento", "Usted, o quien
+        // funja..."). Las frases nuevas no deben mezclar el tú; la Fase 6 lo
+        // reemplaza completo por el borrador.
+        const inicio = PIE.indexOf('title: "Aviso de Privacidad"');
+        const fin = PIE.indexOf("export default function FooterSection");
+        expect(inicio).toBeGreaterThan(-1);
+        expect(fin).toBeGreaterThan(inicio);
+        const aviso = PIE.slice(inicio, fin);
+        const tuteo = aviso.match(/\b(tu|tus|te|ti|activas|subes|pagas|pides|escribes|mandas)\b/gi) ?? [];
+        expect(tuteo).toEqual([]);
     });
 });
