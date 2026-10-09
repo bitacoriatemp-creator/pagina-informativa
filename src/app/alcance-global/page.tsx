@@ -5,7 +5,7 @@ import WorldAdaptiveSection from "@/components/ui/WorldAdaptiveSection";
 export const metadata: Metadata = {
     title: "Alcance global — BitacorIA",
     description:
-        "Pensada para la obra latinoamericana: se adapta a las normativas y a la forma de construir de cada país.",
+        "Pensada para la obra en México: trabaja con la normativa federal y local, y con la forma de construir de cada región.",
     alternates: { canonical: "/alcance-global" },
 };
 

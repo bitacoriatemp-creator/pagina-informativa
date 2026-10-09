@@ -53,7 +53,8 @@ export const PRICING_FOOTER =
     "Todos los precios en MXN · IVA no incluido · Pago por transferencia o Mercado Pago · Sin permanencia";
 
 /**
- * Lo que NO se puede decir en la tabla de planes, porque hoy no existe.
+ * Lo que NO se puede decir en el sitio (planes, pie, módulos), porque hoy no
+ * existe.
  *
  * Cada entrada es una promesa que estuvo publicada y no tenía respaldo en el
  * producto. `planes.test.ts` revisa que ninguna vuelva al copy: si una de estas
@@ -74,4 +75,39 @@ export const PROMESAS_SIN_RESPALDO: readonly string[] = [
     "View-Only",
     // Los planos no se convierten solos en catálogo.
     "planos automáticamente",
+    // 2026-10-05 (Luis): no hay firma electrónica avanzada ni sello NOM-151.
+    // "NOM-151", "Electrónica Avanzada" y "e.firma" siguen en los Términos de
+    // junio; vuelven a esta lista cuando la Fase 6 publique los Términos nuevos.
+    // 2026-10-05 (Luis): no se venden usuarios extra a $299.
+    "+$299",
+    // 2026-10-05 (Luis): BIM Sync es "catálogo y cronograma conectados": el
+    // avance confirmado mueve lo ejecutado, pero un cambio en el catálogo no
+    // mueve el cronograma.
+    "siempre en sincronía",
+    "se refleja en el otro",
+    // 2026-10-05 (Luis): hoy solo se trabaja con la normativa de México.
+    "8 países",
+    "ocho países",
+    "América Latina",
+    "Lo agregamos",
+    // No hay alertas automáticas: el programador de tareas está apagado. El
+    // cronograma tampoco se ajusta solo: un retraso se propone y se aplica con
+    // el sí del residente.
+    "alertas automáticas",
+    "lo sabe antes que tú",
+    "avisa de las desviaciones",
+    "se ajusta solo",
+    // 2026-10-04 (Luis): toda la empresa ve todas sus obras y el código por
+    // obra se quitó. Invitar al cliente final le abriría todas las obras.
+    "código de acceso",
+    "cliente final",
+    // 2026-10-07 (Luis): al vencer o cancelar, 30 días en solo lectura con PDF
+    // y nada se borra solo.
+    "se eliminan de nuestros servidores",
+    // 2026-10-08 (Luis): no hay nada predictivo en el cronograma. Lo real es el
+    // cronograma doble (programado contra real) con el avance que se confirma.
+    "predictiv",
+    // El Aviso de junio todavía dice que solo se transfiere por orden judicial y
+    // a PACs; "solo transferirá" y "Proveedores Autorizados de Certificación"
+    // vuelven a esta lista con el Aviso nuevo de la Fase 6.
 ];

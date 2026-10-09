@@ -5,7 +5,7 @@ import CronogramaSection from "@/components/ui/CronogramaSection";
 export const metadata: Metadata = {
     title: "Smart Calendar — BitacorIA",
     description:
-        "Cronograma que se recalcula con el avance real de la obra y avisa de las desviaciones antes de que cuesten.",
+        "Cronograma de obra con IA: registras el avance real y comparas lo programado contra lo ejecutado.",
     alternates: { canonical: "/smart-calendar" },
 };
 

@@ -16,7 +16,7 @@ export default function SmartBimPage() {
                y lectores de pantalla). La sección trae su cabecera visual, así
                que este es solo para el árbol del documento. Mismo patrón que
                planes/page.tsx:52. */}
-            <h1 className="sr-only">BIM Sync: catálogo y cronograma siempre en sincronía</h1>
+            <h1 className="sr-only">BIM Sync: catálogo y cronograma conectados</h1>
             <SmartBimSyncSection />
         </MarketingShell>
     );

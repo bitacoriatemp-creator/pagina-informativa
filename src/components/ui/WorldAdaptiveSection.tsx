@@ -11,8 +11,8 @@ import { assetPath } from "@/lib/assetPath";
    ──────────────────────────────────────────────────────────────
    Layout: sticky-track 160vh (scroll retention) + sticky inner
    h-screen con todo el contenido cabiendo en un viewport.
-   Globe wireframe 3D con fronteras REALES de países, los 8
-   activos iluminados con fill + glow border + dot pulsante.
+   Globe wireframe 3D con fronteras REALES de países; el activo
+   (hoy solo México) iluminado con fill + glow border + dot pulsante.
    Background: particles café drift en canvas separado.
    ══════════════════════════════════════════════════════════════ */
 
@@ -23,28 +23,19 @@ interface Country {
     isoNumeric: string;
 }
 
+// Solo los países donde BitacorIA trabaja hoy de verdad. Hasta el 2026-10-05
+// aquí había 8 (EE. UU., Guatemala, Colombia, Ecuador, Perú, Bolivia y
+// Paraguay además de México), pero el producto solo cubre la normativa de
+// México: Luis decidió dejar de vender "8 países". Si se abre otro país, se
+// agrega aquí junto con su punto en ACTIVE_DOTS.
 const ACTIVE_COUNTRIES: Country[] = [
-    { code: "us", name: "Estados Unidos", flag: "🇺🇸", isoNumeric: "840" },
     { code: "mx", name: "México",         flag: "🇲🇽", isoNumeric: "484" },
-    { code: "gt", name: "Guatemala",      flag: "🇬🇹", isoNumeric: "320" },
-    { code: "co", name: "Colombia",       flag: "🇨🇴", isoNumeric: "170" },
-    { code: "ec", name: "Ecuador",        flag: "🇪🇨", isoNumeric: "218" },
-    { code: "pe", name: "Perú",           flag: "🇵🇪", isoNumeric: "604" },
-    { code: "bo", name: "Bolivia",        flag: "🇧🇴", isoNumeric: "068" },
-    { code: "py", name: "Paraguay",       flag: "🇵🇾", isoNumeric: "600" },
 ];
 
 const ACTIVE_IDS = new Set(ACTIVE_COUNTRIES.map((c) => c.isoNumeric));
 
 const ACTIVE_DOTS: { lat: number; lng: number; idx: number }[] = [
-    { lat: 38,  lng: -98,  idx: 0 },
-    { lat: 23,  lng: -102, idx: 1 },
-    { lat: 15,  lng: -90,  idx: 2 },
-    { lat: 4,   lng: -74,  idx: 3 },
-    { lat: -2,  lng: -78,  idx: 4 },
-    { lat: -10, lng: -76,  idx: 5 },
-    { lat: -16, lng: -65,  idx: 6 },
-    { lat: -23, lng: -58,  idx: 7 },
+    { lat: 23,  lng: -102, idx: 0 },
 ];
 
 /* ── Types for decoded TopoJSON ── */
@@ -494,7 +485,7 @@ export default function WorldAdaptiveSection() {
                             normativa
                         </span>
                         <br />
-                        de cada país.
+                        de México.
                     </motion.h2>
 
                     {/* Globe */}
@@ -536,7 +527,7 @@ export default function WorldAdaptiveSection() {
                         </motion.div>
                     </motion.div>
 
-                    {/* Sub-text "8 países activos hoy" */}
+                    {/* Sub-text: dónde trabajamos hoy */}
                     <motion.p
                         custom={2}
                         variants={fadeUp}
@@ -545,7 +536,7 @@ export default function WorldAdaptiveSection() {
                         className="mb-4 text-xs uppercase tracking-[0.2em] md:text-sm"
                         style={{ color: "rgba(255,255,255,0.45)" }}
                     >
-                        8 países con normativas activas —{" "}
+                        Hoy trabajamos en México —{" "}
                         <span style={{ color: "rgba(195,151,103,0.85)" }}>El mapa sigue creciendo.</span>
                     </motion.p>
 
@@ -609,7 +600,7 @@ export default function WorldAdaptiveSection() {
                                 e.currentTarget.style.color = "#c39767";
                             }}
                         >
-                            <span className="leading-none">¿Construyes en otro país? Lo agregamos</span>
+                            <span className="leading-none">¿Construyes en otro país? Cuéntanos</span>
                             <ArrowRight
                                 className="w-3.5 h-3.5 shrink-0 transition-transform duration-300 group-hover:translate-x-1"
                                 strokeWidth={2.2}

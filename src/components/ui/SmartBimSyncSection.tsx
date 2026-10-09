@@ -23,7 +23,7 @@ const NODES = [
     {
         id: "costos",
         label: "Control de Costos",
-        sublabel: "Presupuesto en tiempo real",
+        sublabel: "Presupuesto de tu obra",
         color: "#22C55E",
         // top-left corner
         style: { top: 40, left: 24 } as React.CSSProperties,
@@ -68,20 +68,25 @@ const featureItem: Variants = {
 };
 
 // ── MARKETING COPY ────────────────────────────────────────────────
+// Textos de BIM Sync dichos como "catálogo y cronograma conectados" (decisión
+// de Luis 2026-10-05): la foto propone la tarea, tú confirmas el avance y eso
+// mueve lo ejecutado del concepto. Nada de "siempre en sincronía".
 const FEATURES = [
     {
         Icon: Network,
-        title: "Sincronización Total",
-        body: "Si cargas un registro fotográfico, la IA sabe exactamente a qué actividad pertenece y calcula su porcentaje de avance y costo de forma automática. Todo está entrelazado.",
+        title: "Avance y presupuesto conectados",
+        body: "Sube una foto y BitacorIA te propone a qué tarea del cronograma pertenece. Tú confirmas el avance y se actualiza lo ejecutado de su concepto en el catálogo.",
     },
+    // Verdad cuando esté publicado el envío de la Fase 1 (toda la empresa ve
+    // todas sus obras): www se publica después. Si saliera antes, se quita.
     {
         Icon: Users,
-        title: "Fuente Única de Verdad",
-        body: "Acceso multiusuario en tiempo real. Todo tu equipo (residentes, supervisores, directivos) ve los mismos avances, los mismos registros y los mismos costos.",
+        title: "Todo el equipo, los mismos datos",
+        body: "Residentes, supervisores y directivos ven el mismo avance y la misma bitácora.",
     },
     {
         Icon: Box,
-        title: "De la Obra al Modelo",
+        title: "De la obra a la oficina",
         body: "Conectamos la gestión diaria (dinero, tiempo y bitácora) directamente con la realidad física de tu proyecto.",
     },
 ] as const;
@@ -254,7 +259,7 @@ function DataHubMockup() {
                     animate={{ opacity: [0.6, 1, 0.6] }}
                     transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
                 >
-                    ⧳ Sincronizando en tiempo real
+                    ⧳ Catálogo y cronograma conectados
                 </motion.div>
             </motion.div>
         </div>
@@ -549,9 +554,9 @@ export default function SmartBimSyncSection() {
 
                         {/* Sub-headline */}
                         <p className="max-w-sm text-base leading-relaxed text-white/38">
-                            Todo tu ecosistema conectado en un solo lugar.{" "}
+                            Catálogo, cronograma y bitácora en un solo lugar.{" "}
                             <span className="font-medium text-white/58">
-                                Cada registro, cada costo y cada tarea forman una sola fuente de verdad.
+                                El avance que confirmas mueve la partida del cronograma y lo ejecutado del concepto.
                             </span>
                         </p>
 
