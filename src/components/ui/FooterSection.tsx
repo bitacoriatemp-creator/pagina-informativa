@@ -28,27 +28,30 @@ const LEGAL_CONTENT = {
             <div className="divide-y divide-white/[0.07] text-[15px] leading-relaxed text-white/60 [&>*]:py-6 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Qué es BitacorIA y cómo beneficia a mi constructora?</h5>
-                    <p>BitacorIA es la primera plataforma de gestión estructurada diseñada específicamente para el sector de la construcción en América Latina. Moderniza el control de obra tradicional reemplazando el papel por procesos digitales ágiles, con flujos de aprobación y firmado diseñados para alinearse a la normativa mexicana (NOM-151), optimizando el tiempo de captura de los residentes de obra.</p>
+                    <p>BitacorIA es la primera plataforma de gestión estructurada diseñada específicamente para el sector de la construcción en México. Moderniza el control de obra tradicional reemplazando el papel por procesos digitales ágiles y optimizando el tiempo de captura de los residentes de obra.</p>
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Mi información de obra está segura?</h5>
-                    <p>Sí. Toda la información, desde los reportes fotográficos hasta los presupuestos, viaja y se almacena cifrada en infraestructura en la nube con respaldos automáticos. Nuestros flujos de firmado y conservación de bitácoras están diseñados para alinearse a la Ley de Firma Electrónica Avanzada y a la NOM-151, de modo que tus registros mantengan trazabilidad e integridad verificable.</p>
+                    {/* 2026-10-08: se quitó la promesa de firma avanzada y NOM-151. "Respaldos automáticos": la base tiene copia diaria; la copia semanal de fotos llega con la Fase 3 del plan de lanzamiento. */}
+                    <p>Sí. Toda la información, desde los reportes fotográficos hasta los presupuestos, viaja y se almacena cifrada en infraestructura en la nube con respaldos automáticos.</p>
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿BitacorIA utiliza Inteligencia Artificial generativa?</h5>
                     <p>Sí, pero de forma estructurada y guiada, no como un chat abierto de propósito general. El asistente de obra te acompaña en la captura (chatea, adjunta fotos), y tecnologías como &quot;Smart Concepts&quot; funcionan con configuradores guiados que recomiendan los catálogos y conceptos correctos para cada etapa de tu obra. Todo resultado queda en formatos estructurados, editables y validables por ti — la IA propone, tú siempre tienes el control final.</p>
                 </div>
                 <div>
-                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Puedo invitar a subcontratistas y al cliente final a la misma bitácora?</h5>
-                    <p>Sí. Invitas a tu equipo por correo con rol de administrador o de miembro, y a cada obra se entra con un código de acceso que tú generas y puedes revocar. Así el residente captura, quien administra aprueba, y sabes en todo momento quién hizo cada cambio.</p>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Puedo invitar a mi equipo a la misma bitácora?</h5>
+                    {/* Verdad desde el 2026-10-08 (servidor pilot-v34 y app da26bea): toda la empresa ve todas sus obras, decisión de Luis 2026-10-04. */}
+                    <p>Sí, en los planes con más de un usuario. Invitas a tu equipo por correo, como administrador o como miembro, y puedes darlo de baja cuando quieras. Toda tu empresa ve y trabaja todas sus obras: todavía no hay acceso por obra, así que invita solo a quien deba verlas todas.</p>
                 </div>
                 <div>
-                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿De qué trata el protocolo &quot;Smart BIM Sync&quot;?</h5>
-                    <p>Smart BIM Sync es nuestro ecosistema avanzado de sincronización de proyectos. En lugar de limitarse a modelos 3D, nuestra tecnología conecta el avance físico real de la obra (registrado en la bitácora) directamente con el presupuesto y el cronograma financiero del proyecto. Esto permite a los gerentes de proyecto y supervisores comparar la planeación teórica contra la realidad ejecutada en tiempo récord, evitando sobrecostos y desviaciones de cronograma de forma predictiva.</p>
+                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Qué es Smart BIM Sync?</h5>
+                    <p>Smart BIM Sync conecta tu catálogo de conceptos con tu cronograma. Cuando confirmas el avance de una tarea, se actualiza lo ejecutado de su concepto en el presupuesto. Así comparas lo programado contra lo ejecutado y ves si vas en tiempo o atrasado. No usa modelos 3D: trabaja con los datos reales de tu obra.</p>
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Qué pasa con mis datos si decido cancelar la suscripción?</h5>
-                    <p>Tu información te pertenece. Tras la cancelación tienes 30 días para descargar tus bitácoras y reportes en PDF, que es el formato en el que se entregan y se firman. Pasado ese plazo, los datos se eliminan de nuestros servidores.</p>
+                    {/* Decisión de Luis 2026-10-07 (30 días en solo lectura con PDF; nada se borra solo). El servidor que lo cumple es pilot-v35 (Fase 5); el primer plan de pago que vence es del 2026-11-05. */}
+                    <p>Tu información te pertenece. Si tu plan vence o cancelas, durante 30 días puedes verla en solo lectura y descargar tus bitácoras y reportes en PDF. Después tu cuenta pasa al plan gratis y nada se borra, salvo que nos lo pidas.</p>
                 </div>
             </div>
         ),

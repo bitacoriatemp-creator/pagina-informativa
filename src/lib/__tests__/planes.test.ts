@@ -23,6 +23,22 @@ const SECTION = readFileSync(
     "utf-8",
 );
 
+/**
+ * Lo que se ve en pantalla, sin comentarios. En los comentarios se explica a
+ * propósito qué decía antes un texto y por qué cambió: si las pruebas los
+ * leyeran, una frase borrada de la pantalla seguiría "encontrándose" en su
+ * comentario. Quita los bloques /* ... *\/ (también los {/* ... *\/} de JSX,
+ * aunque ocupen varias líneas) y las líneas que empiezan con //.
+ */
+function textoVisible(fuente: string): string {
+    const SALTO = String.fromCharCode(10);
+    return fuente
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .split(SALTO)
+        .filter((l) => !l.trim().startsWith("//"))
+        .join(SALTO);
+}
+
 describe("tabla de precios", () => {
     it("congela los cuatro planes con sus importes en MXN sin IVA", () => {
         expect(PLAN_PRICING).toEqual([
@@ -104,22 +120,109 @@ describe("el copy no promete lo que no existe", () => {
         "src/components/ui/FooterSection.tsx",
         "src/components/ui/BitacoraSection.tsx",
         "src/components/ui/SmartConceptsSection.tsx",
+        "src/components/ui/SmartBimSyncSection.tsx",
+        "src/components/ui/CronogramaSection.tsx",
+        "src/components/ui/WorldAdaptiveSection.tsx",
+        "src/app/smart-bim/page.tsx",
+        "src/app/smart-calendar/page.tsx",
+        "src/app/alcance-global/page.tsx",
     ];
 
     it.each(SECCIONES)("%s no trae ninguna promesa sin respaldo", (ruta) => {
-        const fuente = readFileSync(resolve(process.cwd(), ruta), "utf8");
-        // Se descartan las líneas de comentario: ahí se explica a propósito qué
-        // decía antes cada promesa y por qué se quitó.
-        const SALTO = String.fromCharCode(10);
-        const visible = fuente
-            .split(SALTO)
-            .filter((l) => {
-                const t = l.trim();
-                return !t.startsWith("//") && !t.startsWith("*") && !t.startsWith("/*") && !t.startsWith("{/*");
-            })
-            .join(SALTO);
+        // Sin comentarios: ahí se explica a propósito qué decía antes cada
+        // promesa y por qué se quitó.
+        let visible = textoVisible(readFileSync(resolve(process.cwd(), ruta), "utf8"));
+        // El Aviso de Privacidad de junio sigue publicado hasta la Fase 6, que lo
+        // reemplaza completo; mientras tanto se revisa todo el pie menos el Aviso.
+        if (ruta.endsWith("FooterSection.tsx")) {
+            const inicioAviso = visible.indexOf('title: "Aviso de Privacidad"');
+            const finAviso = visible.indexOf("export default function FooterSection");
+            if (inicioAviso > -1 && finAviso > inicioAviso) {
+                visible = visible.slice(0, inicioAviso) + visible.slice(finAviso);
+            }
+        }
 
-        const encontradas = PROMESAS_SIN_RESPALDO.filter((p) => visible.includes(p));
+        // Sin distinguir mayúsculas: "Alertas automáticas" o "firma electrónica
+        // avanzada" en minúsculas tampoco deben pasar.
+        const visibleMin = visible.toLowerCase();
+        const encontradas = PROMESAS_SIN_RESPALDO.filter((p) => visibleMin.includes(p.toLowerCase()));
         expect(encontradas).toEqual([]);
+    });
+});
+
+describe("la tarjeta del plan gratis dice lo que trae la prueba guiada", () => {
+    // La prueba gratis trae 1 catálogo y 1 cronograma, y con los dos la isla se
+    // pone morada (BIM Sync). Las tres filas van parejas: si solo BIM Sync
+    // estuviera encendido, la tarjeta diría que conecta dos cosas que no trae.
+    const inicio = SECTION.indexOf('id: "draft"');
+    const fin = SECTION.indexOf('id: "resident"');
+    const draft = SECTION.slice(inicio, fin);
+
+    it.each(["SMART CALENDAR", "SMART CONCEPTS", "SMART BIM SYNC"])("%s va como incluido en la prueba", (modulo) => {
+        expect(inicio).toBeGreaterThan(-1);
+        expect(fin).toBeGreaterThan(inicio);
+        const fila = draft.split(String.fromCharCode(10)).find((l) => l.includes(`title: "${modulo}"`)) ?? "";
+        expect(fila).toContain('desc: "Incluido en la prueba"');
+        expect(fila).toContain("included: true");
+    });
+});
+
+describe("las tarjetas de pago dicen lo que hace el cronograma", () => {
+    // 2026-10-08 (Luis): "Cronograma predictivo" pasa a "Cronograma con avance
+    // real" en los tres planes de pago.
+    const inicio = SECTION.indexOf('id: "resident"');
+    const fin = SECTION.indexOf("] as const;", inicio);
+    const pago = SECTION.slice(inicio, fin);
+
+    it("las tres filas de SMART CALENDAR dicen 'Cronograma con avance real'", () => {
+        expect(inicio).toBeGreaterThan(-1);
+        expect(fin).toBeGreaterThan(inicio);
+        const filas = pago.split(String.fromCharCode(10)).filter((l) => l.includes('title: "SMART CALENDAR"'));
+        expect(filas).toHaveLength(3);
+        for (const fila of filas) {
+            expect(fila).toContain('desc: "Cronograma con avance real"');
+            expect(fila).toContain("included: true");
+        }
+    });
+});
+
+describe("el pie dice lo que de verdad pasa", () => {
+    // Solo el texto visible: en los comentarios del pie se cita a propósito lo
+    // que decía antes y por qué cambió.
+    const PIE = textoVisible(readFileSync(resolve(process.cwd(), "src/components/ui/FooterSection.tsx"), "utf8"));
+
+    it("la pregunta del equipo explica que toda la empresa ve todas las obras", () => {
+        // Desde el 2026-10-04 (Luis) toda persona de la empresa ve y trabaja todas
+        // sus obras; el código por obra se quitó. Invitar al cliente final le
+        // abriría todas las obras de la constructora.
+        expect(PIE).toContain("todavía no hay acceso por obra");
+    });
+
+    it("al vencer o cancelar no se borra nada solo", () => {
+        // Decisión de Luis 2026-10-07: 30 días en solo lectura con PDF; nada se
+        // borra solo, solo si el cliente lo pide.
+        expect(PIE).toContain("nada se borra");
+        expect(PIE).toContain("solo lectura");
+    });
+
+    it("los términos conservan la obligación del cliente de cuidar sus claves", () => {
+        expect(PIE).toContain("resguardo de sus claves");
+    });
+
+    // "El aviso nombra a quién le llegan los datos" y "dónde va la ubicación"
+    // vuelven con el Aviso nuevo de la Fase 6: esta publicación (2026-10-08)
+    // solo corrige los textos de venta y las preguntas frecuentes.
+
+    it("el aviso le habla de usted de principio a fin", () => {
+        // El Aviso de hoy va de usted ("hace de su conocimiento", "Usted, o quien
+        // funja..."). Las frases nuevas no deben mezclar el tú; la Fase 6 lo
+        // reemplaza completo por el borrador.
+        const inicio = PIE.indexOf('title: "Aviso de Privacidad"');
+        const fin = PIE.indexOf("export default function FooterSection");
+        expect(inicio).toBeGreaterThan(-1);
+        expect(fin).toBeGreaterThan(inicio);
+        const aviso = PIE.slice(inicio, fin);
+        const tuteo = aviso.match(/\b(tu|tus|te|ti|activas|subes|pagas|pides|escribes|mandas)\b/gi) ?? [];
+        expect(tuteo).toEqual([]);
     });
 });

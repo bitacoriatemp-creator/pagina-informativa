@@ -96,3 +96,67 @@ quién va dirigida la página: prospectos, no usuarios.
    escribe "Iniciar sesión" en un componente, o mete `appUrl`/`app.bitacoria.com` en la barra.
 3. Antes de un despliegue, se mira la página **como la ve un cliente**, en producción, no solo el
    CI. El CI verde de este repo no cubre lo que se ve.
+
+## 2026-09-25 — Reseñas reales en la portada
+
+**Decisión (JC; espera el ok de Luis en el Preview).** La portada muestra, debajo de los planes
+(orden hero → planes → reseñas, pedido de JC), una cinta horizontal ("cinta de obra", `ResenasSection`) con reseñas reales de usuarios de
+la app: foto de Google o iniciales, nombre abreviado ("Ricardo M."), rol y tipo de obra, estrellas,
+el texto tal cual, la respuesta del equipo cuando la hay y el conteo honesto ("4.7 · 12 reseñas").
+La reseña **se pide dentro de la app**, después de la prueba gratis; el sitio solo la muestra.
+Contrato del backend: `_kit_socio/docs/PARA_LUIS_RESENAS_CONTRATO_2026-09-25.md`.
+
+**Por qué así.** Un bloque de testimonios inventados es lo primero que un residente huele; una
+cinta con puras cinco estrellas, lo segundo. Por eso las reseñas salen del backend con cuenta de
+Google verificada, se publican también las de 1 a 3 estrellas (con respuesta del equipo; la
+moderación solo retira spam, abuso o datos personales) y la sección no aparece hasta tener cinco.
+
+**Regla que queda.**
+
+1. **La sección no enlaza a la app** ni tiene botón de "Deja tu reseña": el sitio no autentica
+   (regla del 12 de septiembre) y solo puede opinar quien ya tiene cuenta. La única referencia es
+   la nota al pie ("Las reseñas se escriben desde la app, con cuenta de Google verificada").
+2. **Con menos de 5 reseñas publicadas la sección no existe en el HTML** (`obtenerResenas()`
+   devuelve `null`). Lo mismo si falta `RESENAS_API_URL`, si el backend no responde en 4 s o si la
+   respuesta no cumple el contrato. Mejor nada que tres reseñas.
+3. **Los datos se leen en el servidor.** `src/app/page.tsx` es componente de servidor: lee la API
+   con caché de una hora (`RESENAS_API_URL`, variable de servidor en Vercel) y pasa el resultado a
+   `LandingHome`. El navegador nunca habla con la API; la foto solo se acepta si es `https` de
+   `*.googleusercontent.com`, y el nombre se vuelve a abreviar aquí por si llegara uno completo.
+4. **Es un control visible nuevo**: por la regla 1 del 12 de septiembre, el PR lo describe en el
+   título y **espera el ok de Luis sobre el Preview de Vercel** antes del merge. Hasta que el
+   backend exponga `GET /api/v1/public/reviews`, la variable no se pone y la portada se ve igual
+   que hoy. Para verla en local: `RESENAS_DEMO=true` (datos de ejemplo, nunca en producción).
+
+**Tests.** `src/lib/__tests__/resenas.test.ts` (validación, umbral de 5, red caída, nombre y fecha)
+y `src/components/ui/__tests__/resenasSection.test.ts` (render con 5 y no con 4, sin enlaces a la
+app, respuesta del equipo, foto o iniciales, flechas y arrastre). Los tests de la cinta reutilizan
+el DOM falso de `heroDemoShowcase.entorno.ts`, que pertenece al commit del video móvil: **el commit
+de reseñas se sube después (o junto) al del video**; si sube solo, vitest no encuentra el helper y
+el CI queda en rojo aunque el código esté bien.
+
+**Publicación (2026-09-25).** JC publicó a `main` (producción) el video del hero en móvil y esta
+sección **sin la revisión de Luis sobre el Preview**, por decisión suya: Luis estaba ocupado en otras
+tareas. El punto 4 queda así cumplido por JC y no por Luis; Luis puede revisarlo después y pedir
+cambios o revertirlo. Lo que cambia a la vista hoy: el video del hero en móvil (16:9, sin botones
+encima, reproductor nativo al tocar) y la opacidad del sobretítulo de Planes. La sección de reseñas
+no aparece en producción hasta que exista `RESENAS_API_URL` y haya 5 reseñas publicadas.
+Para revertir: en Vercel, "Promote to Production" del deploy anterior (`e5d5277`), o `git revert`
+de estos commits en `main`, sin force.
+
+**Cambio (2026-10-02, JC).** JC decidió desplegar ya las reseñas y cambia tres reglas de arriba:
+
+- **Publicación automática.** Cada reseña se publica sola al enviarse desde la app, sin moderación
+  previa; el backend la devuelve con estado "publicada" al crearla o actualizarla. El super admin
+  puede ocultarla después (spam, abuso o datos personales). La nota al pie de la sección sigue
+  siendo cierta: se publican todas salvo spam o abuso, solo que el retiro ahora es posterior.
+- **La caja aparece desde la primera reseña publicada** (`MINIMO_RESENAS = 1`; antes 5). Esto
+  reemplaza el punto 2 ("Mejor nada que tres reseñas"), el "hasta tener cinco" de "Por qué así",
+  el umbral de 5 de "Tests" y la condición de 5 publicadas del párrafo de publicación. La sección deja de existir solo con 0 reseñas publicadas o sin backend
+  (sin `RESENAS_API_URL`, sin respuesta en 4 s o con una respuesta que no cumple el contrato).
+  Con una sola reseña el conteo dice "1 reseña", en singular.
+- **Revalidación de 5 minutos** (antes una hora, punto 3): una reseña nueva, o una que el super
+  admin ocultó, se refleja en la portada en unos minutos.
+
+Tests ajustados: con 1 publicada la sección se pinta, con 0 no; `revalidate` 300; los datos de
+ejemplo cumplen el mínimo.
