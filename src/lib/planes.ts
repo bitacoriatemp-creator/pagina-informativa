@@ -76,8 +76,11 @@ export const PROMESAS_SIN_RESPALDO: readonly string[] = [
     // Los planos no se convierten solos en catálogo.
     "planos automáticamente",
     // 2026-10-05 (Luis): no hay firma electrónica avanzada ni sello NOM-151.
-    // "NOM-151", "Electrónica Avanzada" y "e.firma" siguen en los Términos de
-    // junio; vuelven a esta lista cuando la Fase 6 publique los Términos nuevos.
+    // Volvieron a la lista con los Términos nuevos de la Fase 6 (2026-10-19),
+    // que dicen lo que es la firma sin nombrar lo que no es.
+    "NOM-151",
+    "Electrónica Avanzada",
+    "e.firma",
     // 2026-10-05 (Luis): no se venden usuarios extra a $299.
     "+$299",
     // 2026-10-05 (Luis): BIM Sync es "catálogo y cronograma conectados": el
@@ -107,7 +110,9 @@ export const PROMESAS_SIN_RESPALDO: readonly string[] = [
     // 2026-10-08 (Luis): no hay nada predictivo en el cronograma. Lo real es el
     // cronograma doble (programado contra real) con el avance que se confirma.
     "predictiv",
-    // El Aviso de junio todavía dice que solo se transfiere por orden judicial y
-    // a PACs; "solo transferirá" y "Proveedores Autorizados de Certificación"
-    // vuelven a esta lista con el Aviso nuevo de la Fase 6.
+    // El Aviso de junio decía que solo se transfiere por orden judicial y a PACs
+    // (y callaba a los proveedores reales). El Aviso nuevo de la Fase 6 nombra a
+    // cada proveedor.
+    "solo transferirá",
+    "Proveedores Autorizados de Certificación",
 ];

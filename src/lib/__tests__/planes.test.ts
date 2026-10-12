@@ -4,6 +4,7 @@ import { join, resolve } from "node:path";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { PLAN_PRICING, PROJECT_LICENSE, PRICING_FOOTER, PROMESAS_SIN_RESPALDO } from "../planes";
+import { FECHA_LEGAL, PENDIENTES_LEGALES, VERSION_LEGAL } from "../legales";
 
 /**
  * Precios y enlaces del sitio: contrato congelado.
@@ -118,6 +119,7 @@ describe("el copy no promete lo que no existe", () => {
     const SECCIONES = [
         "src/components/ui/PlanesSection.tsx",
         "src/components/ui/FooterSection.tsx",
+        "src/components/ui/TextosLegales.tsx",
         "src/components/ui/BitacoraSection.tsx",
         "src/components/ui/SmartConceptsSection.tsx",
         "src/components/ui/SmartBimSyncSection.tsx",
@@ -131,16 +133,9 @@ describe("el copy no promete lo que no existe", () => {
     it.each(SECCIONES)("%s no trae ninguna promesa sin respaldo", (ruta) => {
         // Sin comentarios: ahí se explica a propósito qué decía antes cada
         // promesa y por qué se quitó.
-        let visible = textoVisible(readFileSync(resolve(process.cwd(), ruta), "utf8"));
-        // El Aviso de Privacidad de junio sigue publicado hasta la Fase 6, que lo
-        // reemplaza completo; mientras tanto se revisa todo el pie menos el Aviso.
-        if (ruta.endsWith("FooterSection.tsx")) {
-            const inicioAviso = visible.indexOf('title: "Aviso de Privacidad"');
-            const finAviso = visible.indexOf("export default function FooterSection");
-            if (inicioAviso > -1 && finAviso > inicioAviso) {
-                visible = visible.slice(0, inicioAviso) + visible.slice(finAviso);
-            }
-        }
+        // Desde la Fase 6 (Términos y Aviso del 2026-10-19) se revisan completos,
+        // también el Aviso.
+        const visible = textoVisible(readFileSync(resolve(process.cwd(), ruta), "utf8"));
 
         // Sin distinguir mayúsculas: "Alertas automáticas" o "firma electrónica
         // avanzada" en minúsculas tampoco deben pasar.
@@ -205,24 +200,78 @@ describe("el pie dice lo que de verdad pasa", () => {
         expect(PIE).toContain("solo lectura");
     });
 
-    it("los términos conservan la obligación del cliente de cuidar sus claves", () => {
-        expect(PIE).toContain("resguardo de sus claves");
+    it("los Términos y el Aviso del pie son los de la Fase 6", () => {
+        expect(PIE).toContain("<TerminosCuerpo />");
+        expect(PIE).toContain("<AvisoCuerpo />");
+    });
+});
+
+describe("Términos y Aviso de la Fase 6 (versión 2026-10-19)", () => {
+    // Solo el texto visible: los comentarios explican qué decía antes cada frase.
+    const LEGAL = textoVisible(readFileSync(resolve(process.cwd(), "src/components/ui/TextosLegales.tsx"), "utf8"));
+    const terminos = LEGAL.slice(LEGAL.indexOf("export function TerminosCuerpo"), LEGAL.indexOf("export function AvisoCuerpo"));
+    const aviso = LEGAL.slice(LEGAL.indexOf("export function AvisoCuerpo"));
+
+    it("la versión es la misma que anota el servidor al aceptar", () => {
+        // TERMINOS_VERSION_2026_10 y AVISO_VERSION_2026_10 en app/core/config.py
+        // del servidor. Si cambia la fecha, se cambian los dos lados.
+        expect(VERSION_LEGAL).toBe("2026-10-19");
+        expect(FECHA_LEGAL).toBe("19 de octubre de 2026");
     });
 
-    // "El aviso nombra a quién le llegan los datos" y "dónde va la ubicación"
-    // vuelven con el Aviso nuevo de la Fase 6: esta publicación (2026-10-08)
-    // solo corrige los textos de venta y las preguntas frecuentes.
+    it("lo que falta de Luis está a la vista y es solo esto", () => {
+        // Antes de publicar en main cada dato tiene que tener valor y esta lista
+        // queda vacía. Un pendiente nuevo se agrega aquí a propósito.
+        expect(PENDIENTES_LEGALES).toEqual([
+            "responsable",
+            "rfc",
+            "domicilio",
+            "correoPrivacidad",
+            "respuestaSoporte",
+            "horarioSoporte",
+            "soporteSiteManager",
+            "soporteExecutive",
+            "devolucionAnual",
+            "devolucionLicencia",
+            "plazoDevolucion",
+            "avisoCambios",
+            "plazoRegistrosServidor",
+            "plazoProspectos",
+        ]);
+    });
 
-    it("el aviso le habla de usted de principio a fin", () => {
-        // El Aviso de hoy va de usted ("hace de su conocimiento", "Usted, o quien
-        // funja..."). Las frases nuevas no deben mezclar el tú; la Fase 6 lo
-        // reemplaza completo por el borrador.
-        const inicio = PIE.indexOf('title: "Aviso de Privacidad"');
-        const fin = PIE.indexOf("export default function FooterSection");
-        expect(inicio).toBeGreaterThan(-1);
-        expect(fin).toBeGreaterThan(inicio);
-        const aviso = PIE.slice(inicio, fin);
-        const tuteo = aviso.match(/\b(tu|tus|te|ti|activas|subes|pagas|pides|escribes|mandas)\b/gi) ?? [];
-        expect(tuteo).toEqual([]);
+    it("hablan de tú de principio a fin", () => {
+        // Decisión de Luis del 2026-10-11: trato de tú en todo.
+        const usted = LEGAL.match(/\b(usted|ustedes|su información|sus datos|absténgase|le informamos)\b/gi) ?? [];
+        expect(usted).toEqual([]);
+    });
+
+    it("los Términos dicen lo que hace el producto de v35 a v38", () => {
+        expect(terminos).toContain("sin que lo confirmes");
+        expect(terminos).toContain("tope diario para tu empresa");
+        expect(terminos).toContain("Nada se borra solo.");
+        expect(terminos).toContain("solo lectura");
+        expect(terminos).toContain("no se renueva");
+        expect(terminos).toContain("No sustituyen la");
+        expect(terminos).toContain("Cuida tu contraseña");
+    });
+
+    it("el Aviso nombra a quién le llegan los datos", () => {
+        for (const proveedor of ["Google Vertex AI", "Supabase", "Vercel", "Resend", "Sentry", "Cloudflare", "OpenStreetMap", "ipapi.co", "Mercado Pago"]) {
+            expect(aviso).toContain(proveedor);
+        }
+    });
+
+    it("el Aviso dice qué se guarda de una foto: fecha y si fue en la obra, nunca coordenadas", () => {
+        expect(aviso).toContain("no guardamos coordenadas");
+        expect(aviso).toContain("cerca de la ubicación de la obra");
+        // El Aviso de junio decía que se recababan "Metadatos y Geolocalización".
+        expect(aviso.toLowerCase()).not.toContain("metadatos y geolocalización");
+    });
+
+    it("no vuelve a prometer el uso anonimizado que no existe", () => {
+        // Términos y Aviso de junio: "de forma anonimizada y agregada... para
+        // refinar nuestros algoritmos". No hay ese proceso (opción A del 05-oct).
+        expect(LEGAL.toLowerCase()).not.toContain("anonimizada");
     });
 });
