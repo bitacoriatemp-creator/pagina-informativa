@@ -68,7 +68,8 @@ export function TerminosCuerpo() {
                 </p>
                 <p>
                     1.3 Aceptas estos Términos y el Aviso de Privacidad al crear tu cuenta, con tu correo, con Google o al
-                    aceptar una invitación. Guardamos qué versión aceptaste y cuándo. Debes ser mayor de 18 años.
+                    aceptar una invitación. Desde octubre de 2026, al crear tu cuenta guardamos qué versión aceptaste y
+                    cuándo. Debes ser mayor de 18 años.
                 </p>
             </Seccion>
 
@@ -91,7 +92,7 @@ export function TerminosCuerpo() {
                     artificial: Smart Concepts (catálogo de conceptos y precios), Smart Calendar (cronograma) y Smart
                     Log (bitácora diaria y reportes).
                 </p>
-                <p>3.2 El servicio es solo para obras en México.</p>
+                <p>3.2 El servicio está hecho para obras en México y trabaja con su normativa (cláusula 12.2).</p>
                 <p>
                     3.3 Las funciones y límites de cada Plan son los de la tabla de planes vigente al contratar (Anexo A).
                     El servicio mejora y cambia. Si quitamos una función esencial de un Plan de pago durante un periodo
@@ -124,21 +125,24 @@ export function TerminosCuerpo() {
                 </p>
                 <Lista>
                     <li>2 consultas al asistente en total (un mensaje con hasta 2 fotos cuenta como una consulta);</li>
-                    <li>1 catálogo de prueba, generado o importado, de hasta 30 conceptos;</li>
+                    <li>
+                        1 catálogo de prueba: uno generado con IA, de hasta 30 conceptos, o uno importado de tu archivo,
+                        completo;
+                    </li>
                     <li>1 cronograma de prueba;</li>
                     <li>1 nota del día con fotos analizadas por la IA;</li>
                     <li>hasta 2 fotos por hoja del día en la bitácora.</li>
                 </Lista>
                 <p>
-                    No incluye descarga de PDF, dictado por voz ni envío de archivos, videos o audios al asistente.
+                    No incluye descarga de PDF, dictado por voz ni envío de documentos al asistente.
                 </p>
                 <p>
                     5.2 Confirmar o cancelar lo que propone el asistente y registrar el avance del día no gastan
                     consultas.
                 </p>
                 <p>
-                    5.3 La prueba con IA tiene su propio tope diario y puede pausarse por el resto del día cuando la
-                    plataforma llega a su gasto de IA del día; lo demás sigue funcionando.
+                    5.3 La prueba con IA tiene su propio tope diario y puede pausarse por el resto del día cuando el gasto
+                    de IA de toda la plataforma pasa de cierto nivel ese día; lo demás sigue funcionando.
                 </p>
                 <p>
                     5.4 Si nuestro equipo te abrió una cuenta de prueba con fecha de fin, al terminar puedes seguir viendo
@@ -199,7 +203,8 @@ export function TerminosCuerpo() {
                 </p>
                 <p>
                     8.3 Pasados los 30 días, tu cuenta pasa al plan gratis. Tus obras siguen ahí, y lo nuevo sigue los
-                    límites del plan gratis: sin PDF, sin obras nuevas, sin invitar y con la IA de la prueba guiada.
+                    límites del plan gratis: sin PDF, sin obras nuevas, sin invitar y con lo que quede de la prueba
+                    guiada.
                 </p>
                 <p>
                     8.4 Si cancelas y te devolvemos dinero (cláusula 7.5), o si un pago no se confirma, damos de baja el
@@ -214,17 +219,22 @@ export function TerminosCuerpo() {
                     8.6 Borrado a petición: el titular del Plan o un administrador de tu empresa puede pedirnos, desde
                     Ayuda en la app o desde el correo de la cuenta, que borremos toda la información de la empresa. Te lo
                     confirmamos por correo y lo hacemos en un máximo de 5 días hábiles. Te decimos qué se borró, qué
-                    conservamos por obligación legal (por ejemplo, datos de facturación) y cuándo vencen las copias de
-                    respaldo que todavía la contengan. El borrado no se puede deshacer: descarga antes lo que necesites.
+                    conservamos (los datos de facturación que pide la ley y el registro de quién hizo cada cambio y de
+                    uso de la IA, que no se borra) y cuándo vencen las copias de respaldo que todavía la contengan. El
+                    borrado no se puede deshacer: descarga antes lo que necesites.
                 </p>
-                <p>8.7 Hoy la entrega de tu información es en PDF. No ofrecemos la exportación completa de la base de datos.</p>
+                <p>
+                    8.7 Hoy puedes descargar tu información en PDF (y algunos reportes en Word, CSV o Excel). No
+                    ofrecemos la exportación completa de la base de datos.
+                </p>
             </Seccion>
 
             <Seccion titulo="9. Tu información es tuya">
                 <p>9.1 Tu contenido es de tu empresa.</p>
                 <p>
-                    9.2 Nos das permiso, solo mientras dure el servicio y para prestarlo, de guardarlo, respaldarlo,
-                    procesarlo (también con inteligencia artificial, cláusula 11) y mostrarlo a las personas de tu empresa.
+                    9.2 Nos das permiso, mientras tu información esté guardada con nosotros y para prestarte el servicio,
+                    de guardarla, respaldarla, procesarla (también con inteligencia artificial, cláusula 11) y
+                    mostrarla a las personas de tu empresa.
                 </p>
                 <p>9.3 No vendemos tu contenido ni lo usamos para otra cosa.</p>
                 <p>
@@ -257,14 +267,14 @@ export function TerminosCuerpo() {
                     revísalas antes de usarlas, firmarlas o presentarlas a alguien.
                 </p>
                 <p>
-                    11.4 <B>Límites de uso de IA.</B> Cada Plan incluye el uso de la IA con dos límites diarios (Anexo
-                    A): un número máximo de usos al día y un tope diario para tu empresa. La app te muestra cuánto
-                    llevas del tope. Al llegar a un límite, las funciones de IA se pausan hasta que se renueve; el tope
-                    de tu empresa se renueva a la medianoche, hora del centro de México. Lo demás (ver, capturar en las
-                    pantallas, descargar tus PDF) sigue funcionando. Un catálogo o un cronograma que no alcanza a
-                    terminarse con lo que queda del día no se empieza; uno ya empezado sí termina. Además, para proteger
-                    el servicio, la plataforma tiene un tope diario general de gasto en IA: si se alcanza, o si falla el
-                    sistema que lo mide, la IA se pausa para todos hasta el día siguiente o hasta que se restablezca.
+                    11.4 <B>Límites de uso de IA.</B> Cada Plan incluye el uso de la IA con un tope diario para tu
+                    empresa, más alto en cada plan (Anexo A); además, para evitar abusos, hay un límite de usos al día.
+                    En los planes de pago la app te muestra cuánto llevas del tope. Al llegar a un límite, las funciones
+                    de IA se pausan hasta que se renueve; el tope de tu empresa se renueva a la medianoche, hora del
+                    centro de México. Lo demás (ver, capturar en las pantallas, descargar tus PDF) sigue funcionando.
+                    Además, para proteger el servicio, la plataforma tiene un tope diario general de gasto en IA: si se
+                    alcanza, o si falla el sistema que lo mide, la IA se pausa para todos hasta el día siguiente o hasta
+                    que se restablezca.
                 </p>
             </Seccion>
 
@@ -282,7 +292,7 @@ export function TerminosCuerpo() {
                 </p>
                 <p>
                     12.3 Los registros y PDF de BitacorIA te apoyan en el control de tu obra. <B>No sustituyen la
-                    bitácora oficial</B> que exijan la autoridad o tu contrato. Los PDF lo dicen en su pie.
+                    bitácora oficial</B> que exijan la autoridad o tu contrato. Los PDF de la bitácora lo dicen en su pie.
                 </p>
                 <p>
                     12.4 La firma que dibujas en un reporte es una imagen dentro del PDF. No es una firma electrónica con
@@ -299,7 +309,12 @@ export function TerminosCuerpo() {
                     13.1 Hacemos lo razonable para que el servicio esté disponible, pero no garantizamos un tiempo mínimo
                     de disponibilidad. Puede haber mantenimientos o fallas.
                 </p>
-                <p>13.2 Respaldamos la base de datos todos los días y guardamos cada copia hasta 14 días.</p>
+                <p>
+                    {/* Si antes de publicar ya corre la copia semanal de fotos (Fase 3) y su aviso, se cambia la
+                        segunda frase por la que diga cada cuánto y cuánto se guarda. */}
+                    13.2 Respaldamos la base de datos todos los días; cada copia se borra a los 14 días y queda 7 días
+                    más en la papelera del proveedor. Las fotos y los archivos todavía no tienen copia de respaldo propia.
+                </p>
                 <p>13.3 Te recomendamos descargar tus PDF de vez en cuando.</p>
             </Seccion>
 
@@ -363,26 +378,27 @@ export function TerminosCuerpo() {
                 <Lista>
                     <li>
                         <B>Draft:</B> $0. 1 obra, 1 usuario. Prueba guiada con IA que no se renueva (2 consultas al
-                        asistente, 1 catálogo de hasta 30 conceptos, 1 cronograma y 1 nota con fotos), con tope diario.
-                        Sin PDF ni dictado por voz.
+                        asistente, 1 catálogo, 1 cronograma y 1 nota con fotos), con tope diario. Sin PDF ni dictado por
+                        voz.
                     </li>
                     <li>
                         <B>The Resident:</B> $2,499 al mes, o $1,999 al mes pagando un año por adelantado. 3 obras, 1
-                        usuario. Hasta 100 usos de IA al día, con tope diario para tu empresa. PDF y dictado por voz.
+                        usuario. Uso de la IA incluido cada día, con tope diario para tu empresa. PDF y dictado por voz.
                     </li>
                     <li>
                         <B>The Site Manager:</B> $3,899 al mes, o $3,199 al mes pagando un año por adelantado. 5 obras, 3
-                        usuarios. Hasta 500 usos de IA al día, con tope diario mayor. PDF, dictado por voz y Soporte Pro
-                        con canal prioritario.
+                        usuarios. Uso de la IA incluido cada día, con un tope diario mayor. PDF, dictado por voz y
+                        Soporte Pro con canal prioritario.
                     </li>
                     <li>
                         <B>Executive:</B> $12,999 al mes, o $10,399 al mes pagando un año por adelantado. Obras y usuarios
-                        sin límite. Hasta 2,000 usos de IA al día, con el tope diario más alto. PDF, dictado por voz y
+                        sin límite. Uso de la IA incluido cada día, con el tope diario más alto. PDF, dictado por voz y
                         Soporte Pro con atención dedicada.
                     </li>
                     <li>
-                        <B>Licencia única de proyecto:</B> $10,999, pago único, 12 meses, 1 obra, con los alcances de The
-                        Site Manager.
+                        <B>Licencia única de proyecto:</B> $10,999, pago único, 12 meses, 1 obra. Comprada sola, trae los
+                        alcances de The Site Manager con un tope diario de IA como el de The Resident; si ya tienes un
+                        plan, le suma una obra.
                     </li>
                 </Lista>
                 <p>Precios en pesos mexicanos, más IVA.</p>
@@ -422,8 +438,8 @@ export function AvisoCuerpo() {
                 <p>
                     <B>3.1 Al crear tu cuenta o entrar.</B> Nombre, correo, contraseña y nombre de tu empresa. La
                     contraseña se guarda de forma que nadie puede leerla. Si entras con Google, recibimos tu nombre, tu
-                    correo y tu foto de perfil; nunca tu contraseña de Google. Guardamos qué versión de estos textos
-                    aceptaste y cuándo.
+                    correo y tu foto de perfil; nunca tu contraseña de Google. Desde octubre de 2026 guardamos qué
+                    versión de estos textos aceptaste y cuándo.
                 </p>
                 <p>
                     <B>3.2 Al usar la plataforma.</B> Dirección IP, tipo de navegador, fecha y hora de entrada, el
@@ -436,7 +452,8 @@ export function AvisoCuerpo() {
                 <p>
                     <B>3.4 De tus obras.</B> Lo que capturas: datos de la obra (nombre, ciudad, estado, superficie,
                     fechas), catálogos, precios, cronogramas, notas e incidencias de la bitácora, fotos, documentos,
-                    mensajes al asistente y la firma que dibujes en un reporte.
+                    mensajes al asistente (y lo que el asistente guarda de ellos para recordar el contexto de tu obra)
+                    y la firma que dibujes en un reporte.
                 </p>
                 <Lista>
                     <li>
@@ -450,8 +467,9 @@ export function AvisoCuerpo() {
                         {/* La segunda frase llega con la app del 22-oct y el servidor v38 (P8). Si P8 no sale, se deja
                             solo: “La app lee en tu dispositivo la fecha en que se tomó la foto y la usa para proponer
                             la fecha de la nota.” */}
-                        <B>Fotos:</B> antes de enviar una foto, tu dispositivo le quita la ubicación (GPS) y los datos
-                        ocultos. Antes de quitarlos, la app lee en tu dispositivo la fecha en que se tomó la foto y, si tu
+                        <B>Fotos:</B> desde el 16 de septiembre de 2026, antes de enviar una foto tu dispositivo le
+                        quita la ubicación (GPS) y los datos ocultos (las fotos subidas antes pueden conservarla; si
+                        quieres que se la quitemos, escríbenos). Antes de quitarlos, la app lee en tu dispositivo la fecha en que se tomó la foto y, si tu
                         obra tiene ubicación guardada, revisa si se tomó cerca de ella. Guardamos la fecha en que se tomó
                         la foto y si se tomó cerca de la ubicación de la obra; no guardamos coordenadas. Las coordenadas
                         de la foto no salen de tu dispositivo.
@@ -492,6 +510,9 @@ export function AvisoCuerpo() {
                         interés de compra.
                     </li>
                     <li>Si te suscribes al boletín: tu correo.</li>
+                    <li>
+                        Si pides que te avisemos cuando haya lugar para una cuenta gratis: tu correo y tu nombre.
+                    </li>
                     <li>
                         Para preseleccionar tu país, la página de registro consulta tu país aproximado en el servicio
                         ipapi.co, que recibe tu dirección IP. Nosotros no la guardamos.
@@ -560,13 +581,17 @@ export function AvisoCuerpo() {
                     servicio:
                 </p>
                 <Lista>
-                    <li>Supabase: base de datos y archivos (Estados Unidos).</li>
+                    <li>Supabase: base de datos y archivos de la app (Estados Unidos) y formularios del sitio.</li>
                     <li>
                         Google Cloud: servidor, respaldos, inteligencia artificial e inicio de sesión con Google (Estados
                         Unidos y otros países donde Google tiene infraestructura).
                     </li>
                     <li>Vercel: alojamiento de la app y del sitio.</li>
                     <li>Resend: envío de los correos del servicio.</li>
+                    <li>
+                        Google (Gmail): el buzón del equipo, que recibe las solicitudes de plan, de soporte y de aviso
+                        cuando haya lugar.
+                    </li>
                     <li>
                         Sentry: registro de errores técnicos del servidor. Está configurado para reducir al mínimo los
                         datos personales, pero ante un error puede recibir fragmentos de lo que se estaba procesando.
@@ -598,10 +623,14 @@ export function AvisoCuerpo() {
                         Cuenta, empresa y obras: mientras exista tu cuenta. <B>Nada se borra solo</B>: al vencer o cancelar
                         sigue lo que dicen los Términos (cláusula 8), y se borra si lo pides.
                     </li>
+                    <li>
+                        Registro de quién hizo cada cambio y de uso de la IA: lo conservamos aunque pidas borrar tu
+                        cuenta; puede incluir nombres, correos o partes de lo que capturaste.
+                    </li>
                     <li>Pagos y facturas: el plazo que pidan las leyes fiscales.</li>
                     <li>
                         Respaldos: la copia diaria de la base de datos se borra a los 14 días y queda 7 días más en la
-                        papelera del proveedor.
+                        papelera del proveedor; las copias diarias del disco del servidor se borran a los 7 días.
                     </li>
                     <li>Registros técnicos del servidor: <D k="plazoRegistrosServidor" />.</li>
                     <li>Boletín: hasta que te des de baja.</li>
@@ -635,6 +664,8 @@ export function AvisoCuerpo() {
                     para verificar tu identidad.
                 </p>
                 <p>
+                    {/* Plazos de la ley de 2010; el abogado los confirma contra la ley de 2025 (borrador en
+                        Backend-Bit/_contexto/legal/). Lo mismo la autoridad de la sección 14. */}
                     Te respondemos en un máximo de 20 días hábiles desde que recibimos la solicitud completa y, si
                     procede, la hacemos efectiva en los 15 días hábiles siguientes. Si formas parte de una empresa
                     cliente, parte de la información de las obras es de esa empresa: coordinamos tu solicitud con su
@@ -656,8 +687,9 @@ export function AvisoCuerpo() {
                 <Lista>
                     <li>
                         App: una cookie de sesión necesaria para mantenerte dentro (el código de la página no puede
-                        leerla; dura hasta 30 días) y una cookie que comparten la app y www.bitacoria.com con tu nombre,
-                        tus iniciales y la dirección de tu foto, para que el sitio sepa que ya tienes cuenta (30 días).
+                        leerla; dura hasta 30 días, pero tu sesión se cierra si pasas 7 días sin usar la app) y una
+                        cookie que comparten la app y www.bitacoria.com con tu nombre, tus iniciales y la dirección de
+                        tu foto, que el sitio puede leer para reconocer que ya tienes cuenta (30 días).
                         También tus preferencias (tema, recorridos y avisos que ya viste) y, mientras la pestaña está
                         abierta, una copia temporal de parte de tus obras y mensajes.
                     </li>
