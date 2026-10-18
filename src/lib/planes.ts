@@ -151,4 +151,15 @@ export const PROMESAS_CORREGIDAS_L2: readonly string[] = [
     "audita la información",
     "todas las partidas necesarias",
     "la primera plataforma",
+    // Desde el 27-10 el registro está abierto: no hay "acceso anticipado".
+    "acceso anticipado",
+    "espero el lanzamiento",
+    // Atención humana sin horario publicado.
+    "al instante",
+    "hoy mismo",
+    // Solo México, sin promesa a futuro.
+    "el mapa sigue creciendo",
+    "Alcance Global",
+    // Los Términos piden mayores de 18 años.
+    "Para Estudiantes",
 ];

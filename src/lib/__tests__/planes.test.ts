@@ -168,6 +168,9 @@ describe("las promesas corregidas en L2 no vuelven (2026-10-18)", () => {
         "src/components/ui/WorldAdaptiveSection.tsx",
         "src/components/ui/PlanesSection.tsx",
         "src/components/ui/FooterSection.tsx",
+        "src/components/ui/LogoMenu.tsx",
+        "src/app/registro/page.tsx",
+        "src/app/registro/Formulario.tsx",
     ];
 
     it.each(ARCHIVOS)("%s no trae ninguna", (ruta) => {

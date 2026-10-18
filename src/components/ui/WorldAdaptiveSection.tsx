@@ -463,7 +463,7 @@ export default function WorldAdaptiveSection() {
                         className="mb-3 font-ui text-[10px] uppercase tracking-[0.35em]"
                         style={{ color: "rgba(195,151,103,0.6)" }}
                     >
-                        Alcance Global
+                        Hecho para México
                     </motion.p>
 
                     {/* Headline */}
@@ -537,7 +537,7 @@ export default function WorldAdaptiveSection() {
                         style={{ color: "rgba(255,255,255,0.45)" }}
                     >
                         Hoy trabajamos en México —{" "}
-                        <span style={{ color: "rgba(195,151,103,0.85)" }}>El mapa sigue creciendo.</span>
+                        <span style={{ color: "rgba(195,151,103,0.85)" }}>NOM federales y reglamento de la CDMX como base.</span>
                     </motion.p>
 
                     {/* Country Chips — wrapper w-full + justify-center para centrado uniforme */}

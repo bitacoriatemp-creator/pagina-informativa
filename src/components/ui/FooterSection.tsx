@@ -51,7 +51,7 @@ const LEGAL_CONTENT = {
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Qué pasa con mis datos si decido cancelar la suscripción?</h5>
                     {/* Decisión de Luis 2026-10-07 (30 días en solo lectura con PDF; nada se borra solo). El servidor que lo cumple es pilot-v35 (Fase 5); el primer plan de pago que vence es del 2026-11-05. */}
-                    <p>Tu información te pertenece. Si tu plan vence o cancelas, durante 30 días puedes verla en solo lectura y descargar tus bitácoras y reportes en PDF. Después tu cuenta pasa al plan gratis y nada se borra, salvo que nos lo pidas.</p>
+                    <p>Tu información te pertenece. Si tu plan vence o decides no renovarlo, durante 30 días puedes verla en solo lectura y descargar tus bitácoras y reportes en PDF. Después tu cuenta pasa al plan gratis y nada se borra, salvo que nos lo pidas.</p>
                 </div>
             </div>
         ),

@@ -9,12 +9,12 @@ import Formulario from "./Formulario";
 export const metadata: Metadata = {
     title: "Solicita tu demo — BitacorIA",
     description:
-        "Déjanos tus datos y preparamos una demo en vivo de BitacorIA sobre tu propia obra. Acceso anticipado a la plataforma de gestión de obra con IA.",
+        "Déjanos tus datos y preparamos una demo en vivo de BitacorIA sobre tu propia obra.",
     alternates: { canonical: "/registro" },
     openGraph: {
         title: "Solicita tu demo — BitacorIA",
         description:
-            "Acceso anticipado a BitacorIA. Seis datos y agendamos una demo en vivo sobre tu obra.",
+            "Seis datos y agendamos una demo en vivo sobre tu obra.",
         url: "https://bitacoria.com/registro",
         type: "website",
     },

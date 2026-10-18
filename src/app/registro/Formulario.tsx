@@ -43,7 +43,7 @@ const PERFILES = [
 ];
 
 const INTERESES: [string, string][] = [
-    ["Listo para comprar", "Listo para comprar — solo espero el lanzamiento"],
+    ["Listo para comprar", "Listo para comprar — quiero empezar ya"],
     ["Muy probable", "Muy probable — estoy evaluando seriamente"],
     ["Probable", "Probable — depende de lo que vea en la demo"],
     ["Curioso", "Curioso — vine a explorar"],
@@ -323,7 +323,7 @@ export default function Formulario() {
             // AbortError = timeout de 15 s; TypeError = fallo de red (señal débil en obra).
             setErrMsg(
                 err instanceof DOMException && err.name === "AbortError"
-                    ? "El servidor tardó en responder. Escríbenos por WhatsApp y te atendemos al instante."
+                    ? "El servidor tardó en responder. Escríbenos por WhatsApp y te atendemos en horario hábil."
                     : err instanceof TypeError
                         ? "Sin conexión. Verifica tu señal e intenta de nuevo."
                         : "No pudimos completar tu registro. Revisa los datos e intenta de nuevo."
@@ -360,7 +360,7 @@ export default function Formulario() {
             ? {
                 antetitulo: "Solicitud recibida",
                 titulo: doneName ? `Listo, ${doneName}` : "Estás dentro",
-                entrada: <>Quedaste en la lista de acceso anticipado. Esto es lo que sigue.</>,
+                entrada: <>Recibimos tu solicitud. Esto es lo que sigue.</>,
             }
             : mostrarYaDentro
                 ? {
@@ -371,7 +371,7 @@ export default function Formulario() {
                         : <>Tenemos tu solicitud y seguimos el proceso de siempre.</>,
                 }
                 : {
-                    antetitulo: "Acceso anticipado",
+                    antetitulo: "Demo en vivo",
                     titulo: "Solicita tu demo",
                     entrada: <>Seis datos. Con ellos preparamos una demo sobre tu obra, no una presentación genérica.</>,
                 };
@@ -465,7 +465,7 @@ export default function Formulario() {
                             </motion.div>
                             <p className="mb-6 text-[15px] leading-relaxed text-white/55">
                                 {waUrl
-                                    ? "Sigue la conversación por WhatsApp y agendamos tu demo hoy mismo. El mensaje ya lleva tus datos."
+                                    ? "Sigue la conversación por WhatsApp y agendamos tu demo. El mensaje ya lleva tus datos."
                                     : "Te escribimos muy pronto para coordinar tu demo en vivo — revisa tu correo, y la carpeta de spam."}
                             </p>
                             {waUrl && (
@@ -489,7 +489,7 @@ export default function Formulario() {
                         <div className="lg:pt-6">
                             <p className="mb-6 text-[15px] leading-relaxed text-white/55">
                                 No hace falta que la llenes otra vez. Si quieres adelantar la
-                                demo, escríbenos y la agendamos hoy mismo.
+                                demo, escríbenos y la agendamos contigo.
                             </p>
                             {waYaDentro && (
                                 <div className="mb-3">

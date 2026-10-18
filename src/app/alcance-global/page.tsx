@@ -3,7 +3,7 @@ import MarketingShell from "@/components/ui/MarketingShell";
 import WorldAdaptiveSection from "@/components/ui/WorldAdaptiveSection";
 
 export const metadata: Metadata = {
-    title: "Alcance global — BitacorIA",
+    title: "Hecho para México — BitacorIA",
     description:
         "Pensada para la obra en México: trabaja con las NOM federales y el reglamento de la CDMX con sus Normas Técnicas. En otros estados, tú verificas lo local.",
     alternates: { canonical: "/alcance-global" },

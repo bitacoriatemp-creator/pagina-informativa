@@ -38,7 +38,7 @@ const PLANS = [
         id: "draft",
         planKey: "draft",
         title: "DRAFT",
-        subtitle: "Para Estudiantes y Pruebas.",
+        subtitle: "Para probar BitacorIA.",
         priceMonthly: "0",
         priceAnnual: "0",
         annualTotal: "0",
