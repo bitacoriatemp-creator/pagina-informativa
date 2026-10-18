@@ -429,7 +429,7 @@ export function AvisoCuerpo() {
             <Seccion titulo="2. A quién aplica">
                 <p>
                     A quien usa la app (constructoras, residentes, supervisores y personas invitadas), a quien deja sus
-                    datos en www.bitacoria.com (registro, acceso anticipado o boletín), a quien pide un plan o soporte y
+                    datos en www.bitacoria.com (solicitud de demo o boletín), a quien pide un plan o soporte y
                     a quien publica una reseña.
                 </p>
             </Seccion>
@@ -506,7 +506,7 @@ export function AvisoCuerpo() {
                 <p><B>3.9 En www.bitacoria.com.</B></p>
                 <Lista>
                     <li>
-                        Si llenas el formulario de acceso anticipado: nombre, correo, país, perfil, obras activas e
+                        Si llenas el formulario para pedir una demo: nombre, correo, país, perfil, obras activas e
                         interés de compra.
                     </li>
                     <li>Si te suscribes al boletín: tu correo.</li>
@@ -546,7 +546,7 @@ export function AvisoCuerpo() {
                     <li>Atender tus solicitudes de soporte.</li>
                     <li>Hacer respaldos y recuperar la información ante una falla.</li>
                     <li>Cumplir obligaciones legales y requerimientos de autoridad.</li>
-                    <li>Si llenaste el formulario de acceso anticipado: contactarte para lo que pediste.</li>
+                    <li>Si pediste una demo: contactarte para prepararla.</li>
                 </Lista>
                 <p><B>4.2 Adicionales, que puedes rechazar sin perder el servicio:</B></p>
                 <Lista>
@@ -634,7 +634,7 @@ export function AvisoCuerpo() {
                     </li>
                     <li>Registros técnicos del servidor: <D k="plazoRegistrosServidor" />.</li>
                     <li>Boletín: hasta que te des de baja.</li>
-                    <li>Prospectos del acceso anticipado: <D k="plazoProspectos" />.</li>
+                    <li>Solicitudes de demo: <D k="plazoProspectos" />.</li>
                     <li>Reseñas: hasta que nos pidas retirarla o la retiremos.</li>
                 </Lista>
             </Seccion>

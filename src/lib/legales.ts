@@ -28,7 +28,7 @@ export const DATOS_LEGALES = {
     plazoDevolucion: { valor: null, falta: "plazo para devolver (propuesta: 10 días hábiles)" },
     avisoCambios: { valor: null, falta: "días de aviso antes de un cambio (15 o 30)" },
     plazoRegistrosServidor: { valor: null, falta: "plazo de los registros técnicos (propuesta: 30 días)" },
-    plazoProspectos: { valor: null, falta: "plazo de los prospectos (propuesta: 12 meses sin respuesta)" },
+    plazoProspectos: { valor: null, falta: "plazo de las solicitudes de demo (propuesta: 12 meses sin respuesta)" },
 } satisfies Record<string, DatoLegal>;
 
 export type ClaveLegal = keyof typeof DATOS_LEGALES;
