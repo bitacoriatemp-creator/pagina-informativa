@@ -80,6 +80,7 @@ export const PROMESAS_SIN_RESPALDO: readonly string[] = [
     // que dicen lo que es la firma sin nombrar lo que no es.
     "NOM-151",
     "Electrónica Avanzada",
+    "Electrónicas Avanzadas",
     "e.firma",
     // 2026-10-05 (Luis): no se venden usuarios extra a $299.
     "+$299",
