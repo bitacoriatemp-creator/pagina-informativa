@@ -184,7 +184,7 @@ export function TerminosCuerpo() {
                 <Lista>
                     <li>Plan mensual: sin devolución del mes en curso; puedes no renovarlo.</li>
                     <li>
-                        Plan anual: puedes cancelar cuando quieras y te devolvemos la parte no usada: <D k="devolucionAnual" />.
+                        Plan anual: puedes cancelar cuando quieras y te devolvemos <D k="devolucionAnual" />.
                     </li>
                     <li>Licencia única: <D k="devolucionLicencia" />.</li>
                     <li>

@@ -219,25 +219,11 @@ describe("Términos y Aviso de la Fase 6 (versión 2026-10-19)", () => {
         expect(FECHA_LEGAL).toBe("19 de octubre de 2026");
     });
 
-    it("lo que falta de Luis está a la vista y es solo esto", () => {
-        // Antes de publicar en main cada dato tiene que tener valor y esta lista
-        // queda vacía. Un pendiente nuevo se agrega aquí a propósito.
-        expect(PENDIENTES_LEGALES).toEqual([
-            "responsable",
-            "rfc",
-            "domicilio",
-            "correoPrivacidad",
-            "respuestaSoporte",
-            "horarioSoporte",
-            "soporteSiteManager",
-            "soporteExecutive",
-            "devolucionAnual",
-            "devolucionLicencia",
-            "plazoDevolucion",
-            "avisoCambios",
-            "plazoRegistrosServidor",
-            "plazoProspectos",
-        ]);
+    it("no queda ningún dato pendiente de Luis (condición para publicar)", () => {
+        // Falla a propósito mientras falte un dato: la página mostraría
+        // "[Pendiente: ...]". 2026-10-18: Luis dio 10 de los 14; faltan
+        // responsable, rfc, domicilio y correoPrivacidad.
+        expect(PENDIENTES_LEGALES).toEqual([]);
     });
 
     it("hablan de tú de principio a fin", () => {
