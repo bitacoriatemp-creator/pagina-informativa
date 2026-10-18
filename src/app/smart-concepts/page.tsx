@@ -5,7 +5,7 @@ import SmartConceptsSection from "@/components/ui/SmartConceptsSection";
 export const metadata: Metadata = {
     title: "Smart Concepts — BitacorIA",
     description:
-        "Catálogos de conceptos y precios unitarios armados por IA en minutos, listos para revisar y firmar.",
+        "Catálogos de conceptos y precios unitarios armados por IA en minutos, listos para que los revises.",
     alternates: { canonical: "/smart-concepts" },
 };
 

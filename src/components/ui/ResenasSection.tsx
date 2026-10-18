@@ -331,7 +331,7 @@ function TarjetaResena({ resena }: { resena: Resena }) {
             <footer className="flex items-center justify-between gap-2 pt-1 text-[11px] text-white/55">
                 <span className="inline-flex items-center gap-1">
                     <BadgeCheck size={13} strokeWidth={2} style={{ color: BRONZE }} aria-hidden="true" />
-                    Cuenta verificada
+                    Usuario de BitacorIA
                 </span>
                 {/* suppressHydrationWarning: el HTML se genera con caché (5 min desde
                     JC 2026-10-02; antes una hora) y
@@ -612,7 +612,7 @@ export default function ResenasSection({ resenas }: { resenas: Resenas }) {
                 </div>
 
                 <p className="mt-6 px-6 text-center text-[11px] leading-relaxed text-white/50 lg:px-12">
-                    Las reseñas se escriben desde la app, con cuenta de Google verificada. Publicamos todas salvo spam o abuso.
+                    Las reseñas se escriben desde la app, solo con cuenta en BitacorIA. Se publican al enviarse; retiramos solo spam, abuso o datos personales.
                 </p>
             </div>
         </section>

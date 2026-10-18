@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import { PROMESAS_CORREGIDAS_L2 } from "../planes";
 
 import { PLAN_PRICING, PROJECT_LICENSE, PRICING_FOOTER, PROMESAS_SIN_RESPALDO } from "../planes";
 
@@ -147,6 +148,38 @@ describe("el copy no promete lo que no existe", () => {
         const visibleMin = visible.toLowerCase();
         const encontradas = PROMESAS_SIN_RESPALDO.filter((p) => visibleMin.includes(p.toLowerCase()));
         expect(encontradas).toEqual([]);
+    });
+});
+
+describe("las promesas corregidas en L2 no vuelven (2026-10-18)", () => {
+    const ARCHIVOS = [
+        "src/app/layout.tsx",
+        "src/app/alcance-global/page.tsx",
+        "src/app/smart-log/page.tsx",
+        "src/app/smart-concepts/page.tsx",
+        "src/app/smart-island/page.tsx",
+        "src/app/nosotros/page.tsx",
+        "src/components/ui/HeroHybrid.tsx",
+        "src/components/ui/GlobalNavbar.tsx",
+        "src/components/ui/ResenasSection.tsx",
+        "src/components/ui/BitacoraSection.tsx",
+        "src/components/ui/SmartConceptsSection.tsx",
+        "src/components/ui/SmartBimSyncSection.tsx",
+        "src/components/ui/WorldAdaptiveSection.tsx",
+        "src/components/ui/PlanesSection.tsx",
+        "src/components/ui/FooterSection.tsx",
+    ];
+
+    it.each(ARCHIVOS)("%s no trae ninguna", (ruta) => {
+        const visibleMin = textoVisible(readFileSync(resolve(process.cwd(), ruta), "utf8")).toLowerCase();
+        const encontradas = PROMESAS_CORREGIDAS_L2.filter((p) => visibleMin.includes(p.toLowerCase()));
+        expect(encontradas).toEqual([]);
+    });
+
+    it("la tarjeta de planes dice firma dibujada e historial de cambios", () => {
+        expect(SECTION).toContain('title: "FIRMA EN PDF", desc: "Tu firma dibujada en PDF"');
+        expect(SECTION).toContain('desc: "Historial de cambios"');
+        expect(SECTION).not.toContain("FIRMAS DIGITALES");
     });
 });
 

@@ -90,7 +90,7 @@ describe("ResenasSection: cuándo existe", () => {
         expect(texto).toContain("4.7");
         expect(texto).toContain("12 reseñas · solo usuarios con cuenta en BitacorIA");
         expect(m.tarjetas()).toHaveLength(5);
-        expect(texto).toContain("Las reseñas se escriben desde la app, con cuenta de Google verificada. Publicamos todas salvo spam o abuso.");
+        expect(texto).toContain("Las reseñas se escriben desde la app, solo con cuenta en BitacorIA. Se publican al enviarse; retiramos solo spam, abuso o datos personales.");
     });
 
     // JC 2026-10-02: la caja aparece desde la primera reseña publicada (antes cinco).
@@ -245,13 +245,13 @@ describe("ResenasSection: la tarjeta", () => {
         expect((cuatro.childNodes[1] as typeof cuatro).style.width).toBe("80%");
     });
 
-    it("texto tal cual, sello 'Cuenta verificada' y fecha relativa; sin fecha no hay <time>", async () => {
+    it("texto tal cual, sello 'Usuario de BitacorIA' y fecha relativa; sin fecha no hay <time>", async () => {
         const datos = cinco();
         const m = await montar(datos);
         const tarjetas = m.tarjetas();
 
         expect(tarjetas[0].textContent).toContain("La bitácora del día queda con foto y hora desde la camioneta.");
-        for (const t of tarjetas) expect(t.textContent).toContain("Cuenta verificada");
+        for (const t of tarjetas) expect(t.textContent).toContain("Usuario de BitacorIA");
         expect(m.porAtributo("data-icono", "BadgeCheck")).toHaveLength(5);
 
         // a (hace 21 días), b (hace 3), c (hace 21, la anónima), d (hoy); e no trae fecha.

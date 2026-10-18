@@ -523,7 +523,7 @@ export default function WorldAdaptiveSection() {
                                 className="mr-2 inline-block h-1.5 w-1.5 rounded-full align-middle"
                                 style={{ background: "#c39767", boxShadow: "0 0 8px #c39767" }}
                             />
-                            Sincronizando normativas locales
+                            Normativa federal y de la CDMX
                         </motion.div>
                     </motion.div>
 

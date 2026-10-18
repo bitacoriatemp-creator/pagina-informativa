@@ -8,12 +8,12 @@ import DemoPlayer from "./DemoPlayer";
 const ACCENT = "#C4A484";
 
 const FEATURES = [
-    { Icon: MessageSquare, title: "Habla con tu obra", body: "Escribe o dicta desde campo. La IA redacta el registro técnico por ti al instante." },
+    { Icon: MessageSquare, title: "Habla con tu obra", body: "Escribe o dicta desde campo (el dictado es de planes de pago). La IA arma el registro técnico y te lo muestra para que lo confirmes." },
     // 2026-09-11: decía "entiende estimaciones y planos automáticamente". Lee
     // fotos y PDFs, eso es cierto; los planos NO se convierten solos en
     // catálogo (el catálogo entra por PDF, Excel o CSV).
-    { Icon: Paperclip, title: "Fotos y documentos", body: "Sube una foto de la obra o un PDF. La IA lo lee y lo suma al registro del día." },
-    { Icon: FileText, title: "Reportes en un clic", body: "Exporta resúmenes diarios estructurados y listos para firma electrónica." },
+    { Icon: Paperclip, title: "Fotos y documentos", body: "Sube una foto de la obra: la IA la lee y te propone qué anotar; con tu sí queda en el registro del día. Tus PDF quedan a la mano para que el asistente los consulte." },
+    { Icon: FileText, title: "Reportes en un clic", body: "Exporta en PDF la bitácora del día o de cualquier periodo, con tu firma dibujada. En planes de pago." },
 ];
 
 const fade: Variants = {
@@ -51,10 +51,10 @@ export default function BitacoraSection() {
                         className="font-display text-3xl font-extrabold uppercase leading-[1.05] tracking-tight text-white/92 sm:text-4xl md:text-5xl"
                         style={{ textShadow: "0 0 60px rgba(196,164,132,0.09), 0 4px 40px rgba(0,0,0,0.95)" }}
                     >
-                        La bitácora que <span style={{ color: ACCENT }}>se escribe sola.</span>
+                        La bitácora que <span style={{ color: ACCENT }}>se llena platicando.</span>
                     </h2>
                     <p className="max-w-xl text-[15px] leading-relaxed text-white/45">
-                        Tu asistente de obra disponible 24/7. Olvídate de llenar formatos a mano al final del día; chatea, adjunta fotos y deja que la IA organice tu bitácora.
+                        Tu asistente de obra, desde el celular. Olvídate de llenar formatos a mano al final del día: chatea, adjunta fotos y confirma lo que la IA te propone anotar.
                     </p>
                 </motion.div>
 
