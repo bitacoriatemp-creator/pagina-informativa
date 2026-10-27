@@ -11,7 +11,8 @@ import { EventoFalso, montarHeroDemoShowcase, type Montado } from "./heroDemoSho
  * y con sus controles para pausar y adelantar. En escritorio no cambia nada.
  */
 
-const RATE_MUTED = 1.2;
+// JC 2026-10-27: los videos nuevos van a velocidad normal también en mudo.
+const RATE_MUTED = 1;
 
 let hero: Montado | null = null;
 
@@ -45,7 +46,7 @@ describe("HeroDemoShowcase en touch", () => {
         expect(tarjeta.getAttribute("role")).toBe("button");
         expect(tarjeta.getAttribute("tabindex")).toBe("0");
         expect(tarjeta.getAttribute("aria-label")).toBe(
-            "Ver el demo de Smart Concepts en pantalla completa, con sonido"
+            "Ver el demo de Smart Log en pantalla completa, con sonido"
         );
     });
 
@@ -146,7 +147,7 @@ describe("HeroDemoShowcase en touch", () => {
         expect(v0.requestFullscreen).toHaveBeenCalledTimes(1);
     });
 
-    it("al salir de la pantalla completa vuelve el hero: sin controles, mudo, 1.2x y el loop sigue", async () => {
+    it("al salir de la pantalla completa vuelve el hero: sin controles, mudo, a velocidad normal y el loop sigue", async () => {
         const h = await montar(true);
         const [v0] = h.videos();
         await h.tocar(h.tarjeta());
@@ -222,7 +223,7 @@ describe("HeroDemoShowcase en touch", () => {
             });
         });
 
-        // Smart Concepts termina y Smart Log todavía no arranca (4G lento).
+        // Smart Log termina y Smart Concepts todavía no arranca (4G lento).
         v0.ended = true;
         await h.disparar(v0, new EventoFalso("ended", { bubbles: false }));
         expect(v1.play).toHaveBeenCalledTimes(1);
@@ -289,7 +290,7 @@ describe("HeroDemoShowcase en touch", () => {
         await h.deslizar(h.tarjeta(), -120);
 
         expect(h.activo()).toBe(1);
-        expect(h.tarjeta().getAttribute("aria-label")).toContain("Smart Log");
+        expect(h.tarjeta().getAttribute("aria-label")).toContain("Smart Concepts");
         for (const v of videos) {
             expect(v.requestFullscreen).not.toHaveBeenCalled();
             expect(v.controls).toBe(false);

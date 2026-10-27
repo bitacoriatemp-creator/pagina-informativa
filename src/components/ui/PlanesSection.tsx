@@ -184,24 +184,33 @@ const FEATURE_EXPLANATIONS: Record<string, string> = {
     "AUDIT READY": "Registro inmutable de cambios: quién, qué y cuándo."
 };
 
-/* ── PLAN CARD ── */
+/* ── PLAN CARD ──
+   JC 2026-10-26: mismo lenguaje que el hero. Vidrio tenue con borde fino en vez de
+   bloques grises; un solo botón relleno (crema) en el plan recomendado y contorno
+   (.auth-field) en los demás; precio limpio y lo incluido en filas alineadas a la
+   izquierda, con lo que no incluye atenuado y dicho. Los datos no cambian. */
+const CREMA = "#f5f0e8";
+const TINTA = "#1a120c";
+
+/* Fondo opaco de la cabecera fija: el color de la parte alta de la tarjeta
+   (vidrio sobre #060302), para que las filas no se vean pasar por debajo. */
+const CABECERA_FIJA = "#110e0d";
+const CABECERA_FIJA_RECOMENDADO = "#19120c";
+
 const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan: typeof PLANS[number]; index: number; isAnnual: boolean }) {
     const [hovered, setHovered] = useState(false);
     /* El ciclo viaja con el enlace: lo que marque el conmutador Mensual/Anual
        de la sección es lo que la app llevará al pago. */
     const billing: BillingCycle = isAnnual ? "annual" : "monthly";
+    const conDescuento = isAnnual && plan.id !== "draft";
 
     return (
-        <div className="relative pt-4">
-            {/* Featured badge — peer of card, outside overflow-hidden */}
+        <div className="relative h-full pt-4">
+            {/* Recomendado — fuera de la tarjeta, montado sobre el borde */}
             {plan.featured && (
                 <div
-                    className="absolute -top-[1px] left-1/2 -translate-x-1/2 z-20 whitespace-nowrap rounded-full px-3 py-[3px] text-[9px] font-bold uppercase tracking-[0.22em]"
-                    style={{
-                        background: "#141210",
-                        border: `1px solid ${GOLD}40`,
-                        color: `${GOLD}CC`,   // pastel/crema — not electric
-                    }}
+                    className="absolute left-1/2 top-[5px] z-20 -translate-x-1/2 whitespace-nowrap rounded-md px-2.5 py-1 font-sans text-[11px] font-semibold leading-none"
+                    style={{ background: CABECERA_FIJA_RECOMENDADO, border: `1px solid ${BRONZE}66`, color: BRONZE }}
                 >
                     Recomendado
                 </div>
@@ -215,211 +224,162 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                 viewport={{ once: true, amount: 0.1 }}
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
-                className="relative flex flex-col rounded-2xl p-5 min-h-[520px]"
+                className="relative flex h-full flex-col rounded-2xl p-6 font-sans"
                 style={{
-                    backgroundColor: plan.featured ? "#121008" : "#0f0f0f",
-                    border: (hovered || plan.featured)
-                        ? `1px solid ${plan.accentColor}`
-                        : "1px solid rgba(255,255,255,0.07)",
-                    boxShadow: hovered
-                        ? `0 0 28px ${plan.glowColor}, 0 16px 48px rgba(0,0,0,0.6)`
-                        : plan.featured
-                            ? `0 0 22px ${plan.glowColor}, 0 12px 40px rgba(0,0,0,0.5)`
-                            : "0 6px 24px rgba(0,0,0,0.4)",
+                    background: plan.featured
+                        ? `linear-gradient(180deg, ${BRONZE}1a 0%, ${BRONZE}08 40%, rgba(255,255,255,0.015) 100%)`
+                        : "linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 100%)",
+                    border: `1px solid ${plan.featured ? `${BRONZE}59` : hovered ? "rgba(245,240,232,0.18)" : "rgba(245,240,232,0.08)"}`,
+                    boxShadow: plan.featured
+                        ? `0 30px 80px -36px ${BRONZE}55`
+                        : hovered ? "0 24px 60px -28px rgba(0,0,0,0.9)" : "none",
                     transform: hovered ? "translateY(-4px)" : "translateY(0)",
                     transition: "transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease",
                 }}
             >
-                {/* Background artwork */}
+                {/* Ilustración del plan, al fondo y desvanecida hacia arriba */}
                 <div
                     aria-hidden="true"
-                    className="absolute bottom-0 right-0 w-full max-h-[70%] h-48 z-0 pointer-events-none overflow-hidden rounded-b-2xl mix-blend-normal md:mix-blend-screen"
+                    className="pointer-events-none absolute bottom-0 right-0 z-0 h-48 max-h-[70%] w-full overflow-hidden rounded-b-2xl mix-blend-normal md:mix-blend-screen"
                     style={{
-                        maskImage: "linear-gradient(to top, white 40%, transparent 100%)",
-                        WebkitMaskImage: "linear-gradient(to top, white 40%, transparent 100%)",
-                        opacity: 0.4,
+                        maskImage: "linear-gradient(to top, white 30%, transparent 100%)",
+                        WebkitMaskImage: "linear-gradient(to top, white 30%, transparent 100%)",
+                        opacity: 0.3,
                         transform: "translateZ(0)",
                     }}
                 >
                     <Image src={plan.image} alt="" fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover object-bottom" />
                 </div>
 
-                {/* All content above image */}
-                <div className="relative z-10 flex flex-col h-full">
-
-                    {/* STICKY HEADER (Title, Price, CTA) — sticky solo en desktop; en móvil estático para evitar repaints/jank.
-                        top-[57px] y no top-0: la barra delgada es fixed, mide h-14
-                        (56px) desde md y va en z-50, así que con top-0 la cabecera se
-                        pegaba DEBAJO de ella y el nombre del plan —que ocupa los
-                        primeros 40px— quedaba tapado. Al comparar filas de la tabla ya
-                        no se sabía de qué columna era cada precio.
-                        Y exactamente 56, ni uno más: la barra ya incluye su borde de
-                        1px dentro de esos 56 (box-border), así que este valor la deja
-                        a ras. Con 64 quedaba una rendija de 8px por la que se veían
-                        pasar las filas de la tabla entre la barra y el nombre. */}
+                <div className="relative z-10 flex h-full flex-col">
+                    {/* CABECERA (nombre, precio y botón): fija en escritorio para comparar
+                        filas sin perder de qué plan es cada una. top-14 = alto exacto de la
+                        barra delgada (56 px, con su borde): ni la tapa ni deja rendija. En
+                        móvil es estática para evitar saltos al desplazar. */}
                     <div
-                        className="relative md:sticky md:top-14 z-30 pt-5 pb-5 -mx-5 px-5 -mt-5"
-                        style={{ 
-                            backgroundColor: plan.featured ? "#121008" : "#0f0f0f",
-                            borderBottom: "1px solid rgba(255,255,255,0.05)",
-                            boxShadow: "0 10px 20px -10px rgba(0,0,0,0.6)"
+                        className="relative z-30 -mx-6 -mt-6 rounded-t-2xl px-6 pb-6 pt-6 md:sticky md:top-14"
+                        style={{
+                            backgroundColor: plan.featured ? CABECERA_FIJA_RECOMENDADO : CABECERA_FIJA,
+                            borderBottom: "1px solid rgba(245,240,232,0.06)",
                         }}
                     >
-                        {/* Title & Price Container (Fixed Height for Alignment) */}
-                        <div className="h-[120px] flex flex-col">
-                            {/* Title */}
-                            <h3 className="mb-0.5 font-display text-base font-extrabold uppercase leading-tight tracking-tight text-white/90">
-                                {plan.title}
-                            </h3>
+                        <h3 className="font-display text-[15px] font-extrabold uppercase leading-tight tracking-tight" style={{ color: CREMA }}>
+                            {plan.title}
+                        </h3>
+                        <p className="mt-1 min-h-[2.6em] text-[12px] leading-snug text-white/45 line-clamp-2">
+                            {plan.subtitle}
+                        </p>
 
-                            {/* Subtitle */}
-                            <p className="mb-3 text-[10.5px] leading-snug text-white/32 line-clamp-2">
-                                {plan.subtitle}
+                        {/* Precio: el anterior tachado arriba (reserva su alto aunque no
+                            aparezca, para que los cuatro precios queden en la misma línea). */}
+                        <div className="mt-4">
+                            <p className="h-4 text-[12px] leading-none text-white/30 line-through decoration-white/30">
+                                {conDescuento ? `$${plan.priceMonthly}` : null}
                             </p>
-
-                            {/* Price */}
-                            <div className="relative mt-auto">
-                                {/* Old Price Strike-through */}
-                                {isAnnual && plan.id !== "draft" && (
-                                    <div className="absolute top-[-14px] left-0 text-[11px] font-bold tracking-wider text-white/20 line-through decoration-red-500/50 decoration-2">
-                                        ${plan.priceMonthly}
-                                    </div>
-                                )}
-                                <span
-                                    className="font-display text-2xl font-extrabold tracking-tight transition-all duration-300"
-                                    style={{ color: "rgba(255,255,255,0.92)" }}
-                                >
+                            <p className="flex items-baseline gap-1.5">
+                                <span className="text-[32px] font-semibold leading-none tracking-tight" style={{ color: CREMA }}>
                                     ${isAnnual ? plan.priceAnnual : plan.priceMonthly}
                                 </span>
-                                <span className="ml-1 text-[10px] text-white/28">{plan.priceSuffix}</span>
-                                
-                                {/* Subtexto Anual */}
-                                <div className="h-4 mt-0.5">
-                                    {isAnnual && plan.id !== "draft" ? (
-                                        <p className="text-[9.5px] font-medium text-white/30 tracking-wide">
-                                            Facturado <span className="text-white/60">${plan.annualTotal}</span> al año
-                                        </p>
-                                    ) : null}
-                                </div>
-                            </div>
+                                <span className="text-[12px] text-white/45">{plan.priceSuffix}</span>
+                            </p>
+                            <p className="mt-1.5 h-4 text-[11.5px] text-white/40">
+                                {conDescuento ? (
+                                    <>Facturado <span className="text-white/70">${plan.annualTotal}</span> al año</>
+                                ) : null}
+                            </p>
                         </div>
 
                         {/* CTA — "Empezar Gratis" y los "Comenzar" abren el alta en la
                             app con el plan y el ciclo ya elegidos; solo "Contactar" sigue
                             en la encuesta de /registro, que es ventas. Son <a> y no
-                            <Link> porque cruzan de origen: misma pestaña, sin prefetch. */}
-                        <div className="mt-4">
+                            <Link> porque cruzan de origen: misma pestaña, sin prefetch.
+                            Un solo botón relleno en toda la fila: el del recomendado. */}
+                        <div className="mt-5">
                             {plan.dualCta ? (
-                                /* Dual buttons — Executive Plan */
                                 <div className="flex gap-2">
                                     <a
                                         href={registerUrl(plan.planKey, billing)}
                                         rel="noopener"
-                                        className="relative flex-1 py-3 rounded-lg font-bold text-sm tracking-wide transition-colors duration-200 active:scale-[0.98] md:transition-all md:duration-300 md:hover:scale-[1.02] md:hover:brightness-110 flex items-center justify-center text-center"
-                                        style={{
-                                            background: "linear-gradient(180deg, #442485 0%, #201140 100%)",
-                                            border: `1px solid ${PURPLE}90`,
-                                            color: "#f3e8ff",
-                                            boxShadow: `inset 0 1px 1px rgba(255,255,255,0.2), 0 6px 15px rgba(168,85,247,0.25)`,
-                                        }}
+                                        className="auth-field flex flex-1 items-center justify-center text-center text-[14px] font-medium"
+                                        style={{ height: 44 }}
                                     >
                                         Comenzar
                                     </a>
                                     <Link
                                         href="/registro"
-                                        className="relative flex-1 py-3 rounded-lg font-semibold text-sm tracking-wide transition-colors duration-200 active:scale-[0.98] md:transition-all md:duration-300 md:hover:scale-[1.02] md:hover:brightness-125 flex items-center justify-center text-center"
-                                        style={{
-                                            background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
-                                            border: "1px solid rgba(255,255,255,0.15)",
-                                            color: "rgba(255,255,255,0.85)",
-                                            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.05), 0 6px 15px rgba(0,0,0,0.5)",
-                                        }}
+                                        className="auth-field flex flex-1 items-center justify-center text-center text-[14px] font-medium"
+                                        style={{ height: 44 }}
                                     >
                                         Contactar
                                     </Link>
                                 </div>
-                            ) : (
-                                /* Single CTA */
+                            ) : plan.featured ? (
                                 <a
                                     href={registerUrl(plan.planKey, billing)}
                                     rel="noopener"
-                                    className="relative w-full py-3 rounded-lg font-bold text-sm tracking-wide transition-colors duration-200 active:scale-[0.98] md:transition-all md:duration-300 md:hover:scale-[1.02] md:hover:brightness-110 flex items-center justify-center text-center"
-                                    style={plan.featured ? {
-                                        background: "linear-gradient(180deg, #322511 0%, #181208 100%)",
-                                        border: `1px solid ${GOLD}90`,
-                                        color: GOLD,
-                                        boxShadow: `inset 0 1px 1px rgba(255,255,255,0.15), 0 6px 20px rgba(197,168,128,0.25)`,
-                                    } : {
-                                        background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
-                                        border: "1px solid rgba(255,255,255,0.15)",
-                                        color: "rgba(255,255,255,0.85)",
-                                        boxShadow: "inset 0 1px 1px rgba(255,255,255,0.05), 0 6px 15px rgba(0,0,0,0.6)",
-                                    }}
+                                    className="flex h-11 w-full items-center justify-center rounded-xl text-center text-[14px] font-semibold transition-colors duration-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c39767]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#060302]"
+                                    style={{ backgroundColor: CREMA, color: TINTA }}
+                                >
+                                    {plan.cta}
+                                </a>
+                            ) : (
+                                <a
+                                    href={registerUrl(plan.planKey, billing)}
+                                    rel="noopener"
+                                    className="auth-field flex w-full items-center justify-center text-center text-[14px] font-medium"
+                                    style={{ height: 44 }}
                                 >
                                     {plan.cta}
                                 </a>
                             )}
                         </div>
-
                     </div>
 
-                    {/* Features (Apple Comparison Style) */}
-                    <ul className="mb-8 flex flex-col gap-6 pt-2">
+                    {/* Lo que incluye: una fila por concepto, a la izquierda. Mismo alto
+                        mínimo en las cuatro tarjetas para comparar fila contra fila. */}
+                    <ul className="mb-6 mt-2 flex flex-col divide-y divide-white/[0.06]">
                         {plan.features.map((f, idx) => (
-                            <li key={idx} className="flex flex-col items-center text-center">
+                            <li key={idx} className={`flex min-h-[88px] gap-3 py-4 ${f.included ? "" : "opacity-45"}`}>
                                 <f.icon
-                                    size={28}
-                                    strokeWidth={1.2}
-                                    className="mb-2"
-                                    style={{
-                                        color: f.included ? plan.checkColor : "rgba(255,255,255,0.15)",
-                                        filter: "none"
-                                    }}
+                                    size={18}
+                                    strokeWidth={1.6}
+                                    className="mt-0.5 shrink-0"
+                                    style={{ color: f.included ? plan.checkColor : "rgba(255,255,255,0.35)" }}
                                 />
-                                <p className={`text-[11px] font-bold tracking-wide uppercase leading-tight ${f.included ? "text-white/90" : "text-white/20"}`}>
-                                    {f.title}
-                                </p>
-                                {/* Explanation */}
-                                <p
-                                    className="text-[9px] mt-0.5 mb-1.5 max-w-[90%] leading-tight"
-                                    style={{ color: f.included ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.2)" }}
-                                >
-                                    {FEATURE_EXPLANATIONS[f.title]}
-                                </p>
-                                <p className={`mt-0.5 text-[10px] leading-snug max-w-[160px] font-medium ${f.included ? "text-white/60" : "text-white/10"}`}>
-                                    {f.desc}
-                                </p>
+                                <div className="min-w-0">
+                                    <p className="flex flex-wrap items-baseline gap-x-2 font-ui text-[13px] uppercase leading-none tracking-[0.16em] text-white/85">
+                                        {f.title}
+                                        {!f.included && (
+                                            <span className="font-sans text-[11px] normal-case tracking-normal text-white/55">No incluido</span>
+                                        )}
+                                    </p>
+                                    <p className="mt-1.5 text-[13px] leading-snug text-white/75">{f.desc}</p>
+                                    <p className="mt-1 text-[11.5px] leading-snug text-white/35">{FEATURE_EXPLANATIONS[f.title]}</p>
+                                </div>
                             </li>
                         ))}
                     </ul>
 
-                    {/* Licencia Única note — Site Manager only (Moved to bottom) */}
+                    {/* Licencia única — solo en Site Manager, al pie */}
                     {plan.note && (
                         <div
-                            className="mt-auto mb-4 rounded-lg p-4 relative z-20"
-                            style={{
-                                background: "rgba(197,168,128,0.05)",
-                                border: "1px solid rgba(197,168,128,0.15)",
-                                boxShadow: "0 4px 15px rgba(0,0,0,0.2)"
-                            }}
+                            className="relative z-20 mb-2 mt-auto rounded-xl p-4"
+                            style={{ background: `${BRONZE}0f`, border: `1px solid ${BRONZE}33` }}
                         >
-                            <p className="mb-1 text-[9px] text-white/25 uppercase tracking-wider">{plan.note.label}</p>
-                            <p
-                                className="mb-1 text-[11px] font-bold uppercase tracking-widest"
-                                style={{ color: `${GOLD}DD` }}
-                            >
+                            <p className="font-ui text-[12px] uppercase leading-none tracking-[0.2em] text-white/40">{plan.note.label}</p>
+                            <p className="mt-2 font-ui text-[14px] uppercase leading-none tracking-[0.16em]" style={{ color: BRONZE }}>
                                 {plan.note.pill}
                             </p>
-                            <p className="text-[10px] leading-relaxed text-white/40">{plan.note.detail}</p>
+                            <p className="mt-2 text-[12.5px] leading-relaxed text-white/55">{plan.note.detail}</p>
                             {/* La licencia también se compra sola: alta en la app con
                                 plan=project_license (pago único, sin ciclo). */}
                             <a
                                 href={registerUrl("project_license")}
                                 rel="noopener"
-                                className="mt-2.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#c5a880] underline-offset-4 transition-colors duration-200 hover:text-[#e8d5b8] hover:underline"
+                                className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#c39767] underline-offset-4 transition-colors duration-200 hover:text-[#d9b088] hover:underline"
                             >
                                 Comprar licencia
-                                <ArrowRight size={11} strokeWidth={2.2} />
+                                <ArrowRight size={13} strokeWidth={2} />
                             </a>
                         </div>
                     )}
@@ -438,19 +398,18 @@ export default function PlanesSection() {
             id="soluciones"
             className="w-full flex flex-col md:min-h-screen md:justify-center shrink-0 relative overflow-x-clip scroll-mt-24"
             style={{
-                backgroundColor: "#080808",
-                borderTop: "1px solid rgba(255,255,255,0.05)",
+                // Mismo negro cálido del hero (HeroLiquidGlass), sin línea arriba:
+                // hero y planes se leen como una sola superficie (JC 2026-10-26).
+                backgroundColor: "#060302",
                 isolation: "isolate",
             }}
         >
-            {/* Ambient glow */}
+            {/* Ambient glow. Sin el halo dorado pegado arriba: marcaba la orilla
+                con el hero. */}
             <div
                 className="pointer-events-none absolute inset-0"
                 style={{
-                    backgroundImage: `
-                        radial-gradient(ellipse 55% 35% at 50% 0%, ${BRONZE}07, transparent 60%),
-                        radial-gradient(ellipse 35% 25% at 85% 65%, ${PURPLE}06, transparent 70%)
-                    `,
+                    backgroundImage: `radial-gradient(ellipse 35% 25% at 85% 65%, ${PURPLE}06, transparent 70%)`,
                 }}
             />
 
@@ -487,13 +446,14 @@ export default function PlanesSection() {
                             cada obra.
                         </span>
                     </h2>
-                    <p className="mx-auto mt-4 max-w-md text-[13px] leading-relaxed text-white/32">
+                    <p className="mx-auto mt-4 max-w-md text-[14px] leading-relaxed text-white/45">
                         Desde estudiantes hasta constructoras. El nivel exacto para tu escala.
                     </p>
                 </motion.div>
 
-                {/* Toggle Switch */}
-                <motion.div 
+                {/* Toggle Switch — JC 2026-10-26: como los botones del hero. Contorno
+                    fino y la opción activa en crema (el botón relleno de la página). */}
+                <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -505,13 +465,13 @@ export default function PlanesSection() {
                         lleva mx-auto dentro de un flex-col, ese ancho mínimo lo
                         dimensionaba por contenido y descentraba TODA la sección. */}
                     <div
-                        className="relative flex items-center p-1 rounded-full border border-white/10"
-                        style={{ background: "rgba(10,10,10,0.8)" }}
+                        className="relative flex items-center rounded-xl p-1 font-sans"
+                        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(245,240,232,0.12)" }}
                     >
                         {/* Botón Mensual */}
                         <button
                             onClick={() => setIsAnnual(false)}
-                            className={`relative whitespace-nowrap rounded-full px-6 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors duration-300 sm:px-10 ${!isAnnual ? "text-white" : "text-white/40 hover:text-white/70"}`}
+                            className={`relative whitespace-nowrap rounded-lg px-6 py-2.5 text-[14px] font-semibold transition-colors duration-300 sm:px-9 ${!isAnnual ? "text-[#1a120c]" : "text-white/55 hover:text-white/85"}`}
                         >
                             {/* La pastilla vive DENTRO del botón activo y viaja con
                                 layoutId: siempre mide lo que mide el botón, sin rems
@@ -519,11 +479,8 @@ export default function PlanesSection() {
                             {!isAnnual && (
                                 <motion.span
                                     layoutId="planes-toggle-pill"
-                                    className="absolute inset-0 rounded-full"
-                                    style={{
-                                        background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
-                                        border: "1px solid rgba(255,255,255,0.08)",
-                                    }}
+                                    className="absolute inset-0 rounded-lg"
+                                    style={{ background: "#f5f0e8" }}
                                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                 />
                             )}
@@ -533,40 +490,37 @@ export default function PlanesSection() {
                         {/* Botón Anual */}
                         <button
                             onClick={() => setIsAnnual(true)}
-                            className={`relative flex items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors duration-300 sm:px-7 ${isAnnual ? "text-white" : "text-white/40 hover:text-white/70"}`}
+                            className={`relative flex items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-[14px] font-semibold transition-colors duration-300 sm:px-6 ${isAnnual ? "text-[#1a120c]" : "text-white/55 hover:text-white/85"}`}
                         >
                             {isAnnual && (
                                 <motion.span
                                     layoutId="planes-toggle-pill"
-                                    className="absolute inset-0 rounded-full"
-                                    style={{
-                                        background: "linear-gradient(180deg, #2a2a2a 0%, #151515 100%)",
-                                        border: "1px solid rgba(255,255,255,0.08)",
-                                    }}
+                                    className="absolute inset-0 rounded-lg"
+                                    style={{ background: "#f5f0e8" }}
                                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                 />
                             )}
                             <span className="relative z-10">Anual</span>
                             <span
-                                className="relative z-10 inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[9px] font-extrabold tracking-widest"
+                                className="relative z-10 inline-flex items-center whitespace-nowrap rounded-md px-2 py-0.5 text-[11px] font-semibold"
                                 style={{
-                                    background: isAnnual ? `${GOLD}20` : "transparent",
-                                    color: isAnnual ? GOLD : "rgba(255,255,255,0.3)",
-                                    border: isAnnual ? `1px solid ${GOLD}40` : "1px solid transparent",
-                                    transition: "all 0.3s ease"
+                                    background: isAnnual ? "rgba(140,105,54,0.14)" : "transparent",
+                                    color: isAnnual ? "#7a5a2c" : BRONZE,
+                                    border: `1px solid ${isAnnual ? "rgba(140,105,54,0.35)" : `${BRONZE}4d`}`,
+                                    transition: "all 0.3s ease",
                                 }}
                             >
                                 {/* En pantallas chicas la etiqueta larga es lo que más
                                     ensancha el conmutador: se acorta, no se recorta. */}
-                                <span className="sm:hidden">2 MESES</span>
-                                <span className="hidden sm:inline">2 MESES GRATIS</span>
+                                <span className="sm:hidden">2 meses</span>
+                                <span className="hidden sm:inline">2 meses gratis</span>
                             </span>
                         </button>
                     </div>
                 </motion.div>
 
                 {/* 4-column card grid */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                     {PLANS.map((plan, i) => (
                         <PlanCard key={plan.id} plan={plan} index={i} isAnnual={isAnnual} />
                     ))}
@@ -578,7 +532,7 @@ export default function PlanesSection() {
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.45, duration: 0.5 }}
-                    className="mt-10 text-center text-[10.5px] text-white/18"
+                    className="mt-10 text-center text-[12px] text-white/35"
                 >
                     Todos los precios en MXN · IVA no incluido · Pago por transferencia o Mercado Pago · Sin permanencia
                 </motion.p>

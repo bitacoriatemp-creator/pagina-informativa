@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { ArrowRight, Mail } from "lucide-react";
 import HeroLiquidGlass from "./HeroLiquidGlass";
 import { irALegal } from "@/lib/eventos";
-import { HANDOFF_EMAIL } from "@/lib/registro";
 import { registerUrl } from "@/lib/appUrl";
 
 /* Apple Sign-In requiere cuenta Apple Developer ($99/año).
@@ -80,24 +80,17 @@ export default function HeroHybrid() {
        (ver leyenda bajo el input). Se descartó quitar el campo: es un cambio
        de una sola línea de texto, más chico para la estética que rehacer el
        bloque de alta sin correo. */
-    const [heroEmail, setHeroEmail] = useState("");
+    /* BOCETO JC 2026-10-26 (sin commit, para verlo con Luis): sin campo de correo.
+       El correo se pedía aquí y otra vez en la app ("Te lo volveremos a pedir"),
+       porque no viaja en la URL. Ahora son dos botones que abren el alta en la app,
+       y una línea aparte manda a las constructoras con varias obras a pedir demo
+       (/registro), que llega a ventas. */
+    const irALaApp = () => window.location.assign(registerUrl("draft"));
 
-    const irALaApp = (email?: string) => {
-        try {
-            if (email) sessionStorage.setItem(HANDOFF_EMAIL, email);
-        } catch { /* modo privado: se pedirá el correo en la app */ }
-        window.location.assign(registerUrl("draft"));
-    };
-
-    const handleHeroSubmit = (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        irALaApp(heroEmail.trim());
-    };
-
-    /* www nunca autentica: "Continuar con Google" abre el alta en la app, que
-       es donde vive el botón real de Google. Nada de OAuth aquí (socialAuth.ts
-       se borró; la "cuenta" del navbar es solo el registro local del lead). */
+    /* www nunca autentica: los dos botones abren el alta en la app, que es donde
+       viven el botón real de Google y el formulario de correo. */
     const handleGoogle = () => irALaApp();
+    const handleCorreo = () => irALaApp();
 
     /* minh-100dvh en vez de min-h-screen: en iOS Safari la barra de
        direcciones hace que 100vh sea mayor que la pantalla visible. */
@@ -192,7 +185,7 @@ export default function HeroHybrid() {
                         animate="visible"
                         className="hero-area-cta pointer-events-auto w-full max-w-[400px] font-sans"
                     >
-                        {/* Social */}
+                        {/* Social: Google con contorno oscuro, como en producción. */}
                         <div className="flex flex-col gap-3">
                             {/* Icono absoluto + texto centrado: el texto queda
                                 ópticamente centrado en el bloque, como la referencia. */}
@@ -221,40 +214,24 @@ export default function HeroHybrid() {
                             )}
                         </div>
 
-                        {/* Divisor: solo la línea. La "o" suelta era un carácter
-                            huérfano entre dos bloques. */}
-                        <div className="my-6 h-px w-full bg-white/10" aria-hidden />
+                        {/* Divisor con "o" entre las dos entradas (JC 2026-10-26). */}
+                        <div className="my-6 flex items-center gap-4" aria-hidden>
+                            <span className="h-px flex-1 bg-white/10" />
+                            <span className="text-[13px] text-white/40">o</span>
+                            <span className="h-px flex-1 bg-white/10" />
+                        </div>
 
-                        {/* Correo — etiqueta encima del campo, no placeholder dentro:
-                            así el campo no se queda "vacío de sentido" al escribir. */}
-                        <form onSubmit={handleHeroSubmit}>
-                            <label htmlFor="hero-email" className="mb-2 block text-[14px] text-[#f5f0e8]/85">
-                                Correo electrónico
-                            </label>
-                            {/* 16px en móvil evita el zoom automático de iOS al enfocar. */}
-                            <input
-                                id="hero-email"
-                                type="email"
-                                required
-                                autoComplete="email"
-                                value={heroEmail}
-                                onChange={(e) => setHeroEmail(e.target.value)}
-                                className="auth-field w-full px-4 text-[16px] outline-none sm:text-[15px]"
-                            />
-                            {/* Deja clara la expectativa antes del clic: no prometemos
-                                continuidad que no existe (el correo no viaja en la URL
-                                hacia la app), así que la pantalla vacía del otro lado no
-                                se siente como un dato perdido. */}
-                            <p className="mt-2 text-[12px] leading-snug text-white/35">
-                                Te lo volveremos a pedir al crear tu cuenta en la app.
-                            </p>
-                            <button
-                                type="submit"
-                                className="mt-4 flex h-12 w-full items-center justify-center rounded-xl bg-[#f5f0e8] text-[15px] font-semibold text-[#1a120c] transition-colors duration-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c39767]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#060302]"
-                            >
-                                Continuar
-                            </button>
-                        </form>
+                        {/* Correo: el único botón relleno, como el "Continuar" de antes. */}
+                        <button
+                            type="button"
+                            onClick={handleCorreo}
+                            className="relative flex h-12 w-full items-center justify-center rounded-xl bg-[#f5f0e8] px-12 text-[15px] font-semibold text-[#1a120c] transition-colors duration-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c39767]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#060302]"
+                        >
+                            <span className="absolute left-4 flex items-center text-[#1a120c]/70" aria-hidden>
+                                <Mail size={18} strokeWidth={1.75} />
+                            </span>
+                            Continuar con correo
+                        </button>
 
                         <p className="mt-5 text-center text-[13px] leading-snug text-white/45">
                             Al continuar, aceptas nuestro{" "}
@@ -269,19 +246,22 @@ export default function HeroHybrid() {
                                 Aviso de Privacidad
                             </button>.
                         </p>
+
+                        {/* Segunda puerta: quien lleva varias obras o un equipo va a pedir
+                            demo (llega a ventas); quien prueba solo, al alta de arriba. */}
+                        <div className="mt-6 h-px w-full bg-white/10" aria-hidden />
+                        <p className="mt-5 text-center text-[14px] leading-snug text-[#f5f0e8]/70">
+                            ¿Llevas varias obras o un equipo?{" "}
+                            <Link
+                                href="/registro"
+                                className="inline-flex items-center gap-1 font-semibold text-[#c39767] underline-offset-4 transition-colors hover:text-[#d9b088] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c39767]/60"
+                            >
+                                Solicita una demo
+                                <ArrowRight size={14} strokeWidth={2} aria-hidden />
+                            </Link>
+                        </p>
                     </motion.div>
                 </div>
-            </div>
-
-            {/* Scroll indicator */}
-            <div className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2">
-                <motion.div
-                    animate={{ y: [0, 8, 0] }}
-                    transition={{ duration: 2.5, repeat: Infinity }}
-                    className="font-mono text-xs text-text/10"
-                >
-                    ↓ scroll
-                </motion.div>
             </div>
 
     </section>

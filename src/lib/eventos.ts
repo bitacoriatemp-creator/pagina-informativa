@@ -13,7 +13,7 @@ export function irALegal(doc: DocumentoLegal) {
     window.dispatchEvent(new CustomEvent<DocumentoLegal>(EVENTO_IR_LEGAL, { detail: doc }));
 }
 
-/** Cambia el demo activo del hero: 0 Smart Concepts · 1 Bitácora · 2 Smart Calendar. */
+/** Cambia el demo activo del hero: 0 Bitácora (Smart Log) · 1 Smart Concepts · 2 Smart Calendar. */
 export function mostrarDemo(indice: number) {
     window.dispatchEvent(new CustomEvent<number>(EVENTO_DEMO, { detail: indice }));
 }

@@ -3,6 +3,44 @@
 Registro corto de decisiones de producto sobre la landing. Cada entrada dice qué se decidió,
 qué pasó antes y qué regla queda. Se lee antes de tocar cualquier elemento visible del sitio.
 
+## 2026-10-27 — Hero sin campo de correo, planes con el estilo del hero y videos nuevos (JC, sin revisión de Luis)
+
+**Decisión (JC).** JC publicó a `main` (producción) sin el ok de Luis sobre el Preview, por decisión
+suya, como el 25-09. La regla 1 del 12-09 queda cumplida por JC y no por Luis. Luis puede revisarlo
+y pedir cambios o revertirlo.
+
+**Qué cambia a la vista:**
+
+- **Hero.** Se quita el campo de correo con su leyenda "Te lo volveremos a pedir…". Esto revierte
+  la decisión de Luis del 09-09, que lo había dejado. Ahora el bloque es:
+  - "Continuar con Google", con contorno, como antes.
+  - Un divisor con "o".
+  - "Continuar con correo", el único botón relleno.
+  - El aviso de privacidad.
+  - Debajo, "¿Llevas varias obras o un equipo? **Solicita una demo**" → `/registro`. Es la segunda
+    puerta, la de ventas. Mientras el backend de leads no esté en producción, `/registro` no guarda y
+    ofrece WhatsApp.
+
+  Los dos botones abren el alta en la app (Draft), sin pasar el correo.
+- **Sin el indicador "↓ scroll".** Planes usa el mismo negro del hero (`#060302`), sin la línea de
+  arriba ni el halo dorado.
+- **Tarjetas de planes:**
+  - Vidrio tenue con borde fino.
+  - Un solo botón relleno (crema), en Site Manager; los demás con contorno.
+  - Precio más limpio: el anterior tachado en gris, no en rojo.
+  - Lo que incluye en filas a la izquierda; lo no incluido, atenuado y dicho.
+  - "Recomendado" en la letra normal.
+  - El selector Mensual/Anual con esquinas cuadradas y la opción activa en crema.
+
+  Datos, precios y enlaces no cambian.
+- **Videos de los demos** (hero y páginas de módulo): los nuevos de Smart Log, Smart Concepts y Smart
+  Calendar, a 1080p y con portadas nuevas. El carrusel abre con Smart Log y ya no acelera a 1.2x en
+  mudo.
+- **Logo de `/registro`** en blanco, con el filtro del logo de la portada.
+
+**Para revertir:** en Vercel, "Promote to Production" del deploy anterior (`8e5f1b2`), o `git revert`
+de este commit en `main`, sin force.
+
 ## 2026-09-12 — La barra es solo el logo: ni "Iniciar sesión" ni "Empezar gratis"
 
 **Decisión (Luis).** El sitio vende y enlaza; no autentica ni ofrece entrada a la app a quien ya

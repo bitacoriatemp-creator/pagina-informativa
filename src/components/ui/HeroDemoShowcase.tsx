@@ -18,18 +18,19 @@ type Demo = {
     accent: string;
 };
 
+/* JC 2026-10-27: el carrusel abre con Smart Log (antes Smart Concepts). */
 const DEMOS: Demo[] = [
-    {
-        src: assetPath("/videos/demo-concepts.mp4"),
-        poster: assetPath("/videos/demo-concepts-poster.jpg"),
-        label: "Smart Concepts",
-        accent: "#00D26A",
-    },
     {
         src: assetPath("/videos/demo-bitacora.mp4"),
         poster: assetPath("/videos/demo-bitacora-poster.jpg"),
         label: "Smart Log",
         accent: "#C39767",
+    },
+    {
+        src: assetPath("/videos/demo-concepts.mp4"),
+        poster: assetPath("/videos/demo-concepts-poster.jpg"),
+        label: "Smart Concepts",
+        accent: "#00D26A",
     },
     {
         src: assetPath("/videos/demo-calendar.mp4"),
@@ -41,7 +42,9 @@ const DEMOS: Demo[] = [
 
 /* En mudo los demos corren acelerados (se ven como un vistazo rápido); al
    activar el sonido volvemos a 1x para que la voz suene natural. */
-const RATE_MUTED = 1.2;
+// JC 2026-10-26: los videos nuevos ya son dinámicos; a 1.2x se veían atropellados.
+// Mudos o con sonido van a velocidad normal.
+const RATE_MUTED = 1;
 const RATE_SOUND = 1;
 
 /* Aparición del control de sonido: fundido puro de 0 a 100 en 1s, igual de
@@ -333,7 +336,7 @@ export default function HeroDemoShowcase() {
         }
     };
 
-    /* La isla flotante pide un demo concreto ("Smart Log" → índice 1). goTo
+    /* La isla flotante pide un demo concreto ("Smart Log" → índice 0). goTo
        cambia en cada render, así que el listener lee la versión vigente por ref
        y se suscribe una sola vez. */
     const goToRef = useRef(goTo);

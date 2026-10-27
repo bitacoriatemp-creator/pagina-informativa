@@ -393,6 +393,8 @@ export default function Formulario() {
                         height={191}
                         priority
                         className="h-auto w-24 lg:w-28"
+                        // En blanco, con el mismo filtro del logo de la portada (LogoMenu), JC 2026-10-26.
+                        style={{ filter: "brightness(0) invert(1) sepia(1) saturate(0.3) hue-rotate(350deg) brightness(0.85)" }}
                     />
                 </Link>
                 <Link
