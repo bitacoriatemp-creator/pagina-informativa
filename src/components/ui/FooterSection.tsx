@@ -8,6 +8,7 @@ import Image from "next/image";
 import { assetPath } from "@/lib/assetPath";
 import { useLenis } from "@/components/ui/LenisProvider";
 import { EVENTO_IR_LEGAL, type DocumentoLegal } from "@/lib/eventos";
+import { AvisoCuerpo, TerminosCuerpo } from "@/components/ui/TextosLegales";
 
 /* ══════════════════════════════════════════════════════════════
    FooterSection — Contacto y Legal (con Modales)
@@ -56,63 +57,14 @@ const LEGAL_CONTENT = {
             </div>
         ),
     },
+    // Fase 6 (2026-10-19): Términos y Aviso nuevos, en TextosLegales.tsx.
     terms: {
         title: "Términos y Condiciones",
-        body: (
-            <div className="divide-y divide-white/[0.07] text-[15px] leading-relaxed text-white/60 [&>*]:py-6 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
-                <div>
-                    <p><strong className="text-white">Última actualización:</strong> Junio 2026</p>
-                    <p className="mt-2">Bienvenido a BitacorIA (&quot;La Plataforma&quot;). Estos Términos y Condiciones (&quot;Términos&quot;) constituyen un contrato legalmente vinculante entre el usuario (y su empresa constructora) y BitacorIA. Al crear una cuenta, usted declara tener la autoridad legal para comprometer a la entidad que representa. Si no acepta estos Términos, absténgase de utilizar la Plataforma.</p>
-                </div>
-                <div>
-                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">1. Objeto del Servicio y Licenciamiento</h5>
-                    <p>BitacorIA otorga al cliente una licencia limitada, no exclusiva, intransferible y revocable, bajo la modalidad de Software como Servicio (SaaS), para acceder a la plataforma y utilizar sus herramientas de administración de obra, control de costos, cronogramas y asistencia por Inteligencia Artificial, exclusivamente para la duración de su plan de facturación activo.</p>
-                </div>
-                <div>
-                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">2. Inteligencia Artificial, Privacidad y Entrenamiento de Modelos</h5>
-                    <p>Nuestra plataforma utiliza motores de Inteligencia Artificial para el procesamiento de planos, catálogos en PDF y análisis fotográfico. Toda la información capturada por el cliente sigue siendo de su propiedad. Al utilizar el servicio, el cliente otorga a BitacorIA una licencia técnica para procesar y, de forma anonimizada y agregada, utilizar estos datos con el fin de <strong className="text-white">refinar y mejorar nuestros algoritmos y funciones</strong> (como Smart Concepts y Smart Calendar). Para operar estas funciones podemos apoyarnos en proveedores de servicios de IA e infraestructura en la nube, bajo acuerdos que prohíben el uso de su información para entrenar modelos públicos. Su información confidencial <strong className="text-white">nunca</strong> será vendida a terceros.</p>
-                </div>
-                <div>
-                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">3. Disposiciones de Firmas Electrónicas (NOM-151)</h5>
-                    <p>La Plataforma proporciona infraestructura técnica e integraciones para generar sellos de tiempo y recabar Firmas Electrónicas Avanzadas (FIEL/e.firma). El cliente asume total responsabilidad sobre el resguardo de sus claves privadas y la designación formal (ante notario si aplica) de los residentes de obra autorizados a asentar firmas. BitacorIA actúa como proveedor tecnológico, no como perito ni certificador directo.</p>
-                </div>
-                <div>
-                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">4. Disponibilidad del Sistema y Respaldos</h5>
-                    <p>BitacorIA se esfuerza por mantener la mayor disponibilidad posible del servicio, sin que ello constituya una garantía contractual de tiempo de actividad. Toda la información y documentos generados en el ecosistema &quot;Smart BIM Sync&quot; cuentan con respaldos en la nube para prevenir pérdida de datos, cuidando que su fuente única de verdad esté disponible.</p>
-                </div>
-            </div>
-        ),
+        body: <TerminosCuerpo />,
     },
     privacy: {
         title: "Aviso de Privacidad",
-        body: (
-            <div className="divide-y divide-white/[0.07] text-[15px] leading-relaxed text-white/60 [&>*]:py-6 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
-                <div>
-                    <p><strong className="text-white">Última actualización:</strong> Junio 2026</p>
-                    <p className="mt-2">En cumplimiento a lo dispuesto por la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (en adelante, &quot;La Ley&quot;) y su Reglamento, <strong className="text-white">BitacorIA</strong> (&quot;Nosotros&quot; o &quot;La Plataforma&quot;) hace de su conocimiento la presente normativa sobre cómo es tratada, protegida y almacenada su información como contratista, residente, supervisor o director de obra al operar en nuestra infraestructura.</p>
-                </div>
-                <div>
-                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">I. Datos que Recabamos</h5>
-                    <p>Para la plena ejecución del aplicativo constructivo, recabamos los siguientes datos personales y corporativos: (a) Datos de Identificación (Nombre completo, cargo, RFC de representantes legales para contratos de suscripción), (b) Datos de Contacto (correos electrónicos institucionales, teléfonos), (c) Credenciales de Autenticación, y (d) <strong className="text-white">Metadatos y Geolocalización</strong>, provenientes exclusivamente de las fotografías y evidencias cargadas a la Bitácora para auditar la ejecución de trabajos in-situ. No recabamos datos biométricos.</p>
-                </div>
-                <div>
-                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">II. Finalidades del Tratamiento</h5>
-                    <p>Los datos arriba mencionados son de tratamiento primario y necesarios para la prestación del servicio de BitacorIA. Se utilizan específicamente para: habilitar el acceso al ecosistema &quot;Smart BIM Sync&quot;, facturación y cobro de planes (Draft, Resident, Site Manager, Executive), envío de alertas automáticas sobre desviaciones o retrasos en el cronograma, y la generación de reportes en PDF listos para procesos de auditoría y firma.</p>
-                </div>
-                <div>
-                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">III. Tratamiento por Inteligencia Artificial</h5>
-                    <p>La información ingresada a la plataforma (reportes fotográficos, catálogos de conceptos, interacciones en el chat) es procesada por motores de Inteligencia Artificial para automatizar la gestión de obra. Al utilizar BitacorIA, el usuario acepta que estos datos sean utilizados, de forma anonimizada y agregada, para <strong className="text-white">refinar y mejorar nuestros algoritmos y funciones</strong> (Smart Concepts y Smart Calendar). Para estas funciones podemos apoyarnos en proveedores de servicios de IA e infraestructura en la nube, bajo acuerdos que <strong className="text-white">prohíben el uso de su información para entrenar modelos públicos</strong>. Su propiedad intelectual no se vende ni se comparte para fines ajenos a la prestación del servicio.</p>
-                </div>
-                <div>
-                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">IV. Transferencias a Terceros</h5>
-                    <p>BitacorIA solo transferirá información bajo obligación procesal dictaminada y con orden ejecutoria a las autoridades competentes. Asimismo, para el cumplimiento técnico y fiscal, podremos trabajar con Proveedores Autorizados de Certificación (PACs) y servicios de sellado de tiempo (NOM-151) bajo estrictos convenios de confidencialidad y no diseminación.</p>
-                </div>
-                <div>
-                    <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">V. Ejercicio de los Derechos ARCO</h5>
-                    <p>Usted, o quien funja como responsable dentro de la empresa cliente, tendrá siempre el derecho al Acceso, Rectificación, Cancelación u Oposición del manejo de estos datos. Deberá iniciar contacto formal con el responsable de datos de BitacorIA escribiendo a <strong className="text-white">bitacoria.temp@gmail.com</strong>, presentando acreditación de identidad o representación legal para que la solicitud sea procesada en los plazos que marca La Ley.</p>
-                </div>
-            </div>
-        ),
+        body: <AvisoCuerpo />,
     },
 };
 
