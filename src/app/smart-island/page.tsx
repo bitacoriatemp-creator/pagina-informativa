@@ -16,7 +16,7 @@ export default function SmartIslandPage() {
                y lectores de pantalla). La sección trae su cabecera visual, así
                que este es solo para el árbol del documento. Mismo patrón que
                planes/page.tsx:52. */}
-            <h1 className="sr-only">Smart Island: el asistente flotante de BitacorIA</h1>
+            <h1 className="sr-only">Smart Island: la navegación flotante de BitacorIA</h1>
             <Contenido />
         </MarketingShell>
     );

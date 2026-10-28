@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://bitacoria.com"),
   title: "BitacorIA — Inteligencia de Campo para Construcción",
   description:
-    "Plataforma de Field Intelligence que digitaliza y automatiza la gestión de bitácoras de obra con IA. Control total de tu operación en campo.",
+    "Plataforma que digitaliza la bitácora de obra con IA: registras desde el celular, la IA propone y tú confirmas.",
   keywords: [
     "bitácora de obra",
     "inteligencia artificial",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     locale: "es_MX",
     title: "BitacorIA — Inteligencia de Campo para Construcción",
     description:
-      "Bitácoras, catálogos de conceptos y estimaciones de obra con IA. Regístrate y agenda tu demo.",
+      "Bitácoras, catálogos de conceptos y cronogramas de obra con IA. Crea tu cuenta gratis o agenda tu demo.",
     images: [
       {
         url: "/images/og-image.jpg",
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "BitacorIA — Inteligencia de Campo para Construcción",
     description:
-      "Bitácoras, catálogos de conceptos y estimaciones de obra con IA.",
+      "Bitácoras, catálogos de conceptos y cronogramas de obra con IA.",
     images: ["/images/og-image.jpg"],
   },
 };
@@ -101,7 +101,7 @@ export default function RootLayout({
               url: "https://bitacoria.com",
               inLanguage: "es",
               description:
-                "Plataforma de Field Intelligence que digitaliza y automatiza la gestión de bitácoras de obra con IA.",
+                "Plataforma que digitaliza la bitácora de obra con IA.",
             }),
           }}
         />

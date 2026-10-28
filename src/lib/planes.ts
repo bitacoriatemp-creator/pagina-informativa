@@ -111,3 +111,55 @@ export const PROMESAS_SIN_RESPALDO: readonly string[] = [
     // a PACs; "solo transferirá" y "Proveedores Autorizados de Certificación"
     // vuelven a esta lista con el Aviso nuevo de la Fase 6.
 ];
+
+/**
+ * Promesas que corrigió L2 (2026-10-18; lista completa con el porqué en
+ * Backend-Bit/_contexto/legal/promesas_landing_l2_2026-10-25.md). Aparte de
+ * PROMESAS_SIN_RESPALDO para que la prueba revise también la portada, el menú
+ * "Cómo funciona", las reseñas y lo que leen los buscadores, que esa lista no
+ * cubre. Sin distinguir mayúsculas.
+ */
+export const PROMESAS_CORREGIDAS_L2: readonly string[] = [
+    // No hay aprendizaje por cliente: la IA trabaja con lo de tu obra.
+    "aprende de tus propios datos",
+    // La IA se pausa por topes diarios y el plan gratis tiene 2 consultas.
+    "24/7",
+    // Las fuentes de mercado están apagadas: base de referencia + factor por estado.
+    "revisa el mercado",
+    "realista y certero",
+    // Los rendimientos no se editan en el catálogo.
+    "rendimientos",
+    // Solo la base de datos tiene copia diaria; fotos y archivos aún no.
+    "respaldos automáticos",
+    // POST /reviews acepta cualquier sesión y los correos no se verifican.
+    "Google verificada",
+    "Cuenta verificada",
+    // Solo firma dibujada en el PDF.
+    "listos para firma electrónica",
+    // Solo NOM federales y CDMX (más partes de Mérida y Tijuana).
+    "de cada región",
+    "Sincronizando normativas",
+    // No existen.
+    "Multi-Empresa",
+    "Gobernanza",
+    // El registro de cambios no es "inmutable" en el sentido que promete.
+    "inmutable",
+    // No hay estimaciones de obra.
+    "estimaciones de obra",
+    // Todo lo que anota la IA pasa por tu sí.
+    "se escribe sola",
+    "audita la información",
+    "todas las partidas necesarias",
+    "la primera plataforma",
+    // Desde el 27-10 el registro está abierto: no hay "acceso anticipado".
+    "acceso anticipado",
+    "espero el lanzamiento",
+    // Atención humana sin horario publicado.
+    "al instante",
+    "hoy mismo",
+    // Solo México, sin promesa a futuro.
+    "el mapa sigue creciendo",
+    "Alcance Global",
+    // Los Términos piden mayores de 18 años.
+    "Para Estudiantes",
+];

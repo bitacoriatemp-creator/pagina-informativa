@@ -48,13 +48,13 @@ const PASOS: {
         Icon: Upload,
         titulo: "Contextualiza",
         nota: "(opcional)",
-        texto: "Carga tu catálogo de conceptos o tu calendario de obra. Si no tienes, inicia una bitácora en blanco.",
+        texto: "Carga tu catálogo de conceptos (PDF, Excel o CSV) o deja que la IA lo arme. Si no tienes, empieza con la bitácora en blanco.",
     },
     {
         n: "03",
         Icon: MessageSquareText,
         titulo: "Habla con tu obra",
-        texto: "Empieza a interactuar. La IA audita la información, cruza los datos y te da todo masticado.",
+        texto: "Empieza a platicar. La IA te contesta con lo que registraste en tu obra y te propone qué anotar; tú confirmas.",
     },
 ];
 

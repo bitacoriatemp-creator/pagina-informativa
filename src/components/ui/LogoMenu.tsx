@@ -55,7 +55,7 @@ const COLUMNAS: { titulo: string; elementos: Elemento[] }[] = [
         elementos: [
             { label: "Cómo funciona", accion: "comoFunciona" },
             { label: "El problema", href: "/el-problema" },
-            { label: "Alcance global", href: "/alcance-global" },
+            { label: "Hecho para México", href: "/alcance-global" },
             { label: "Planes y precios", href: "/#soluciones" },
         ],
     },

@@ -154,8 +154,8 @@ export default function HeroHybrid() {
                             variants={fadeUp}
                             className="mb-6 max-w-md text-sm leading-relaxed text-text/40 lg:text-base"
                         >
-                            Gestiona, valida y cotiza en un solo lugar. La IA aprende de
-                            tus propios datos para prevenir errores antes de construir.
+                            Gestiona, valida y cotiza en un solo lugar. La IA trabaja con los
+                            datos de tu obra: propone, y tú confirmas antes de guardar.
                         </motion.p>
                     </motion.div>
 

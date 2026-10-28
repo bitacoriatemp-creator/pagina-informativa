@@ -51,7 +51,7 @@ const FUNDADORES = [
         nombre: "Luis Felipe Ramírez Heredia",
         titulo: "Ing. en Comunicaciones y Electrónica",
         cargo: "Fundador y CTO",
-        texto: "Convirtió esa obra en software: la IA que lee la foto, redacta la bitácora y cuadra el cronograma.",
+        texto: "Convirtió esa obra en software: la IA que lee la foto, te propone la nota de bitácora y arma el cronograma desde tu catálogo.",
     },
 ];
 

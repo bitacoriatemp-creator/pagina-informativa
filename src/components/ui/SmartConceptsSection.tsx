@@ -11,17 +11,17 @@ const FEATURES = [
     {
         icon: Check,
         title: "Configuración guiada",
-        body: "No hay que adivinar. Elige entre opciones predefinidas —tipo de obra, topografía, cimentación— y el sistema estructura todas las partidas necesarias automáticamente.",
+        body: "No hay que adivinar. Elige entre opciones predefinidas —tipo de obra, topografía, cimentación— y el sistema arma una propuesta de partidas para que la revises y completes.",
     },
     {
         icon: MapPin,
-        title: "Inteligencia de precios local",
-        body: "Nada de plantillas muertas. El sistema revisa el mercado de tu zona para ofrecerte un Análisis de Precios Unitarios realista y certero.",
+        title: "Precios ajustados a tu estado",
+        body: "Nada de plantillas muertas. Cada precio parte de una base de referencia, se ajusta a tu estado y trae un semáforo que te dice cuál revisar.",
     },
     {
         icon: Pencil,
-        title: "100% Editable y tuyo",
-        body: "El catálogo generado no está bloqueado. Añade partidas, edita precios y ajusta rendimientos en una interfaz limpia —sin perderte en celdas de Excel.",
+        title: "Editable y tuyo",
+        body: "Mientras lo revisas, añade partidas y edita cantidades y precios sin pelearte con Excel. Ya aprobado, lo cambias desde el chat con tu sí.",
     },
 ];
 
@@ -63,8 +63,8 @@ export default function SmartConceptsSection() {
                         De cero a un presupuesto <span style={{ color: ACCENT }}>exacto</span> en minutos.
                     </h2>
                     <p className="max-w-xl text-[15px] leading-relaxed text-white/45">
-                        Ya sea que subas tu catálogo en PDF o dejes que nuestra Inteligencia Artificial lo cree desde cero,{" "}
-                        <span className="font-medium text-white/65">seleccionando las características de tu proyecto con un clic.</span>
+                        Ya sea que subas tu catálogo (PDF, Excel o CSV) o dejes que nuestra Inteligencia Artificial lo cree desde cero,{" "}
+                        <span className="font-medium text-white/65">eligiendo las características de tu proyecto en unos clics.</span>
                     </p>
                 </motion.div>
 

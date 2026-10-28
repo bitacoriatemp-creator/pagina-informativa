@@ -28,16 +28,16 @@ const LEGAL_CONTENT = {
             <div className="divide-y divide-white/[0.07] text-[15px] leading-relaxed text-white/60 [&>*]:py-6 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Qué es BitacorIA y cómo beneficia a mi constructora?</h5>
-                    <p>BitacorIA es la primera plataforma de gestión estructurada diseñada específicamente para el sector de la construcción en México. Moderniza el control de obra tradicional reemplazando el papel por procesos digitales ágiles y optimizando el tiempo de captura de los residentes de obra.</p>
+                    <p>BitacorIA es una plataforma de gestión de obra hecha para la construcción en México. Moderniza el control de obra tradicional: cambia el papel por registros digitales y reduce el tiempo de captura de los residentes.</p>
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Mi información de obra está segura?</h5>
-                    {/* 2026-10-08: se quitó la promesa de firma avanzada y NOM-151. "Respaldos automáticos": la base tiene copia diaria; la copia semanal de fotos llega con la Fase 3 del plan de lanzamiento. */}
-                    <p>Sí. Toda la información, desde los reportes fotográficos hasta los presupuestos, viaja y se almacena cifrada en infraestructura en la nube con respaldos automáticos.</p>
+                    {/* 2026-10-18 (L2): decía "Sí... con respaldos automáticos" de toda la información; solo la base tiene copia diaria. Si ya corre la copia semanal de fotos con su aviso (Fase 3), se agrega "y tus fotos cada semana". */}
+                    <p>La cuidamos así: viaja cifrada, nuestros proveedores la guardan cifrada y respaldamos la base de datos todos los días. Ningún sistema es infalible: descarga tus PDF de vez en cuando.</p>
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿BitacorIA utiliza Inteligencia Artificial generativa?</h5>
-                    <p>Sí, pero de forma estructurada y guiada, no como un chat abierto de propósito general. El asistente de obra te acompaña en la captura (chatea, adjunta fotos), y tecnologías como &quot;Smart Concepts&quot; funcionan con configuradores guiados que recomiendan los catálogos y conceptos correctos para cada etapa de tu obra. Todo resultado queda en formatos estructurados, editables y validables por ti — la IA propone, tú siempre tienes el control final.</p>
+                    <p>Sí, pero de forma estructurada y guiada, no como un chat abierto de propósito general. El asistente de obra te acompaña en la captura (chatea, adjunta fotos), y Smart Concepts usa un configurador guiado que arma una propuesta de catálogo según tu tipo de obra. Todo resultado queda en formatos estructurados, editables y validables por ti — la IA propone, tú siempre tienes el control final.</p>
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Puedo invitar a mi equipo a la misma bitácora?</h5>
@@ -51,7 +51,7 @@ const LEGAL_CONTENT = {
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">¿Qué pasa con mis datos si decido cancelar la suscripción?</h5>
                     {/* Decisión de Luis 2026-10-07 (30 días en solo lectura con PDF; nada se borra solo). El servidor que lo cumple es pilot-v35 (Fase 5); el primer plan de pago que vence es del 2026-11-05. */}
-                    <p>Tu información te pertenece. Si tu plan vence o cancelas, durante 30 días puedes verla en solo lectura y descargar tus bitácoras y reportes en PDF. Después tu cuenta pasa al plan gratis y nada se borra, salvo que nos lo pidas.</p>
+                    <p>Tu información te pertenece. Si tu plan vence o decides no renovarlo, durante 30 días puedes verla en solo lectura y descargar tus bitácoras y reportes en PDF. Después tu cuenta pasa al plan gratis y nada se borra, salvo que nos lo pidas.</p>
                 </div>
             </div>
         ),
