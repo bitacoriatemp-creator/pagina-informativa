@@ -459,20 +459,19 @@ export function AvisoCuerpo() {
                     <li>
                         <B>Ubicación de la obra:</B> solo si presionas “Activar geolocalización”. Guardamos la ubicación
                         de tu dispositivo en ese momento como ubicación de la obra, con unos 10 metros de precisión: úsalo
-                        estando en la obra. La usamos para el clima, el ajuste de precios por zona y para saber si una
-                        foto se tomó en la obra. Para llenar la ciudad y el estado, tu navegador manda esa ubicación a
-                        OpenStreetMap. Para quitarla después de guardar la obra, escríbenos.
+                        estando en la obra. La usamos para el clima y el ajuste de precios por zona. Para llenar la
+                        ciudad y el estado, tu navegador manda esa ubicación a OpenStreetMap. Para quitarla después de
+                        guardar la obra, escríbenos.
                     </li>
                     <li>
-                        {/* La segunda frase llega con la app del 22-oct y el servidor v38 (P8). Si P8 no sale, se deja
-                            solo: “La app lee en tu dispositivo la fecha en que se tomó la foto y la usa para proponer
-                            la fecha de la nota.” */}
+                        {/* P8 (revisar si la foto se tomó cerca de la obra) no salió: la app solo lee la fecha
+                            (fotoFecha.ts, con gps: false) y el servidor no guarda nada de dónde se tomó. Si P8 sale,
+                            la frase vuelve aquí en el mismo envío (2026-10-27). */}
                         <B>Fotos:</B> desde el 16 de septiembre de 2026, antes de enviar una foto tu dispositivo le
                         quita la ubicación (GPS) y los datos ocultos (las fotos subidas antes pueden conservarla; si
-                        quieres que se la quitemos, escríbenos). Antes de quitarlos, la app lee en tu dispositivo la fecha en que se tomó la foto y, si tu
-                        obra tiene ubicación guardada, revisa si se tomó cerca de ella. Guardamos la fecha en que se tomó
-                        la foto y si se tomó cerca de la ubicación de la obra; no guardamos coordenadas. Las coordenadas
-                        de la foto no salen de tu dispositivo.
+                        quieres que se la quitemos, escríbenos). Antes de quitarlos, la app lee en tu dispositivo la
+                        fecha en que se tomó la foto y la usa para proponer la fecha de la nota.
+                        Las coordenadas de la foto no salen de tu dispositivo.
                     </li>
                     <li>
                         <B>Documentos:</B> la inteligencia artificial lee el contenido de los documentos que subes (PDF,

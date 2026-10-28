@@ -284,9 +284,13 @@ describe("Términos y Aviso de la Fase 6 (versión 2026-10-19)", () => {
         }
     });
 
-    it("el Aviso dice qué se guarda de una foto: fecha y si fue en la obra, nunca coordenadas", () => {
-        expect(aviso).toContain("no guardamos coordenadas");
-        expect(aviso).toContain("cerca de la ubicación de la obra");
+    it("el Aviso dice qué se lee de una foto: solo la fecha, nunca coordenadas", () => {
+        expect(aviso).toContain("la usa para proponer la fecha de la nota");
+        expect(aviso).toContain("Las coordenadas de la foto no salen de tu dispositivo");
+        // P8 no salió (la app lee la foto con gps: false): el Aviso no puede decir que se revisa ni
+        // que se guarda si la foto se tomó en la obra.
+        expect(aviso).not.toContain("cerca de la ubicación de la obra");
+        expect(aviso).not.toContain("se tomó en la obra");
         // El Aviso de junio decía que se recababan "Metadatos y Geolocalización".
         expect(aviso.toLowerCase()).not.toContain("metadatos y geolocalización");
     });
