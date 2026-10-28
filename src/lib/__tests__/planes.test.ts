@@ -5,7 +5,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { PROMESAS_CORREGIDAS_L2 } from "../planes";
 
 import { PLAN_PRICING, PROJECT_LICENSE, PRICING_FOOTER, PROMESAS_SIN_RESPALDO } from "../planes";
-import { FECHA_LEGAL, PENDIENTES_LEGALES, VERSION_LEGAL } from "../legales";
+import { DATOS_LEGALES, FECHA_LEGAL, PENDIENTES_LEGALES, VERSION_LEGAL } from "../legales";
 
 /**
  * Precios y enlaces del sitio: contrato congelado.
@@ -260,6 +260,10 @@ describe("Términos y Aviso de la Fase 6 (versión 2026-10-19)", () => {
         // "[Pendiente: ...]". 2026-10-18: Luis dio 10 de los 14; faltan
         // responsable, rfc, domicilio y correoPrivacidad.
         expect(PENDIENTES_LEGALES).toEqual([]);
+    });
+
+    it("la licencia única dice que los 10 días hábiles son para pedir la devolución (Luis, 2026-10-27)", () => {
+        expect(DATOS_LEGALES.devolucionLicencia.valor).toContain("dentro de los 10 días hábiles siguientes a la compra");
     });
 
     it("hablan de tú de principio a fin", () => {

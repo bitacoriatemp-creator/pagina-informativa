@@ -10,7 +10,9 @@
      (src/lib/__tests__/planes.test.ts falla hasta que no quede ninguno).
    - 2026-10-18: Luis contestó 10 datos (soporte, Soporte Pro, devoluciones,
      aviso de cambios y plazos), redactados de tú sin cambiar su contenido.
-     Faltan responsable, RFC, domicilio y correo de privacidad. */
+     Faltan responsable, RFC, domicilio y correo de privacidad.
+   - 2026-10-27: Luis aclaró que los 10 días hábiles de la licencia única son
+     el plazo para pedir la devolución (el pago va aparte, en `plazoDevolucion`). */
 
 export const VERSION_LEGAL = "2026-10-19";
 export const FECHA_LEGAL = "19 de octubre de 2026";
@@ -27,7 +29,7 @@ export const DATOS_LEGALES = {
     soporteSiteManager: { valor: "WhatsApp prioritario; te respondemos el mismo día hábil si escribes antes de las 15:00", falta: "canal y horario del canal prioritario (propuesta: WhatsApp prioritario, respuesta el mismo día hábil si escribes antes de las 15:00)" },
     soporteExecutive: { valor: "una persona asignada y una revisión de seguimiento al mes", falta: "qué incluye la atención dedicada (propuesta: una persona asignada y una revisión de seguimiento al mes)" },
     devolucionAnual: { valor: "en proporción los meses completos que no hayas usado", falta: "cómo se calcula la devolución del plan anual" },
-    devolucionLicencia: { valor: "solo si no la has usado: devolución completa dentro de 10 días hábiles si todavía no la activaste en una obra; después, sin devolución", falta: "si la licencia única tiene devolución" },
+    devolucionLicencia: { valor: "puedes pedir la devolución completa dentro de los 10 días hábiles siguientes a la compra, si todavía no la activaste en una obra; pasado ese plazo, o ya activada, no tiene devolución", falta: "si la licencia única tiene devolución" },
     plazoDevolucion: { valor: "10 días hábiles", falta: "plazo para devolver (propuesta: 10 días hábiles)" },
     avisoCambios: { valor: "30 días", falta: "días de aviso antes de un cambio (15 o 30)" },
     plazoRegistrosServidor: { valor: "30 días", falta: "plazo de los registros técnicos (propuesta: 30 días)" },
