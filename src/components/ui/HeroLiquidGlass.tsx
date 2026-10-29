@@ -71,6 +71,18 @@ export default function HeroLiquidGlass() {
         let targetGlow = 0;
         let frame = 0;
         let running = false;
+        let visible = false;
+
+        /* JC 2026-10-29: el bucle ya no gira mientras el hero está a la vista
+           aunque nada cambie: cada vuelta reescribía 4 variables de CSS y obligaba
+           a repintar capas de pantalla completa, a costa de los videos. Ahora
+           arranca con el mouse y se detiene cuando la luz llegó a su sitio. */
+        const arrancar = () => {
+            if (visible && !running) {
+                running = true;
+                frame = requestAnimationFrame(render);
+            }
+        };
 
         const handleMove = (e: MouseEvent) => {
             const r = root.getBoundingClientRect();
@@ -78,6 +90,7 @@ export default function HeroLiquidGlass() {
             targetY = (e.clientY - r.top) / r.height;
             // Solo encendemos la luz mientras el cursor está sobre el hero.
             targetGlow = targetY >= -0.15 && targetY <= 1.15 ? 1 : 0;
+            arrancar();
         };
 
         /* Al salir el puntero hacia el cromo del navegador (barra de direcciones,
@@ -100,15 +113,22 @@ export default function HeroLiquidGlass() {
             root.style.setProperty("--lg-rgb", lightAt(x));
             root.style.setProperty("--lg-glow", glow.toFixed(3));
 
+            // Quieto: la luz ya está donde va y con su brillo final.
+            const quieto =
+                Math.abs(targetX - x) < 0.0005 &&
+                Math.abs(targetY - y) < 0.0005 &&
+                Math.abs(targetGlow - glow) < 0.001;
+            if (quieto) {
+                running = false;
+                return;
+            }
             frame = requestAnimationFrame(render);
         };
 
-        // El rAF solo gira mientras el hero está a la vista.
+        // El rAF solo gira mientras el hero está a la vista y algo se mueve.
         const io = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting && !running) {
-                running = true;
-                frame = requestAnimationFrame(render);
-            } else if (!entry.isIntersecting && running) {
+            visible = entry.isIntersecting;
+            if (!visible && running) {
                 running = false;
                 cancelAnimationFrame(frame);
             }

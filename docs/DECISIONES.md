@@ -41,6 +41,20 @@ y pedir cambios o revertirlo.
 **Para revertir:** en Vercel, "Promote to Production" del deploy anterior (`8e5f1b2`), o `git revert`
 de este commit en `main`, sin force.
 
+**Cambio (2026-10-29, JC): los videos se veían a tirones.** Hay dos causas y dos arreglos:
+
+- **Cuadros por segundo.** Smart Log y Smart Concepts se habían publicado a 30, aunque los
+  originales son de 60. Ahora van a 60. Smart Calendar sigue en 30 porque así viene el original.
+- **Fondo del hero.** Le peleaba la tarjeta gráfica al video:
+  - Se quitaron el `filter: blur(90px)` de los blobs y el `backdrop-filter` de la lámina. Eran dos
+    desenfoques de pantalla completa recalculados en cada cuadro.
+  - La luz del cursor ya no corre en bucle si nada se mueve.
+
+  A la vista el fondo casi no cambia.
+
+**Medido en el navegador:** el video de Smart Log pasó de 28–30 a 60 cuadros por segundo, sin
+cuadros perdidos.
+
 ## 2026-09-12 — La barra es solo el logo: ni "Iniciar sesión" ni "Empezar gratis"
 
 **Decisión (Luis).** El sitio vende y enlaza; no autentica ni ofrece entrada a la app a quien ya

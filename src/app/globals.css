@@ -864,11 +864,14 @@
 /* ═══════════════════════════════════════════════════════════════
    HERO LIQUID GLASS — fondo del hero (ver HeroLiquidGlass.tsx)
    Blobs de color a la deriva + lámina de vidrio esmerilado.
-   El blur va como `filter` sobre los blobs (no backdrop-filter):
-   más barato y sobrevive al corte de backdrop-filter en móvil.
+   JC 2026-10-29: sin `filter: blur` en los blobs ni `backdrop-filter` en la
+   lámina. Con los blobs moviéndose, los dos desenfoques de pantalla completa
+   se recalculaban en cada cuadro y le peleaban la GPU a los videos del hero
+   (se veían a tirones). Los blobs ya son degradados radiales que se apagan
+   solos, así que sin el blur casi no cambian, y su deriva queda en
+   `transform`, que el compositor mueve sin repintar.
    ═══════════════════════════════════════════════════════════════ */
 .lg-blobs {
-  filter: blur(90px);
   opacity: 0.45;
 }
 
@@ -906,10 +909,8 @@
   animation: lg-drift-c 38s ease-in-out infinite;
 }
 
-/* Lámina de vidrio: difumina los blobs y añade el brillo diagonal */
+/* Lámina de vidrio: el brillo diagonal (el difuminado lo dan ya los degradados) */
 .lg-sheet {
-  backdrop-filter: blur(28px) saturate(1.25);
-  -webkit-backdrop-filter: blur(28px) saturate(1.25);
   background: linear-gradient(135deg,
       rgba(245, 240, 232, 0.022) 0%,
       rgba(245, 240, 232, 0.008) 30%,
@@ -933,11 +934,8 @@
   50%      { transform: translate3d(-8%, -14%, 0) scale(1.1); }
 }
 
-/* Móvil y tablet: el blur de 90px sobre 3 blobs a pantalla completa es lo
-   más caro de repintar del hero al hacer scroll. Bajamos el radio y
-   congelamos la deriva — a ese tamaño el matiz del blur no se aprecia. */
+/* Móvil y tablet: la deriva queda congelada; a ese tamaño no se aprecia. */
 @media (max-width: 1023px) {
-  .lg-blobs { filter: blur(60px); }
   .lg-blob { animation: none !important; }
 }
 
