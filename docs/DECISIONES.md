@@ -55,6 +55,14 @@ de este commit en `main`, sin force.
 **Medido en el navegador:** el video de Smart Log pasó de 28–30 a 60 cuadros por segundo, sin
 cuadros perdidos.
 
+**Ese mismo día:**
+
+- **Nombres con versión.** Los videos llevan versión en el nombre (`demo-*-v3.mp4`). Vercel los sirve
+  con `max-age` de 4 horas: con el mismo nombre, quien ya había entrado seguía viendo los de 30
+  cuadros. **Regla:** cada vez que cambie un video, se le sube la versión.
+- **Más calidad.** CRF 21 en vez de 25. El SSIM contra el original sube de 0.9946 a 0.9969. Pesan
+  8.2 MB (Smart Log), 16 MB (Smart Concepts) y 9.3 MB (Smart Calendar).
+
 ## 2026-09-12 — La barra es solo el logo: ni "Iniciar sesión" ni "Empezar gratis"
 
 **Decisión (Luis).** El sitio vende y enlaza; no autentica ni ofrece entrada a la app a quien ya

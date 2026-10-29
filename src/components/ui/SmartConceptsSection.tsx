@@ -77,7 +77,7 @@ export default function SmartConceptsSection() {
                     className="mt-10 md:mt-12"
                 >
                     <DemoPlayer
-                        src={assetPath("/videos/demo-concepts.mp4")}
+                        src={assetPath("/videos/demo-concepts-v3.mp4")}
                         poster={assetPath("/videos/demo-concepts-poster.jpg")}
                         label="Smart Concepts"
                     />

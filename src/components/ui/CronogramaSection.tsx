@@ -65,7 +65,7 @@ export default function CronogramaSection() {
                     className="mt-10 md:mt-12"
                 >
                     <DemoPlayer
-                        src={assetPath("/videos/demo-calendar.mp4")}
+                        src={assetPath("/videos/demo-calendar-v3.mp4")}
                         poster={assetPath("/videos/demo-calendar-poster.jpg")}
                         label="Smart Calendar"
                     />

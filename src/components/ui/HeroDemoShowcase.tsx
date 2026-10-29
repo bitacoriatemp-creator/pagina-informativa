@@ -18,22 +18,25 @@ type Demo = {
     accent: string;
 };
 
-/* JC 2026-10-27: el carrusel abre con Smart Log (antes Smart Concepts). */
+/* JC 2026-10-27: el carrusel abre con Smart Log (antes Smart Concepts).
+   JC 2026-10-29: los videos llevan versión en el nombre (-v3). Vercel los sirve con
+   max-age de 4 h: con el mismo nombre, quien ya había entrado seguía viendo el video
+   anterior. Cada vez que cambie un video, se le sube la versión. */
 const DEMOS: Demo[] = [
     {
-        src: assetPath("/videos/demo-bitacora.mp4"),
+        src: assetPath("/videos/demo-bitacora-v3.mp4"),
         poster: assetPath("/videos/demo-bitacora-poster.jpg"),
         label: "Smart Log",
         accent: "#C39767",
     },
     {
-        src: assetPath("/videos/demo-concepts.mp4"),
+        src: assetPath("/videos/demo-concepts-v3.mp4"),
         poster: assetPath("/videos/demo-concepts-poster.jpg"),
         label: "Smart Concepts",
         accent: "#00D26A",
     },
     {
-        src: assetPath("/videos/demo-calendar.mp4"),
+        src: assetPath("/videos/demo-calendar-v3.mp4"),
         poster: assetPath("/videos/demo-calendar-poster.jpg"),
         label: "Smart Calendar",
         accent: "#3B82F6",

@@ -67,7 +67,7 @@ export default function BitacoraSection() {
                     className="mt-10 md:mt-12"
                 >
                     <DemoPlayer
-                        src={assetPath("/videos/demo-bitacora.mp4")}
+                        src={assetPath("/videos/demo-bitacora-v3.mp4")}
                         poster={assetPath("/videos/demo-bitacora-poster.jpg")}
                         label="Smart Log"
                     />
