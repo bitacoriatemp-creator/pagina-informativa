@@ -34,6 +34,9 @@ export type LeadDatos = {
     obras_activas?: string | number | null;
     interes_compra: string;
     pais: string;
+    /** Plan que pidió desde la página (2026-11-13: Plus), con su precio y ciclo
+        ("$549 al mes, pago anual"). Sin plan, el mensaje es el de siempre. */
+    plan?: { nombre: string; precio: string } | null;
 };
 
 /**
@@ -44,13 +47,17 @@ export type LeadDatos = {
 export function buildWhatsAppUrl(datos: LeadDatos): string | null {
     if (!hasWhatsApp()) return null;
 
+    // Plus todavía no existe en la app: el plan que pidió solo llega al equipo
+    // por este mensaje (la base guarda los mismos seis datos de siempre).
+    const plan = datos.plan;
     const lineas = [
-        "Hola, quiero una demo de BitacorIA.",
+        plan ? `Hola, me interesa el plan ${plan.nombre} de BitacorIA.` : "Hola, quiero una demo de BitacorIA.",
         "",
         `Nombre: ${datos.nombre}`,
         `Correo: ${datos.email}`,
         `Perfil: ${datos.perfil}`,
     ];
+    if (plan) lineas.push(`Plan: ${plan.nombre} (${plan.precio})`);
 
     // Campo opcional: solo lo incluimos si de verdad lo llenaron.
     const obras = datos.obras_activas;

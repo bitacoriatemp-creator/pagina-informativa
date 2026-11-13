@@ -42,7 +42,7 @@ const KNOWLEDGE_BASE = [
     },
     {
         keywords: ["plan", "planes", "facturacion", "cobro", "pago", "pagar", "limite", "limites", "upgrade", "suscripcion", "precio", "precios", "comprar", "barato", "costo"],
-        response: "La facturación en BitacorIA se maneja por workspaces. Cada plan te otorga un límite de Obras Activas (Proyectos), capacidad de almacenamiento para modelos BIM y un número de asientos de usuario.\n\nPara ver un comparativo exacto de nuestros planes (Draft, The Resident, The Site Manager y Executive), haz clic en el botón de abajo.",
+        response: "La facturación en BitacorIA se maneja por workspaces. Cada plan te otorga un límite de Obras Activas (Proyectos), capacidad de almacenamiento para modelos BIM y un número de asientos de usuario.\n\nPara ver un comparativo exacto de nuestros planes (Draft, Plus, Pro, Max y Ultra), haz clic en el botón de abajo.",
         suggestions: ["⭐ Ver Planes V.I.P.", "Hablar con asesor V.I.P."]
     },
     {

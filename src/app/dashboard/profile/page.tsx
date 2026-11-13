@@ -82,7 +82,7 @@ export default function ProfileDashboard() {
             ]
         },
         subscription: {
-            planName: "THE SITE MANAGER",
+            planName: "MAX",
             status: "Activo",
             cycle: "Mensual",
             nextBilling: "15 de Abril, 2026",
@@ -356,9 +356,9 @@ export default function ProfileDashboard() {
 
                                     <Image src={getImagePath(
                                         user.subscription.planName.includes("DRAFT") ? "/images/plan_free.webp" :
-                                            user.subscription.planName.includes("RESIDENT") ? "/images/plan_theresident.webp" :
-                                                user.subscription.planName.includes("MANAGER") ? "/images/sitemanager.webp" :
-                                                    user.subscription.planName.includes("EXECUTIVE") ? "/images/executive_plan.webp" :
+                                            user.subscription.planName.includes("PRO") ? "/images/plan_theresident.webp" :
+                                                user.subscription.planName.includes("MAX") ? "/images/sitemanager.webp" :
+                                                    user.subscription.planName.includes("ULTRA") ? "/images/executive_plan.webp" :
                                                         "/images/sitemanager.webp" // Default fallback
                                     )} alt="Plan Actual" fill className="object-cover object-right-bottom scale-[1.2] translate-y-4" unoptimized />
                                     <div className="absolute inset-0 bg-black/40 mix-blend-overlay z-10" />

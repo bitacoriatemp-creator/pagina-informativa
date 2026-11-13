@@ -81,16 +81,16 @@ export default function PlanManagementModal({ isOpen, onClose }: PlanManagementM
                             ]}
                         />
 
-                        {/* 2. THE RESIDENT */}
+                        {/* 2. PRO (antes The Resident; clave resident) */}
                         <PlanCard
-                            title="THE RESIDENT"
+                            title="PRO"
                             subtitle="Para Arquitectos e Ingenieros Independientes."
                             price="$2,499"
                             period="MXN / MES"
                             imageSrc={getImagePath("/images/plan_theresident.webp")}
                             buttonText="Cámbiate a este Plan"
                             features={[
-                                { title: "2 Bitácoras Activas", desc: "Gestiona dos obras de forma simultánea con control total." },
+                                { title: "5 Bitácoras Activas", desc: "Gestiona cinco obras de forma simultánea con control total." },
                                 { title: "Múltiples Frentes", desc: "Organiza tu obra por zonas, niveles o etapas constructivas." },
                                 { title: "Single User Pro", desc: "Acceso exclusivo y centralizado para el ingeniero residente." },
                                 { title: "Smart Calendar & Concepts", desc: "Desbloquea la IA predictiva para cronogramas y catálogos de conceptos." },
@@ -98,9 +98,9 @@ export default function PlanManagementModal({ isOpen, onClose }: PlanManagementM
                             ]}
                         />
 
-                        {/* 3. THE SITE MANAGER */}
+                        {/* 3. MAX (antes The Site Manager; clave manager) */}
                         <PlanCard
-                            title="THE SITE MANAGER"
+                            title="MAX"
                             subtitle="El estándar para Constructores y PyMES."
                             price="$3,899"
                             period="MXN / mes"
@@ -115,7 +115,7 @@ export default function PlanManagementModal({ isOpen, onClose }: PlanManagementM
                                 </div>
                             }
                             features={[
-                                { title: "5 Bitácoras Activas", desc: "Capacidad robusta diseñada para constructoras y PyMES." },
+                                { title: "10 Bitácoras Activas", desc: "Capacidad robusta diseñada para constructoras y PyMES." },
                                 { title: "Team Work (3 Usuarios)", desc: "Colaboración en tiempo real entre residente, supervisor y director." },
                                 { title: "Smart BIM Sync", desc: "Conecta tu modelo 3D con la realidad física, tiempo y costos de la obra." },
                                 { title: "Módulo Predictivo Completo", desc: "Smart Calendar y Smart Concepts trabajando en conjunto." },
@@ -123,9 +123,9 @@ export default function PlanManagementModal({ isOpen, onClose }: PlanManagementM
                             ]}
                         />
 
-                        {/* 4. EXECUTIVE PLAN */}
+                        {/* 4. ULTRA (antes Executive Plan; clave executive) */}
                         <PlanCard
-                            title="EXECUTIVE PLAN"
+                            title="ULTRA"
                             subtitle="Control total y escala ilimitada."
                             price="$12,999"
                             period="MXN / MES"
@@ -133,7 +133,7 @@ export default function PlanManagementModal({ isOpen, onClose }: PlanManagementM
                             isPurple={true}
                             buttonText="Plan Actual"
                             features={[
-                                { title: "Volumen Corporativo", desc: "Despliegues desde 10 bitácoras con capacidad de escalar a nivel Enterprise." },
+                                { title: "Volumen Corporativo", desc: "Obras ilimitadas para toda tu operación." },
                                 { title: "Frentes Ilimitados", desc: "Controla megaproyectos y desarrollos complejos sin restricciones." },
                                 { title: "Colaboración Masiva", desc: "Cuentas centralizadas para toda tu plantilla administrativa y de campo." },
                                 { title: "Marca Blanca (White Label)", desc: "Personaliza la plataforma y los reportes con el logo y colores de tu empresa." },

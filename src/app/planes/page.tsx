@@ -9,7 +9,7 @@ import PlanesSection from "@/components/ui/PlanesSection";
 export const metadata: Metadata = {
     title: "Planes y precios — BitacorIA",
     description:
-        "Draft gratis, The Resident, The Site Manager y Executive Plan. Precios en MXN, mensual o anual, y licencia única por obra. Elige tu plan y crea tu cuenta.",
+        "Draft gratis, Plus, Pro, Max y Ultra. Precios en MXN, mensual o anual, y licencia única por obra. Elige tu plan y crea tu cuenta.",
     alternates: { canonical: "/planes" },
     openGraph: {
         title: "Planes y precios — BitacorIA",

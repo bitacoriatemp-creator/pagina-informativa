@@ -3,7 +3,7 @@ import { join, resolve } from "node:path";
 
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-import { PLAN_PRICING, PROJECT_LICENSE, PRICING_FOOTER, PROMESAS_SIN_RESPALDO } from "../planes";
+import { OBRAS_POR_PLAN, PLAN_PRICING, PROJECT_LICENSE, PRICING_FOOTER, PROMESAS_SIN_RESPALDO } from "../planes";
 
 /**
  * Precios y enlaces del sitio: contrato congelado.
@@ -40,13 +40,25 @@ function textoVisible(fuente: string): string {
 }
 
 describe("tabla de precios", () => {
-    it("congela los cuatro planes con sus importes en MXN sin IVA", () => {
+    it("congela los cinco planes con sus importes en MXN sin IVA", () => {
+        // 2026-11-13 (Luis): Plus nuevo y nombres nuevos (Pro, Max, Ultra). Las
+        // claves internas (resident, manager, executive) no cambian.
         expect(PLAN_PRICING).toEqual([
             { planKey: "draft", title: "DRAFT", priceMonthly: "0", priceAnnual: "0", annualTotal: "0", cta: "Empezar Gratis" },
-            { planKey: "resident", title: "THE RESIDENT", priceMonthly: "2,499", priceAnnual: "1,999", annualTotal: "23,988", cta: "Comenzar" },
-            { planKey: "manager", title: "THE SITE MANAGER", priceMonthly: "3,899", priceAnnual: "3,199", annualTotal: "38,388", cta: "Comenzar" },
-            { planKey: "executive", title: "EXECUTIVE PLAN", priceMonthly: "12,999", priceAnnual: "10,399", annualTotal: "124,788", cta: "Contactar" },
+            { planKey: "plus", title: "PLUS", priceMonthly: "699", priceAnnual: "549", annualTotal: "6,588", cta: "Solicitar" },
+            { planKey: "resident", title: "PRO", priceMonthly: "2,499", priceAnnual: "1,999", annualTotal: "23,988", cta: "Comenzar" },
+            { planKey: "manager", title: "MAX", priceMonthly: "3,899", priceAnnual: "3,199", annualTotal: "38,388", cta: "Comenzar" },
+            { planKey: "executive", title: "ULTRA", priceMonthly: "12,999", priceAnnual: "10,399", annualTotal: "124,788", cta: "Contactar" },
         ]);
+    });
+
+    it("las obras de Pro y Max son las del cupo nuevo del servidor (5 y 10)", () => {
+        expect(OBRAS_POR_PLAN).toEqual({
+            draft: "1 proyecto de prueba",
+            plus: "1 obra",
+            resident: "5 obras simultáneas",
+            manager: "10 obras simultáneas",
+        });
     });
 
     it("el anual facturado equivale a doce meses del precio anual", () => {
@@ -80,6 +92,120 @@ describe("la tarjeta de planes muestra los mismos numeros", () => {
     it("incluye la licencia unica de proyecto y el pie de precios", () => {
         expect(SECTION).toContain(PROJECT_LICENSE.detail);
         expect(SECTION).toContain(PRICING_FOOTER);
+    });
+
+    it.each(Object.entries(OBRAS_POR_PLAN))("la fila de obras de %s dice lo del cupo", (planKey, obras) => {
+        const tarjeta = bloqueDeTarjeta(planKey);
+        const fila = tarjeta.split(String.fromCharCode(10)).find((l) => l.includes('title: "OBRAS ACTIVAS"')) ?? "";
+        expect(fila).toContain(`desc: "${obras}"`);
+    });
+
+    it("las tarjetas van en orden: Draft, Plus, Pro, Max y Ultra", () => {
+        const orden = PLAN_PRICING.map((p) => SECTION.indexOf(`planKey: "${p.planKey}"`));
+        expect(orden.every((i) => i > -1)).toBe(true);
+        expect([...orden].sort((a, b) => a - b)).toEqual(orden);
+    });
+});
+
+/**
+ * Texto de una tarjeta de PLANS: desde su `planKey` hasta el `planKey` de la
+ * siguiente (o el cierre de la lista).
+ */
+function bloqueDeTarjeta(planKey: string): string {
+    const inicio = SECTION.indexOf(`planKey: "${planKey}"`);
+    if (inicio < 0) return "";
+    const siguiente = SECTION.indexOf("planKey: ", inicio + 1);
+    const cierre = SECTION.indexOf("] as const;", inicio);
+    const fin = siguiente > -1 && siguiente < cierre ? siguiente : cierre;
+    return SECTION.slice(inicio, fin);
+}
+
+describe("nombres nuevos de los planes (2026-11-13, Luis)", () => {
+    // The Resident pasa a Pro, The Site Manager a Max y Executive Plan a Ultra,
+    // "en todos lados". Solo el texto visible: los comentarios citan a propósito
+    // el nombre anterior.
+    const ARCHIVOS = [
+        "src/components/ui/PlanesSection.tsx",
+        "src/components/ui/FooterSection.tsx",
+        "src/app/planes/page.tsx",
+        "src/app/registro/Formulario.tsx",
+        "src/components/dashboard/PlanManagementModal.tsx",
+        "src/components/dashboard/AIAssistantModal.tsx",
+        "src/app/dashboard/profile/page.tsx",
+    ];
+    const VIEJOS = ["The Resident", "Site Manager", "Executive Plan", "Resident,", "Executive)"];
+
+    it.each(ARCHIVOS)("%s ya no dice los nombres viejos", (ruta) => {
+        const visibleMin = textoVisible(readFileSync(resolve(process.cwd(), ruta), "utf8")).toLowerCase();
+        const encontrados = VIEJOS.filter((v) => visibleMin.includes(v.toLowerCase()));
+        expect(encontrados).toEqual([]);
+    });
+
+    it("la descripción de /planes nombra los cinco planes", () => {
+        const pagina = readFileSync(resolve(process.cwd(), "src/app/planes/page.tsx"), "utf8");
+        expect(pagina).toContain("Draft gratis, Plus, Pro, Max y Ultra.");
+    });
+});
+
+describe("la tarjeta de Plus (2026-11-13, Luis)", () => {
+    const plus = bloqueDeTarjeta("plus");
+    const filas = plus.split(String.fromCharCode(10));
+    const fila = (titulo: string) => filas.find((l) => l.includes(`title: "${titulo}"`)) ?? "";
+
+    it("va entre Draft y Pro con su frase", () => {
+        expect(plus).toContain('title: "PLUS"');
+        expect(plus).toContain('subtitle: "Para tu primera obra."');
+        expect(SECTION.indexOf('planKey: "draft"')).toBeLessThan(SECTION.indexOf('planKey: "plus"'));
+        expect(SECTION.indexOf('planKey: "plus"')).toBeLessThan(SECTION.indexOf('planKey: "resident"'));
+    });
+
+    it("solo Plus lleva la etiqueta Nuevo", () => {
+        expect(plus).toContain("isNew: true");
+        expect(SECTION.match(/isNew: true/g) ?? []).toHaveLength(1);
+        expect(SECTION).toMatch(/>\s*Nuevo\s*</);
+    });
+
+    it("el uso diario es un renglón en las cinco tarjetas: en gris en Draft y Plus, en color en las demás (Luis 2026-11-13)", () => {
+        const renglones = SECTION.split(String.fromCharCode(10)).filter((l) => l.includes('title: "SIN LÍMITE DIARIO"'));
+        expect(renglones).toHaveLength(5);
+        for (const clave of ["draft", "plus"]) {
+            const fila = bloqueDeTarjeta(clave).split(String.fromCharCode(10)).find((l) => l.includes('title: "SIN LÍMITE DIARIO"')) ?? "";
+            expect(fila).toContain('desc: "Con límite de uso diario"');
+            expect(fila).toContain("included: false");
+            expect(fila).not.toMatch(/\d/);
+        }
+        for (const clave of ["resident", "manager", "executive"]) {
+            const fila = bloqueDeTarjeta(clave).split(String.fromCharCode(10)).find((l) => l.includes('title: "SIN LÍMITE DIARIO"')) ?? "";
+            expect(fila).toContain("included: true");
+        }
+        // Ya no hay pastilla en la cabecera.
+        expect(SECTION).not.toContain("dailyLimit");
+    });
+
+    it.each([
+        ["OBRAS ACTIVAS", "1 obra", true],
+        ["FRENTES", "Frente único", true],
+        ["USUARIOS", "Licencia individual", true],
+        ["SMART LOG", "Bitácora con PDF", true],
+        ["SMART CALENDAR", "Como en el plan gratis", true],
+        ["SMART CONCEPTS", "Como en el plan gratis", true],
+        ["SMART BIM SYNC", "Incluido, versión básica", true],
+        ["FIRMAS DIGITALES", "Firma en reportes PDF", true],
+        ["SOPORTE PRIORITARIO", "Canal prioritario", false],
+        ["WHITE LABEL", "Con marca de BitacorIA", false],
+        ["AUDIT READY", "Trazabilidad inmutable", false],
+    ] as const)("%s: %s", (titulo, desc, incluido) => {
+        expect(fila(titulo)).toContain(`desc: "${desc}"`);
+        expect(fila(titulo)).toContain(`included: ${incluido}`);
+    });
+
+    it("su botón va al formulario de /registro con Plus marcado, nunca al alta de la app", () => {
+        // La app no conoce "plus": registerUrl("plus") caería en un alta sin plan.
+        expect(SECTION).not.toMatch(/registerUrl\(\s*["']plus["']/);
+        expect(SECTION).toContain('solicitudPlanUrl("plus", billing)');
+        // Y debajo, la salida al plan gratis.
+        expect(SECTION).toContain('href={registerUrl("draft")}');
+        expect(SECTION).toContain("o empieza gratis");
     });
 });
 
@@ -155,7 +281,8 @@ describe("la tarjeta del plan gratis dice lo que trae la prueba guiada", () => {
     // pone morada (BIM Sync). Las tres filas van parejas: si solo BIM Sync
     // estuviera encendido, la tarjeta diría que conecta dos cosas que no trae.
     const inicio = SECTION.indexOf('id: "draft"');
-    const fin = SECTION.indexOf('id: "resident"');
+    // Desde 2026-11-13 la tarjeta que sigue a Draft es Plus.
+    const fin = SECTION.indexOf('id: "plus"');
     const draft = SECTION.slice(inicio, fin);
 
     it.each(["SMART CALENDAR", "SMART CONCEPTS", "SMART BIM SYNC"])("%s va como incluido en la prueba", (modulo) => {
@@ -169,7 +296,8 @@ describe("la tarjeta del plan gratis dice lo que trae la prueba guiada", () => {
 
 describe("las tarjetas de pago dicen lo que hace el cronograma", () => {
     // 2026-10-08 (Luis): "Cronograma predictivo" pasa a "Cronograma con avance
-    // real" en los tres planes de pago.
+    // real" en los tres planes de pago. Plus (2026-11-13) va antes de Pro y
+    // lleva el cronograma del plan gratis: queda fuera de este tramo.
     const inicio = SECTION.indexOf('id: "resident"');
     const fin = SECTION.indexOf("] as const;", inicio);
     const pago = SECTION.slice(inicio, fin);

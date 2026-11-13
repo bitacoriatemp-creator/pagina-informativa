@@ -19,9 +19,21 @@
 
 import type { PlanKey } from "./appUrl";
 
+/**
+ * Clave de cada tarjeta del sitio. Son las de la app (`PlanKey`) más "plus".
+ *
+ * 2026-11-13 (Luis): Plus se anuncia en el sitio, pero todavía no existe en la
+ * app ni en el servidor ("hasta que alguien pague"). Por eso "plus" NO es un
+ * `PlanKey`: su botón no va al alta de la app (`registerUrl`), va al
+ * formulario de /registro con el plan ya marcado (ver `solicitudPlanUrl` en
+ * registro.ts). Las claves internas de la app no cambian nunca aunque cambie
+ * el nombre que ve el cliente: resident = Pro, manager = Max, executive = Ultra.
+ */
+export type PlanDelSitio = PlanKey | "plus";
+
 export interface PlanPricing {
-    /** Clave que viaja a la app en el CTA (?plan=...). */
-    planKey: PlanKey;
+    /** Clave que viaja en el CTA (?plan=...): a la app, o a /registro si es "plus". */
+    planKey: PlanDelSitio;
     /** Titulo tal como se muestra en la tarjeta. */
     title: string;
     /** Precio mensual sin IVA, formateado como en la tarjeta. */
@@ -34,14 +46,31 @@ export interface PlanPricing {
     cta: string;
 }
 
+/* 2026-11-13 (Luis): nombres nuevos que ve el cliente. The Resident pasa a Pro,
+   The Site Manager a Max y Executive Plan a Ultra; Draft se queda. Plus es
+   nuevo ($699 al mes, $549 al mes en pago anual). */
 export const PLAN_PRICING: readonly PlanPricing[] = [
     { planKey: "draft", title: "DRAFT", priceMonthly: "0", priceAnnual: "0", annualTotal: "0", cta: "Empezar Gratis" },
-    { planKey: "resident", title: "THE RESIDENT", priceMonthly: "2,499", priceAnnual: "1,999", annualTotal: "23,988", cta: "Comenzar" },
-    { planKey: "manager", title: "THE SITE MANAGER", priceMonthly: "3,899", priceAnnual: "3,199", annualTotal: "38,388", cta: "Comenzar" },
-    { planKey: "executive", title: "EXECUTIVE PLAN", priceMonthly: "12,999", priceAnnual: "10,399", annualTotal: "124,788", cta: "Contactar" },
+    { planKey: "plus", title: "PLUS", priceMonthly: "699", priceAnnual: "549", annualTotal: "6,588", cta: "Solicitar" },
+    { planKey: "resident", title: "PRO", priceMonthly: "2,499", priceAnnual: "1,999", annualTotal: "23,988", cta: "Comenzar" },
+    { planKey: "manager", title: "MAX", priceMonthly: "3,899", priceAnnual: "3,199", annualTotal: "38,388", cta: "Comenzar" },
+    { planKey: "executive", title: "ULTRA", priceMonthly: "12,999", priceAnnual: "10,399", annualTotal: "124,788", cta: "Contactar" },
 ] as const;
 
-/** Licencia unica de proyecto: pago unico, 12 meses, 1 obra (alcances Site Manager). */
+/**
+ * Obras activas que promete cada tarjeta con cupo. Deben coincidir con el cupo
+ * del servidor (TIER_QUOTAS.max_projects en billing_service.py): 2026-11-13
+ * (Luis) Pro sube de 3 a 5 y Max de 5 a 10. La página no puede decir más obras
+ * de las que da el servidor publicado. Ultra no tiene tope (obras ilimitadas).
+ */
+export const OBRAS_POR_PLAN: Readonly<Record<"draft" | "plus" | "resident" | "manager", string>> = {
+    draft: "1 proyecto de prueba",
+    plus: "1 obra",
+    resident: "5 obras simultáneas",
+    manager: "10 obras simultáneas",
+};
+
+/** Licencia unica de proyecto: pago unico, 12 meses, 1 obra (alcances de Max). */
 export const PROJECT_LICENSE = {
     planKey: "project_license" as const,
     pill: "LICENCIA ÚNICA DE PROYECTO",
@@ -62,7 +91,7 @@ export const PRICING_FOOTER =
  * la construye.
  */
 export const PROMESAS_SIN_RESPALDO: readonly string[] = [
-    // No hay SSO empresarial. Lo real en Executive es el cupo sin límite.
+    // No hay SSO empresarial. Lo real en Ultra (antes Executive) es el cupo sin límite.
     "Single Sign-On",
     "SSO",
     // Las firmas son dibujadas dentro del PDF, no un flujo de aprobación.

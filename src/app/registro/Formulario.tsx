@@ -19,7 +19,7 @@ import { ArrowLeft, Check, ChevronDown, Facebook, Instagram } from "lucide-react
 import { assetPath } from "@/lib/assetPath";
 import { getStoredAccount, setStoredAccount, type Account } from "@/lib/account";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
-import { HANDOFF_EMAIL, REGISTERED_FLAG } from "@/lib/registro";
+import { HANDOFF_EMAIL, REGISTERED_FLAG, leerPlanDeInteres, type PlanDeInteres } from "@/lib/registro";
 import { registerUrl } from "@/lib/appUrl";
 
 const REGISTER_ENDPOINT =
@@ -194,6 +194,9 @@ export default function Formulario() {
     const [yaDentro, setYaDentro] = useState<Account | null | undefined>(undefined);
     const [otraPersona, setOtraPersona] = useState(false);
     const [prefill, setPrefill] = useState<{ nombre?: string; email?: string }>({});
+    /* Plan que trae la URL desde la tarjeta de la página (?plan=plus). null =
+       el formulario de siempre (demo). */
+    const [planInteres, setPlanInteres] = useState<PlanDeInteres | null>(null);
 
     const paisRef = useRef<HTMLSelectElement>(null);
     const formRef = useRef<HTMLFormElement>(null);
@@ -214,6 +217,12 @@ export default function Formulario() {
         let registrado = false;
         try { registrado = localStorage.getItem(REGISTERED_FLAG) === "true"; } catch { /* */ }
         setYaDentro(registrado ? getStoredAccount() ?? { email: "" } : null);
+    }, []);
+
+    /* El plan se lee de la URL al montar y no con useSearchParams: así la
+       página sigue siendo estática y no necesita un Suspense alrededor. */
+    useEffect(() => {
+        setPlanInteres(leerPlanDeInteres(window.location.search));
     }, []);
 
     /* Auto-detección de país por IP (silenciosa, solo pre-selecciona).
@@ -262,6 +271,7 @@ export default function Formulario() {
             obras_activas: (fd.get("obras_activas") as string) || null,
             interes_compra: INTERESES.find(([v]) => v === interes)?.[1] ?? interes,
             pais: PAISES.find(([v]) => v === pais)?.[1] ?? pais,
+            plan: planInteres,
         });
     };
 
@@ -290,6 +300,9 @@ export default function Formulario() {
                 pais: paisLegible,
                 interes_compra: interesLegible,
                 obras_activas: payload.obras_activas as string | number | null,
+                // El plan va solo en el mensaje: el aviso a la base (payload)
+                // lleva los mismos seis datos de siempre.
+                plan: planInteres,
             });
 
         // Timeout duro: sin esto, una Edge Function fría o una señal de obra débil
@@ -340,8 +353,9 @@ export default function Formulario() {
             nombre: yaDentro.nombre || "",
             email: yaDentro.email || "",
             perfil: "",
-            interes_compra: "Ya registrado — quiero agendar la demo",
+            interes_compra: planInteres ? "Ya registrado" : "Ya registrado — quiero agendar la demo",
             pais: "",
+            plan: planInteres,
         })
         : null;
 
@@ -375,6 +389,18 @@ export default function Formulario() {
                     titulo: "Solicita tu demo",
                     entrada: <>Seis datos. Con ellos preparamos una demo sobre tu obra, no una presentación genérica.</>,
                 };
+
+    /* Si llegó desde la tarjeta de Plus, mientras llena la hoja el titular dice
+       qué pidió. Tras enviar, o si ya estaba registrado, se queda el de siempre
+       (el plan ya va en el mensaje de WhatsApp). No promete fechas ni límites:
+       Plus todavía se activa a mano (2026-11-13, Luis). */
+    const cabecera = planInteres && mostrarFormulario
+        ? {
+            antetitulo: `Plan ${planInteres.nombre}`,
+            titulo: `Comienza con el plan ${planInteres.nombre}`,
+            entrada: <>Seis datos. Con ellos te escribimos para darte de alta y arrancar con tu obra.</>,
+        }
+        : encabezado;
 
     return (
         <MotionConfig reducedMotion="user">
@@ -415,13 +441,13 @@ export default function Formulario() {
                     className="lg:pt-2"
                 >
                     <p className="mb-3 font-ui text-[11px] uppercase tracking-[0.35em] text-[#c39767]">
-                        {encabezado.antetitulo}
+                        {cabecera.antetitulo}
                     </p>
                     <h1 className="font-display text-4xl font-extrabold uppercase leading-[1.03] tracking-tight text-white/92 sm:text-5xl lg:text-[clamp(2.75rem,3.8vw,3.5rem)]">
-                        {encabezado.titulo}
+                        {cabecera.titulo}
                     </h1>
                     <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-white/45">
-                        {encabezado.entrada}
+                        {cabecera.entrada}
                     </p>
 
                     {/* La demo es opcional: quien no quiera esperar puede crear su
@@ -515,6 +541,22 @@ export default function Formulario() {
 
                     {mostrarFormulario && (
                         <form onSubmit={handleSubmit} ref={formRef} className="space-y-5">
+                            {/* El plan que eligió en la página, ya marcado. Va como el
+                                renglón del país: un metadato, no una pregunta más. */}
+                            {planInteres && (
+                                <div className="flex items-center justify-between gap-4 border-b border-white/[0.07] pb-4">
+                                    <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/45">Plan</span>
+                                    <span className="flex items-center gap-2 text-right text-[13px] text-white/70">
+                                        <Check size={14} strokeWidth={2.2} aria-hidden className="shrink-0 text-[#c39767]" />
+                                        <span>
+                                            <span className="font-semibold text-[#f5f0e8]">{planInteres.nombre}</span>
+                                            {" · "}
+                                            {planInteres.precio}
+                                        </span>
+                                    </span>
+                                </div>
+                            )}
+
                             <div>
                                 <Renglon n="01" htmlFor="reg-nombre">Nombre completo</Renglon>
                                 <input
@@ -598,7 +640,9 @@ export default function Formulario() {
                             {/* Único elemento relleno de la pantalla: el mismo botón que
                                 el "Continuar" del hero. */}
                             <button type="submit" disabled={status === "submitting"} className={`mt-1 ${botonCrema}`}>
-                                {status === "submitting" ? "Procesando…" : "Solicitar demo"}
+                                {status === "submitting"
+                                    ? "Procesando…"
+                                    : planInteres ? `Comenzar con ${planInteres.nombre}` : "Solicitar demo"}
                             </button>
 
                             {errMsg && (
