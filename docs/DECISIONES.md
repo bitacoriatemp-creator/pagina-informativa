@@ -3,6 +3,62 @@
 Registro corto de decisiones de producto sobre la landing. Cada entrada dice qué se decidió,
 qué pasó antes y qué regla queda. Se lee antes de tocar cualquier elemento visible del sitio.
 
+## 2026-11-13 — La solicitud de demo se guarda en el servidor (tanda 4; preparada, sin publicar)
+
+**Decisión (plan `registro_filtro_2026-11-13`, §9).** Cuando el servidor de BitacorIA reciba solicitudes
+(pilot-v55), `/registro` le manda la hoja desde el navegador a
+`{NEXT_PUBLIC_API_BASE_URL}/api/v1/public/demo-requests`, con la verificación de Cloudflare (acción
+`demo`). Rama `wip/demo-al-servidor-2026-11-13`, hecha sobre la tanda 0. **No se sube** hasta que el
+servidor esté publicado, estén las dos variables en Vercel (OK de Luis) y Luis vea la captura.
+
+**Contrato.** El de la página, la app y el servidor es uno solo:
+`src/lib/__tests__/fixtures/contrato_cuestionario.json`, copia tal cual del plan. Las pruebas recorren
+todos sus casos (WhatsApp de México y de otro país, nombre) y comprueban que el cuerpo de ejemplo sale de
+la misma función que arma el envío (`src/lib/demoContrato.ts`).
+
+**Qué cambia a la vista (`src/app/registro/Formulario.tsx`):**
+
+- **Siete datos** (antes seis): se suma **WhatsApp**, obligatorio. Con país México pide 10 dígitos; con
+  otro país, el número con lada (`+57 300…`). Con otro país no se aceptan 10 dígitos sueltos: un número
+  de Estados Unidos o de Colombia también tiene 10 y quedaría guardado como si fuera de México.
+- "¿A qué te dedicas?" usa las opciones del cuestionario de la app ("Residente o superintendente de
+  obra", "Constructora o contratista", …), con la pista "Elige la que más se parezca". "¿Qué tan listo
+  estás?" conserva sus textos largos; lo que viaja es la clave (`listo`, `muy_probable`, …).
+- Nombre con la regla del contrato (nombre y apellido). Un dato mal escrito se avisa junto a su campo, en
+  ámbar, nunca en rojo.
+- Recuadro de verificación de Cloudflare antes del botón, solo cuando hay servidor.
+- Después del botón:
+  - **El servidor la guardó (2xx):** "Solicitud recibida": "Gracias, {nombre}. Te escribimos por
+    WhatsApp al {número} para agendar tu demo." Debajo, opcional, el botón verde "Escríbenos por
+    WhatsApp". Se escribe en el navegador una marca **nueva** (`bitacoria_demo_recibida`, solo la fecha),
+    nunca la vieja.
+  - **El servidor rechaza un dato:** el aviso junto a ese campo; la hoja sigue escrita.
+  - **La verificación venció:** se pide otra y se reintenta una sola vez.
+  - **Falta una variable o el recuadro no carga** (se sabe antes de enviar): como en la tanda 0, WhatsApp
+    dentro del mismo clic y "Falta un paso".
+  - **Cualquier otra respuesta, sin red o más de 15 s:** no se abre nada solo (tras la espera el
+    navegador lo bloquearía). "No pudimos guardar tu solicitud. Envíanosla por WhatsApp: el mensaje ya va
+    escrito con tus datos", con el botón verde, el correo y el número.
+- El mensaje de WhatsApp (y el correo) suma el renglón "WhatsApp: +52 55 1234 5678".
+- "Qué pasa después", renglón 2: con servidor, "Te escribimos por WhatsApp. Al número que nos dejes;
+  contesta alguien del equipo."; sin servidor, el de la tanda 0.
+
+**Regla que queda.**
+
+1. **"Solicitud recibida" solo con la respuesta 2xx del servidor.** Las pruebas lo vigilan.
+2. **El salto automático a WhatsApp solo va dentro del clic**, nunca después de esperar al servidor.
+3. **Variables:** `NEXT_PUBLIC_API_BASE_URL` y `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (públicas; documentadas
+   en `.env.example`). Sin ellas la página se ve y trabaja como en la tanda 0.
+4. Pruebas: `demoContrato.test.ts` (todos los casos del contrato), `demoServidor.test.ts` (respuestas,
+   15 s, reintento único), `solicitudDemo.test.ts` (textos por caso) y `registro.test.ts` (destino,
+   claves, que no se abra nada tras esperar).
+
+**Pendiente antes del "sube":** servidor pilot-v55 publicado; las dos variables en Vercel (Production)
+con OK de Luis; prueba de punta a punta en local (página, servidor :8000 y la llave de prueba de
+Cloudflare) en 375 y 1440; captura a Luis; el Aviso de Privacidad nuevo (va en la rama legal) suma el
+WhatsApp en la sección de la demo. Vuelta atrás: "Promote to Production" del deploy anterior; con el
+servidor de vuelta en pilot-v54, la página cae sola a "No pudimos guardar" con el botón de WhatsApp.
+
 ## 2026-11-13 — "Solicitar demo" abre WhatsApp directo y el botón de WhatsApp pasa a verde (Luis)
 
 **Decisión (Luis).** Mientras el servidor no reciba las solicitudes de demo, `/registro` no manda los

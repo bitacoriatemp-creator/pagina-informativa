@@ -1,10 +1,13 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { botonCrema, botonVerde } from "../../app/registro/botones";
+import { armarCuerpoDemo, cuerpoParaEnviar, type HojaDemo } from "../demoContrato";
+import { RUTA_SOLICITUD_DEMO, enviarSolicitudDemo, urlSolicitudDemo } from "../demoServidor";
 import { leerPlanDeInteres, solicitudPlanUrl } from "../registro";
+import { datosDelMensaje } from "../solicitudDemo";
 import { armarMensaje, buildWhatsAppUrl } from "../whatsapp";
 
 /**
@@ -14,13 +17,33 @@ import { armarMensaje, buildWhatsAppUrl } from "../whatsapp";
  * al formulario con ?plan=plus&billing=... El formulario lo marca y lo pone en
  * el mensaje de WhatsApp.
  *
- * Tanda 0 del plan registro_filtro: el formulario ya no manda nada a ninguna
- * base (la vieja ya no existe). Abre WhatsApp con el mensaje escrito dentro del
- * mismo clic y la pantalla dice "Falta un paso". Estas pruebas vigilan que no
- * vuelva el envío al destino muerto y que el mensaje lleve los datos de siempre.
+ * Tanda 0 del plan registro_filtro: sin servidor el formulario no manda nada a
+ * ninguna base (la vieja ya no existe). Abre WhatsApp con el mensaje escrito
+ * dentro del mismo clic y la pantalla dice "Falta un paso".
+ *
+ * Tanda 4: con servidor, la hoja va a {NEXT_PUBLIC_API_BASE_URL}/api/v1/public/
+ * demo-requests con el cuerpo del contrato (fixtures/contrato_cuestionario.json).
+ * Estas pruebas vigilan el destino, las claves, que el cuerpo de ejemplo del
+ * contrato salga de la misma función que arma el envío, que no vuelva el destino
+ * muerto y que la pantalla no diga que llegó si no llegó.
  */
 
 const FORM = readFileSync(resolve(process.cwd(), "src/app/registro/Formulario.tsx"), "utf8");
+const CONTRATO = JSON.parse(
+    readFileSync(resolve(process.cwd(), "src/lib/__tests__/fixtures/contrato_cuestionario.json"), "utf8"),
+) as { ejemplos: { demo_cuerpo: Record<string, unknown> }; demo: { _regla: string } };
+
+/** La hoja escrita para obtener el cuerpo de ejemplo del contrato. */
+const HOJA_DEL_EJEMPLO: HojaDemo = {
+    nombre: "Juan Pérez",
+    email: "obra@ejemplo.mx",
+    whatsapp: "55 1234 5678",
+    pais: "MX",
+    perfil: "constructora",
+    obras_activas: "8",
+    interes_compra: "muy_probable",
+    plan: "plus",
+};
 
 /** Lo que se ve, sin comentarios (en ellos se cuenta a propósito qué decía antes
     la pantalla). Igual que en planes.test.ts. */
@@ -88,7 +111,8 @@ describe("mensaje de WhatsApp", () => {
     const base = {
         nombre: "SMOKE Prueba",
         email: "prueba@example.com",
-        perfil: "Residente independiente",
+        whatsapp: "+52 55 1234 5678",
+        perfil: "Residente o superintendente de obra",
         interes_compra: "Probable",
         pais: "México",
     };
@@ -117,36 +141,40 @@ describe("las claves del mensaje de WhatsApp", () => {
     const etiquetas = (msg: string) =>
         msg.split(SALTO).slice(2).map((l) => l.slice(0, l.indexOf(":")));
 
-    it("con todo: nombre, correo, perfil, plan, obras, interés y país", () => {
+    it("con todo: nombre, correo, WhatsApp, perfil, plan, obras, interés y país", () => {
         const msg = armarMensaje({
             nombre: "SMOKE Prueba",
             email: "prueba@example.com",
-            perfil: "Residente independiente",
+            whatsapp: "+52 55 1234 5678",
+            perfil: "Residente o superintendente de obra",
             obras_activas: "3",
             interes_compra: "Probable",
             pais: "México",
             plan: leerPlanDeInteres("?plan=plus&billing=annual"),
         });
-        expect(etiquetas(msg)).toEqual(["Nombre", "Correo", "Perfil", "Plan", "Obras activas", "Interés", "País"]);
+        expect(etiquetas(msg)).toEqual(["Nombre", "Correo", "WhatsApp", "Perfil", "Plan", "Obras activas", "Interés", "País"]);
+        expect(msg).toContain("WhatsApp: +52 55 1234 5678");
     });
 
     it("sin plan y sin obras: no deja renglones vacíos", () => {
         const msg = armarMensaje({
             nombre: "SMOKE Prueba",
             email: "prueba@example.com",
-            perfil: "Residente independiente",
+            whatsapp: "+52 55 1234 5678",
+            perfil: "Residente o superintendente de obra",
             obras_activas: null,
             interes_compra: "Probable",
             pais: "México",
         });
-        expect(etiquetas(msg)).toEqual(["Nombre", "Correo", "Perfil", "Interés", "País"]);
+        expect(etiquetas(msg)).toEqual(["Nombre", "Correo", "WhatsApp", "Perfil", "Interés", "País"]);
     });
 
     it("el enlace de WhatsApp lleva exactamente ese mensaje", () => {
         const datos = {
             nombre: "SMOKE Prueba",
             email: "prueba@example.com",
-            perfil: "Despacho técnico",
+            whatsapp: "+573001234567",
+            perfil: "Arquitecto o ingeniero independiente",
             interes_compra: "Curioso",
             pais: "Colombia",
         };
@@ -155,17 +183,119 @@ describe("las claves del mensaje de WhatsApp", () => {
         expect(decodeURIComponent(url.split("?text=")[1] ?? "")).toBe(armarMensaje(datos));
     });
 
-    it("la hoja arma el mensaje con los seis datos de siempre y el plan", () => {
-        const cuerpo = cuerpoDe(FORM, "function leerDatos(");
-        const inicio = cuerpo.indexOf("const datos: LeadDatos = {");
+    it("la hoja lee los siete datos y el plan", () => {
+        const cuerpo = cuerpoDe(FORM, "function leerHoja(");
+        const inicio = cuerpo.indexOf("return {");
         expect(inicio).toBeGreaterThan(-1);
         const bloque = cuerpo.slice(inicio, cuerpo.indexOf("};", inicio));
         const claves = bloque.match(/^\s*(\w+):/gm)?.map((c) => c.trim().replace(":", "")) ?? [];
-        expect(claves).toEqual(["nombre", "email", "perfil", "obras_activas", "interes_compra", "pais", "plan"]);
+        expect(claves).toEqual(["nombre", "email", "whatsapp", "pais", "perfil", "obras_activas", "interes_compra", "plan"]);
+    });
+
+    it("el mensaje sale del mismo cuerpo revisado que va al servidor", () => {
+        const envio = cuerpoDe(FORM, "function handleSubmit(");
+        expect(envio).toContain("armarCuerpoDemo(leerHoja(e.currentTarget, planInteres))");
+        expect(envio).toContain("datosDelMensaje(armado.cuerpo, planInteres)");
+        const armado = armarCuerpoDemo(HOJA_DEL_EJEMPLO);
+        expect(armado.ok).toBe(true);
+        if (!armado.ok) return;
+        const msg = armarMensaje(datosDelMensaje(armado.cuerpo, null));
+        expect(msg).toContain("WhatsApp: +52 55 1234 5678");
+        expect(msg).toContain("Perfil: Constructora o contratista");
+        expect(msg).toContain("Interés: Muy probable — estoy evaluando seriamente");
+        expect(msg).toContain("Obras activas: 8");
+        expect(msg).toContain("País: México");
     });
 });
 
-describe("la hoja ya no manda nada a la base vieja", () => {
+describe("contrato con el servidor (tanda 4): destino y claves", () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it("el destino es la ruta del contrato bajo NEXT_PUBLIC_API_BASE_URL", () => {
+        expect(CONTRATO.demo._regla.startsWith(`POST ${RUTA_SOLICITUD_DEMO}.`)).toBe(true);
+        vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "https://api.ejemplo.test/");
+        expect(urlSolicitudDemo()).toBe("https://api.ejemplo.test/api/v1/public/demo-requests");
+    });
+
+    it("las variables se leen escritas literal (Next solo así las pone en el navegador)", () => {
+        const fuente = readFileSync(resolve(process.cwd(), "src/lib/demoServidor.ts"), "utf8");
+        expect(fuente).toContain("process.env.NEXT_PUBLIC_API_BASE_URL");
+        expect(fuente).toContain("process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY");
+    });
+
+    it("Formulario.tsx no escribe a mano ningún servidor: usa urlSolicitudDemo()", () => {
+        expect(FORM).toContain("urlSolicitudDemo()");
+        expect(FORM).not.toContain("demo-requests");
+        expect(FORM).not.toMatch(/sslip|api\.bitacoria|localhost/);
+    });
+
+    it("el cuerpo de ejemplo del contrato sale de la misma función que arma el envío", () => {
+        const armado = armarCuerpoDemo(HOJA_DEL_EJEMPLO);
+        expect(armado.ok).toBe(true);
+        if (!armado.ok) return;
+        const cuerpo = cuerpoParaEnviar(armado.cuerpo, "token-de-prueba");
+        expect(cuerpo).toEqual(CONTRATO.ejemplos.demo_cuerpo);
+        expect(Object.keys(cuerpo)).toEqual([
+            "nombre",
+            "email",
+            "whatsapp",
+            "pais",
+            "perfil",
+            "obras_activas",
+            "interes_compra",
+            "plan",
+            "captcha_token",
+        ]);
+        expect(Object.keys(cuerpo)).toEqual(Object.keys(CONTRATO.ejemplos.demo_cuerpo));
+    });
+
+    it("y es exactamente lo que viaja por la red", async () => {
+        const armado = armarCuerpoDemo(HOJA_DEL_EJEMPLO);
+        if (!armado.ok) throw new Error("la hoja del ejemplo no pasó");
+        let enviado: unknown = null;
+        await enviarSolicitudDemo(
+            "https://api.ejemplo.test/api/v1/public/demo-requests",
+            cuerpoParaEnviar(armado.cuerpo, "token-de-prueba"),
+            {
+                fetchImpl: (_url, init) => {
+                    enviado = JSON.parse(String(init.body));
+                    return Promise.resolve({ status: 200, json: () => Promise.resolve({ ok: true }) });
+                },
+            },
+        );
+        expect(enviado).toEqual(CONTRATO.ejemplos.demo_cuerpo);
+    });
+
+    it("Formulario.tsx manda con esas mismas funciones", () => {
+        const servidor = cuerpoDe(FORM, "async function enviarAlServidor(");
+        expect(servidor).toContain("enviarConReintento({");
+        const fuente = readFileSync(resolve(process.cwd(), "src/lib/demoServidor.ts"), "utf8").replace(/\r\n/g, "\n");
+        const inicio = fuente.indexOf("export async function enviarConReintento(");
+        expect(inicio).toBeGreaterThan(-1);
+        const reintento = fuente.slice(inicio, fuente.indexOf("\n}\n", inicio));
+        expect(reintento).toContain("enviar(p.url, cuerpoParaEnviar(p.cuerpo, token))");
+        expect(reintento).toContain("enviarSolicitudDemo(url, cuerpo)");
+    });
+
+    it("las opciones de la hoja mandan la CLAVE y enseñan el texto", () => {
+        expect(FORM).toContain("PERFILES.map(([clave, texto]) => <option key={clave} value={clave}>{texto}</option>)");
+        expect(FORM).toContain("INTERESES.map(([clave, texto]) => <option key={clave} value={clave}>{texto}</option>)");
+    });
+
+    it("el WhatsApp es obligatorio, de teléfono y sin tope de largo", () => {
+        const inicio = FORM.indexOf('id="reg-whatsapp"');
+        expect(inicio).toBeGreaterThan(-1);
+        const campo = FORM.slice(inicio, FORM.indexOf("/>", inicio));
+        expect(campo).toContain('name="whatsapp"');
+        expect(campo).toContain('type="tel"');
+        expect(campo).toContain("required");
+        expect(campo).not.toContain("maxLength");
+    });
+});
+
+describe("la hoja ya no manda nada a la base vieja y el salto a WhatsApp va dentro del clic", () => {
     it("Formulario.tsx no apunta a ningún proyecto de Supabase", () => {
         // El destino viejo (functions/v1/register-participant) ya no existe: a
         // todos les salía "Sin conexión". Que no vuelva por copiar y pegar.
@@ -173,9 +303,10 @@ describe("la hoja ya no manda nada a la base vieja", () => {
         expect(FORM).not.toContain("/functions/v1/");
     });
 
-    it("el envío no es async, no espera nada y no llama a la red", () => {
-        // WhatsApp se abre dentro del mismo clic: tras un await el navegador ya
-        // no lo cuenta como clic y bloquea la ventana.
+    it("el clic no es async, no espera nada y no llama a la red", () => {
+        // Sin servidor, WhatsApp se abre dentro del mismo clic: tras un await el
+        // navegador ya no lo cuenta como clic y bloquea la ventana. El envío al
+        // servidor (que sí espera) va aparte, en enviarAlServidor.
         expect(FORM).not.toMatch(/async\s+function\s+handleSubmit/);
         expect(FORM).not.toMatch(/handleSubmit\s*=\s*async/);
         const envio = cuerpoDe(FORM, "function handleSubmit(");
@@ -184,11 +315,45 @@ describe("la hoja ya no manda nada a la base vieja", () => {
         }
     });
 
-    it("abre WhatsApp antes de cambiar la pantalla, con la ventana del navegador", () => {
+    it("sin servidor, abre WhatsApp antes de cambiar la pantalla, con la ventana del navegador", () => {
         const envio = cuerpoDe(FORM, "function handleSubmit(");
         const abre = envio.indexOf("abrirEnPestanaNueva(wa, window)");
         expect(abre).toBeGreaterThan(-1);
-        expect(abre).toBeLessThan(envio.indexOf("setEnviado("));
+        expect(abre).toBeLessThan(envio.indexOf('setPantalla({ tipo: "falta", datos })'));
+    });
+
+    it("el camino lo decide decidirEnvio en el clic, con lo que ya se sabe", () => {
+        const envio = cuerpoDe(FORM, "function handleSubmit(");
+        expect(envio).toContain("decidirEnvio({");
+        // Al servidor se va sin esperar dentro del clic.
+        expect(envio).toContain("void enviarAlServidor(");
+        expect(envio.indexOf("void enviarAlServidor(")).toBeLessThan(envio.indexOf("abrirEnPestanaNueva("));
+    });
+
+    it("tras esperar al servidor nunca se abre nada solo", () => {
+        const servidor = cuerpoDe(FORM, "async function enviarAlServidor(");
+        for (const prohibido of ["abrirEnPestanaNueva", "window.open", "location.assign", "location.href"]) {
+            expect(servidor, `enviarAlServidor no debe usar ${prohibido}`).not.toContain(prohibido);
+        }
+    });
+
+    it("Solicitud recibida solo con la respuesta 2xx del servidor", () => {
+        const servidor = cuerpoDe(FORM, "async function enviarAlServidor(");
+        const recibida = servidor.indexOf('if (resultado.tipo === "recibida")');
+        expect(recibida).toBeGreaterThan(-1);
+        expect(servidor.indexOf('setPantalla({ tipo: "recibida", datos })')).toBeGreaterThan(recibida);
+        expect(FORM.match(/tipo: "recibida", datos/g) ?? []).toHaveLength(1);
+        expect(servidor.indexOf("marcarSolicitudRecibida()")).toBeGreaterThan(recibida);
+        expect(FORM.match(/marcarSolicitudRecibida\(\)/g) ?? []).toHaveLength(1);
+    });
+
+    it("la verificación vencida pide otro token (el reintento único se prueba en demoServidor.test.ts); lo demás va a No pudimos guardar", () => {
+        const servidor = cuerpoDe(FORM, "async function enviarAlServidor(");
+        expect(servidor).toContain("pedirOtroToken: () => verificacionRef.current?.reset()");
+        expect(servidor).toContain("esperarToken: () => tomarToken(TIEMPO_MAXIMO_TOKEN_MS)");
+        expect(servidor).toContain('setPantalla({ tipo: "no_guardada", datos })');
+        // El token se consume al tomarlo: cada uno sirve una vez.
+        expect(cuerpoDe(FORM, "async function tomarToken(")).toContain("tokenRef.current = null");
     });
 
     it("la validación sigue siendo la del navegador", () => {
@@ -196,7 +361,7 @@ describe("la hoja ya no manda nada a la base vieja", () => {
         expect(FORM).not.toContain("noValidate");
     });
 
-    it("no deja la marca vieja ni guarda la cuenta: nada quedó guardado", () => {
+    it("no deja la marca vieja ni guarda la cuenta local (la nueva vive en registro.ts)", () => {
         expect(FORM).not.toContain("REGISTERED_FLAG");
         expect(FORM).not.toContain("bitacoria_registered");
         expect(FORM).not.toContain("setStoredAccount");
@@ -206,12 +371,16 @@ describe("la hoja ya no manda nada a la base vieja", () => {
     it("la marca vieja ya no tapa la hoja: se prellenan nombre y correo guardados", () => {
         expect(FORM).toContain("datosPrellenados(correoDelHero, getStoredAccount())");
         expect(FORM).not.toContain("yaDentro");
-        expect(FORM).toContain("{!enviado && (");
+        expect(FORM).toContain('{pantalla.tipo === "hoja" && (');
     });
 });
 
 describe("la pantalla no dice que algo llegó si no llegó", () => {
     const VISIBLE = textoVisible(FORM);
+    // Formulario.tsx no los trae escritos. "Solicitud recibida" y "Te escribimos
+    // por WhatsApp" existen desde la tanda 4, pero solo en textosRecibida y
+    // pasosDespues(..., "servidor") de src/lib/solicitudDemo.ts, y solo se pintan
+    // con la respuesta 2xx (ver arriba).
     const VIEJOS = [
         "Solicitud recibida",
         "Quedaste en la lista",
@@ -237,7 +406,7 @@ describe("la pantalla no dice que algo llegó si no llegó", () => {
     });
 
     it("con WhatsApp: botón verde, correo con el mismo mensaje y el número a la vista", () => {
-        expect(VISIBLE).toContain("<WhatsAppCTA href={waUrl}>{falta.boton}</WhatsAppCTA>");
+        expect(VISIBLE).toContain("<WhatsAppCTA href={waUrl}>{aviso.boton}</WhatsAppCTA>");
         expect(VISIBLE).toContain("¿Sin WhatsApp en este equipo?");
         expect(VISIBLE).toContain("Envíanos el mismo mensaje por correo");
         expect(VISIBLE).toContain("{numeroVisible}");
@@ -250,7 +419,28 @@ describe("la pantalla no dice que algo llegó si no llegó", () => {
 
     it("Otras opciones (redes) se queda bajo el botón", () => {
         expect(VISIBLE).toContain("Otras opciones");
-        expect(VISIBLE.indexOf("Otras opciones")).toBeGreaterThan(VISIBLE.indexOf("{falta.boton}"));
+        expect(VISIBLE.indexOf("Otras opciones")).toBeGreaterThan(VISIBLE.indexOf("{aviso.boton}"));
+    });
+
+    it("recibida: el botón de WhatsApp es opcional y va debajo de su explicación", () => {
+        expect(VISIBLE).toContain("{recibida.extra}");
+        expect(VISIBLE).toContain("<WhatsAppCTA href={waUrl}>{recibida.boton}</WhatsAppCTA>");
+        expect(VISIBLE.indexOf("{recibida.extra}")).toBeLessThan(VISIBLE.indexOf("{recibida.boton}"));
+    });
+
+    it("los avisos de campo y el de la verificación van en ámbar, nunca en rojo", () => {
+        expect(VISIBLE).not.toMatch(/text-red|#f00\b|#ef4444|#dc2626/i);
+        expect(VISIBLE).toContain("Completa la verificación de arriba y vuelve a pulsar el botón.");
+    });
+
+    it("siete datos: seis con folio y el país al pie", () => {
+        for (const n of ["01", "02", "03", "04", "05", "06"]) expect(VISIBLE).toContain(`n="${n}"`);
+        expect(VISIBLE).not.toContain('n="07"');
+        expect(VISIBLE).toContain('htmlFor="reg-pais"');
+        const pagina = readFileSync(resolve(process.cwd(), "src/app/registro/page.tsx"), "utf8");
+        expect(pagina).toContain("Siete datos");
+        expect(pagina).not.toContain("Seis datos");
+        expect(VISIBLE).not.toContain("Seis datos");
     });
 });
 

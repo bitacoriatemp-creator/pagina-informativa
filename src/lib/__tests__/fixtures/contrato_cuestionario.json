@@ -1,0 +1,203 @@
+{
+  "_que_es": "Contrato app <-> servidor <-> página del cuestionario de alta y de la solicitud de demo (plan registro_filtro_2026-11-13). Se copia TAL CUAL a los dos repos y las pruebas de los dos lados lo leen: si un lado cambia una regla sin el otro, se rompe una prueba. Versión 1, 2026-11-13.",
+  "version": 1,
+
+  "opciones": {
+    "perfil": [
+      ["residente", "Residente o superintendente de obra"],
+      ["constructora", "Constructora o contratista"],
+      ["independiente", "Arquitecto o ingeniero independiente"],
+      ["supervision", "Supervisión o DRO (director responsable de obra)"],
+      ["desarrollador", "Desarrollador o dueño de la obra"],
+      ["estudiante", "Estudiante o docente"],
+      ["otro", "Otro"]
+    ],
+    "obras_activas": [
+      ["ninguna", "Ninguna por ahora"],
+      ["una", "1"],
+      ["2_5", "2 a 5"],
+      ["6_10", "6 a 10"],
+      ["mas_10", "Más de 10"]
+    ],
+    "como_se_entero": [
+      ["redes", "Redes sociales"],
+      ["recomendacion", "Recomendación de un colega"],
+      ["busqueda", "Búsqueda en Google"],
+      ["evento", "Evento, plática o escuela"],
+      ["otro", "Otro"]
+    ],
+    "plan": ["draft", "resident", "manager", "executive", "project_license"],
+    "interes_compra_demo": [
+      ["listo", "Listo para comprar"],
+      ["muy_probable", "Muy probable"],
+      ["probable", "Probable"],
+      ["curioso", "Curioso"],
+      ["investigando", "Solo investigando"]
+    ]
+  },
+
+  "campos": {
+    "obligatorios": ["perfil", "obras_activas", "whatsapp", "como_se_entero"],
+    "opcionales": ["empresa", "plan"],
+    "orden_de_revision": ["nombre", "perfil", "obras_activas", "whatsapp", "empresa", "como_se_entero"],
+    "_nota": "El nombre viaja fuera del cuestionario (`name`), pero se revisa con estas reglas y su error sale con campo 'nombre'. El servidor contesta el PRIMER campo inválido según orden_de_revision; la app revisa y marca todos. Claves desconocidas dentro de `cuestionario` se descartan. `plan` desconocido se guarda como null (no es error)."
+  },
+
+  "mensajes": {
+    "nombre": "Escribe tu nombre y apellido.",
+    "perfil": "Elige a qué te dedicas.",
+    "obras_activas": "Elige cuántas obras llevas hoy.",
+    "whatsapp": "Escribe tu WhatsApp a 10 dígitos, por ejemplo 55 1234 5678.",
+    "whatsapp_otro_pais": "Escribe tu número con lada del país, de 8 a 15 dígitos.",
+    "empresa": "Revisa el nombre de tu empresa: sin enlaces ni símbolos raros, hasta 80 caracteres.",
+    "como_se_entero": "Elige cómo te enteraste de BitacorIA.",
+    "cuestionario": "Revisa tus respuestas e intenta de nuevo.",
+    "CUESTIONARIO_PENDIENTE": "Actualizamos el registro. Recarga la página para crear tu cuenta."
+  },
+
+  "codigos": {
+    "CUESTIONARIO_PENDIENTE": {"status": 403, "detail": ["code", "message", "email (solo Google)", "name (solo Google, el que dio Google)"]},
+    "CUESTIONARIO_INVALIDO": {"status": 400, "detail": ["code", "message", "campo"]},
+    "ACEPTA_TERMINOS": {"status": 403, "detail": ["code", "message", "email", "name (nuevo, el que dio Google)"]},
+    "CUERPO_GRANDE": {"status": 413, "limite_bytes": 8192}
+  },
+
+  "whatsapp": {
+    "_regla": "México: quitar todo lo que no sea dígito; prefijos 521 (13 dígitos), 52 (12) y 01 (12) se quitan; quedan 10 dígitos, el primero de 2 a 9 y no todos iguales; se guarda +52 y los 10. Otro país: empieza con '+', los dígitos NO empiezan con 52 (si empiezan con 52 se aplica la regla de México), 8 a 15 dígitos, el primero de 1 a 9; se guarda '+' y los dígitos. La app manda siempre la salida; el servidor acepta además la entrada cruda de México.",
+    "mx": [
+      {"entrada": "5512345678", "salida": "+525512345678"},
+      {"entrada": "55 1234 5678", "salida": "+525512345678"},
+      {"entrada": "(55) 1234-5678", "salida": "+525512345678"},
+      {"entrada": "+52 55 1234 5678", "salida": "+525512345678"},
+      {"entrada": "525512345678", "salida": "+525512345678"},
+      {"entrada": "5215512345678", "salida": "+525512345678"},
+      {"entrada": "+5215512345678", "salida": "+525512345678"},
+      {"entrada": "015512345678", "salida": "+525512345678"},
+      {"entrada": "+525512345678", "salida": "+525512345678"},
+      {"entrada": "8119876543", "salida": "+528119876543"},
+      {"entrada": "0000000000", "salida": null},
+      {"entrada": "5555555555", "salida": null},
+      {"entrada": "1234567890", "salida": null},
+      {"entrada": "0123456789", "salida": null},
+      {"entrada": "551234567", "salida": null},
+      {"entrada": "55123456789", "salida": null},
+      {"entrada": "+520000000000", "salida": null},
+      {"entrada": "", "salida": null},
+      {"entrada": "abc", "salida": null}
+    ],
+    "otro_pais": [
+      {"entrada": "+1 415 555 0123", "salida": "+14155550123"},
+      {"entrada": "+57 300 123 4567", "salida": "+573001234567"},
+      {"entrada": "+34 612 34 56 78", "salida": "+34612345678"},
+      {"entrada": "+52 55 1234 5678", "salida": "+525512345678"},
+      {"entrada": "+1234567", "salida": null},
+      {"entrada": "+1234567890123456", "salida": null},
+      {"entrada": "+0123456789", "salida": null},
+      {"entrada": "+520000000000", "salida": null}
+    ]
+  },
+
+  "nombre": {
+    "_regla": "Se quitan espacios a los lados y se juntan los de en medio. Sin tabuladores, saltos de línea ni otros caracteres de control. Solo letras (con acentos y ñ), espacios, punto, apóstrofo y guion. Al menos 2 palabras de 2 letras o más (puede haber iniciales). De 5 a 120 caracteres después de limpiar. Se guarda limpio, sin cambiar mayúsculas.",
+    "casos": [
+      {"entrada": "Juan Pérez", "salida": "Juan Pérez"},
+      {"entrada": "  juan   pérez  ", "salida": "juan pérez"},
+      {"entrada": "Ma. del Carmen López", "salida": "Ma. del Carmen López"},
+      {"entrada": "José Ángel O'Connor", "salida": "José Ángel O'Connor"},
+      {"entrada": "Ana Sofía Ruiz-Tagle", "salida": "Ana Sofía Ruiz-Tagle"},
+      {"entrada": "Juan E. López", "salida": "Juan E. López"},
+      {"entrada": "Ñoño Muñoz", "salida": "Ñoño Muñoz"},
+      {"entrada": "Al Bo", "salida": "Al Bo"},
+      {"entrada": "Juan", "salida": null},
+      {"entrada": "J P", "salida": null},
+      {"entrada": "Juan 123", "salida": null},
+      {"entrada": "Juan <b>Pérez</b>", "salida": null},
+      {"entrada": "Juan@Pérez López", "salida": null},
+      {"entrada": "Juan\nPérez", "salida": null},
+      {"entrada": "Juan\tPérez", "salida": null},
+      {"entrada": "", "salida": null},
+      {"entrada": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA BBBBB", "salida": null}
+    ]
+  },
+
+  "empresa": {
+    "_regla": "Opcional. Se quitan espacios a los lados y se juntan los de en medio. Cuenta como vacía (null) si queda vacía, si tiene 2 caracteres o menos, si solo tiene guiones, puntos o diagonales, o si en minúsculas es una de: n/a, na, ninguna, ninguno, no, independiente, particular. Si no está vacía: sin caracteres de control, sin '<', '>', '@', 'http', 'www.' ni '://' (sin importar mayúsculas), no empieza con '=', '+', '-' ni '@', y mide hasta 80 caracteres. Se guarda limpia.",
+    "casos": [
+      {"entrada": "", "salida": null, "valida": true},
+      {"entrada": "Constructora Ruiz", "salida": "Constructora Ruiz", "valida": true},
+      {"entrada": "  Grupo   ABC  ", "salida": "Grupo ABC", "valida": true},
+      {"entrada": "Despacho 3R & Asociados", "salida": "Despacho 3R & Asociados", "valida": true},
+      {"entrada": "N/A", "salida": null, "valida": true},
+      {"entrada": "ninguna", "salida": null, "valida": true},
+      {"entrada": "Ninguno", "salida": null, "valida": true},
+      {"entrada": "no", "salida": null, "valida": true},
+      {"entrada": "Independiente", "salida": null, "valida": true},
+      {"entrada": "particular", "salida": null, "valida": true},
+      {"entrada": "--", "salida": null, "valida": true},
+      {"entrada": "-", "salida": null, "valida": true},
+      {"entrada": "ab", "salida": null, "valida": true},
+      {"entrada": "www.miempresa.com", "salida": null, "valida": false},
+      {"entrada": "https://x.com", "salida": null, "valida": false},
+      {"entrada": "=HIPERVINCULO(\"x\")", "salida": null, "valida": false},
+      {"entrada": "+Obras del Norte", "salida": null, "valida": false},
+      {"entrada": "-Obras del Norte", "salida": null, "valida": false},
+      {"entrada": "<script>alert(1)</script>", "salida": null, "valida": false},
+      {"entrada": "contacto@empresa.mx", "salida": null, "valida": false},
+      {"entrada": "Constructora\tRuiz", "salida": null, "valida": false},
+      {"entrada": "Constructora y Proyectos del Valle de México Sociedad Anónima de Capital Variable", "salida": null, "valida": false}
+    ]
+  },
+
+  "ejemplos": {
+    "register_cuerpo": {
+      "email": "obra@ejemplo.mx",
+      "password": "secreta123",
+      "name": "Juan Pérez",
+      "captcha_token": "token-de-prueba",
+      "acepta_terminos": true,
+      "cuestionario": {
+        "perfil": "residente",
+        "obras_activas": "2_5",
+        "whatsapp": "+525512345678",
+        "empresa": "Constructora Ruiz",
+        "como_se_entero": "redes",
+        "plan": "draft"
+      }
+    },
+    "oauth_google_cuerpo": {
+      "code": "codigo-de-google-de-prueba",
+      "redirect_uri": "https://app.bitacoria.com/auth/callback",
+      "code_verifier": "verificador-de-prueba-de-43-caracteres-aaaaaaa",
+      "acepta_terminos": true,
+      "name": "Juan Pérez",
+      "cuestionario": {
+        "perfil": "constructora",
+        "obras_activas": "una",
+        "whatsapp": "+525512345678",
+        "como_se_entero": "recomendacion"
+      }
+    },
+    "demo_cuerpo": {
+      "nombre": "Juan Pérez",
+      "email": "obra@ejemplo.mx",
+      "whatsapp": "+525512345678",
+      "pais": "MX",
+      "perfil": "constructora",
+      "obras_activas": 8,
+      "interes_compra": "muy_probable",
+      "plan": "plus",
+      "captcha_token": "token-de-prueba"
+    },
+    "demo_respuesta": {"ok": true}
+  },
+
+  "demo": {
+    "_regla": "POST /api/v1/public/demo-requests. nombre: reglas de `nombre`. email: regla de email_validator sin DNS, minúsculas, hasta 254. whatsapp: reglas de `whatsapp` (México si pais = MX; si no, también acepta otro país). pais: 2 letras mayúsculas (la lista de la página incluye OT = otro). perfil: clave de opciones.perfil. obras_activas: entero de 0 a 999 o null. interes_compra: clave de opciones.interes_compra_demo. plan: opcional, texto de hasta 30. captcha_token: acción 'demo'. Respuesta 2xx siempre {\"ok\": true}. Errores: 400 {code: DEMO_INVALIDA, campo, message}, 400 {code: CAPTCHA_INVALIDO}, 413, 429, 503.",
+    "mensajes_extra": {
+      "email": "Escribe un correo válido.",
+      "pais": "Elige tu país.",
+      "interes_compra": "Elige qué tan listo estás.",
+      "obras_activas": "Escribe cuántas obras llevas, de 0 a 999."
+    }
+  }
+}

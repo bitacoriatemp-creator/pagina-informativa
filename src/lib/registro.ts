@@ -14,6 +14,22 @@ export const HANDOFF_EMAIL = "bitacoria_registro_email";
     (tanda 4), el éxito real usará una marca con otro nombre. */
 export const REGISTERED_FLAG = "bitacoria_registered";
 
+/** Marca NUEVA (tanda 4, 2026-11-13): "el servidor guardó una solicitud de demo
+    desde este navegador". Solo se escribe con una respuesta 2xx del servidor y
+    lleva la fecha, nada de la persona. Tiene otro nombre a propósito: la vieja
+    quedó puesta en navegadores cuyas solicitudes se perdieron. Hoy nadie la lee
+    para tapar la hoja. */
+export const DEMO_RECIBIDA_FLAG = "bitacoria_demo_recibida";
+
+/** Escribe la marca nueva; si el navegador no deja (modo privado), no pasa nada. */
+export function marcarSolicitudRecibida(ahora: Date = new Date()): void {
+    try {
+        localStorage.setItem(DEMO_RECIBIDA_FLAG, ahora.toISOString());
+    } catch {
+        /* sin almacenamiento: la solicitud ya quedó en el servidor */
+    }
+}
+
 /* ── Plan que le interesa a la persona: /registro?plan=plus&billing=annual ──
    2026-11-13 (Luis): Plus se anuncia en la página pero todavía no existe en la
    app ni en el servidor. Su botón trae aquí, al formulario, con el plan y el

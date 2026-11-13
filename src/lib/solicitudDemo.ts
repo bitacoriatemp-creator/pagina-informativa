@@ -7,13 +7,19 @@
    mismo texto. Nada queda guardado hasta que la persona envíe ese
    mensaje, y la pantalla lo dice tal cual ("Falta un paso").
 
+   Tanda 4 (2026-11-13): con el servidor configurado la hoja se guarda
+   allá (src/lib/demoServidor.ts) y, si llegó, la pantalla dice "Solicitud
+   recibida". Sin servidor sigue lo de arriba; si el servidor falla, "No
+   pudimos guardar tu solicitud" con el mismo mensaje listo para mandar.
+
    Aquí viven las piezas sin pantalla, para poder probarlas sin montar
    el formulario: los textos de cada caso, el enlace de correo y la
    regla de abrir en pestaña nueva o, si el navegador la bloquea, en la
    misma.
    ══════════════════════════════════════════════════════════════ */
 
-import { armarMensaje, type LeadDatos } from "./whatsapp";
+import { INTERESES, PAISES, PERFILES, textoDe, type CuerpoDemo } from "./demoContrato";
+import { armarMensaje, formatearNumeroVisible, type LeadDatos } from "./whatsapp";
 
 /** El correo de contacto del pie de la página (FooterSection). Una prueba
     vigila que los dos digan lo mismo. */
@@ -22,6 +28,10 @@ export const CORREO_CONTACTO = "bitacoria.temp@gmail.com";
 /** Por dónde manda la persona su solicitud: WhatsApp si hay número
     configurado; si no, correo. */
 export type Canal = "whatsapp" | "correo";
+
+/** Cómo viaja la solicitud: "servidor" = se guarda en el servidor (tanda 4);
+    "directo" = la persona manda el mensaje ya escrito (tanda 0). */
+export type Modo = "servidor" | "directo";
 
 type PlanVisible = { nombre: string } | null | undefined;
 
@@ -71,18 +81,73 @@ function primerNombre(nombre: string): string {
 }
 
 /** Titular y entrada mientras la persona llena la hoja. */
-export function cabeceraFormulario(plan: PlanVisible, canal: Canal) {
+export function cabeceraFormulario(plan: PlanVisible, canal: Canal, modo: Modo = "directo") {
     if (plan) {
         return {
             antetitulo: `Plan ${plan.nombre}`,
             titulo: `Comienza con el plan ${plan.nombre}`,
-            entrada: `Seis datos. Con ellos armamos el mensaje para darte de alta por ${canal === "whatsapp" ? "WhatsApp" : "correo"}.`,
+            entrada:
+                modo === "servidor"
+                    ? "Siete datos. Con ellos te escribimos por WhatsApp para darte de alta."
+                    : `Siete datos. Con ellos armamos el mensaje para darte de alta por ${canal === "whatsapp" ? "WhatsApp" : "correo"}.`,
         };
     }
     return {
         antetitulo: "Acceso anticipado",
         titulo: "Solicita tu demo",
-        entrada: "Seis datos. Con ellos preparamos una demo sobre tu obra, no una presentación genérica.",
+        entrada: "Siete datos. Con ellos preparamos una demo sobre tu obra, no una presentación genérica.",
+    };
+}
+
+/**
+ * Textos cuando el servidor SÍ guardó la solicitud (respuesta 2xx). Es el único
+ * caso en que se dice "recibida". Debajo, opcional, el botón de WhatsApp.
+ */
+export function textosRecibida({ nombre, plan, whatsapp }: { nombre: string; plan: PlanVisible; whatsapp: string }) {
+    const quien = primerNombre(nombre);
+    const para = plan ? `para darte de alta en ${plan.nombre}.` : "para agendar tu demo.";
+    const numero = whatsapp.trim() ? ` al ${whatsapp.trim()}` : "";
+    return {
+        antetitulo: plan ? `Plan ${plan.nombre}` : "Solicitud de demo",
+        titulo: "Solicitud recibida",
+        entrada: `${quien ? `Gracias, ${quien}. ` : ""}Te escribimos por WhatsApp${numero} ${para}`,
+        extra: "No hace falta, pero si prefieres escribirnos tú:",
+        boton: "Escríbenos por WhatsApp",
+    };
+}
+
+/**
+ * Textos cuando el servidor no la guardó (otra respuesta, sin red o más de
+ * 15 s). No se abre nada solo: la persona pulsa el botón con el mensaje ya
+ * escrito. Nunca "recibida" ni letra roja.
+ */
+export function textosNoGuardada({ plan, canal }: { plan: PlanVisible; canal: Canal }) {
+    return {
+        antetitulo: plan ? `Plan ${plan.nombre}` : "Solicitud de demo",
+        titulo: "No pudimos guardar tu solicitud",
+        entrada:
+            canal === "whatsapp"
+                ? "Envíanosla por WhatsApp: el mensaje ya va escrito con tus datos."
+                : "Envíanosla por correo: el mensaje ya va escrito con tus datos.",
+        boton: canal === "whatsapp" ? "Enviar por WhatsApp" : "Enviar por correo",
+    };
+}
+
+/**
+ * Lo que lee el equipo en el mensaje de WhatsApp (o en el correo): los textos,
+ * no las claves. Sale del mismo cuerpo que se manda al servidor, así los dos
+ * caminos dicen lo mismo.
+ */
+export function datosDelMensaje(cuerpo: CuerpoDemo, plan: LeadDatos["plan"]): LeadDatos {
+    return {
+        nombre: cuerpo.nombre,
+        email: cuerpo.email,
+        whatsapp: formatearNumeroVisible(cuerpo.whatsapp),
+        perfil: textoDe(PERFILES, cuerpo.perfil),
+        obras_activas: cuerpo.obras_activas,
+        interes_compra: textoDe(INTERESES, cuerpo.interes_compra),
+        pais: textoDe(PAISES, cuerpo.pais),
+        plan: plan ?? null,
     };
 }
 
@@ -103,13 +168,21 @@ export function textosFaltaUnPaso({ nombre, plan, canal }: { nombre: string; pla
     };
 }
 
-/** "Qué pasa después", en la columna izquierda y bajo la hoja en teléfono. */
-export function pasosDespues(canal: Canal): [string, string][] {
+/** "Qué pasa después", en la columna izquierda y bajo la hoja en teléfono.
+    Con servidor la solicitud se guarda y quien escribe es el equipo; sin él,
+    quien escribe es la persona, con el mensaje ya armado. */
+export function pasosDespues(canal: Canal, modo: Modo = "directo"): [string, string][] {
+    let segundo: [string, string];
+    if (modo === "servidor") {
+        segundo = ["Te escribimos por WhatsApp", "Al número que nos dejes; contesta alguien del equipo."];
+    } else if (canal === "whatsapp") {
+        segundo = ["Nos escribes por WhatsApp", "El mensaje ya lleva tus datos; contesta alguien del equipo."];
+    } else {
+        segundo = ["Nos escribes por correo", "El mensaje ya lleva tus datos; contesta alguien del equipo."];
+    }
     return [
         ["Revisamos tu caso", "Cuántas obras llevas y qué módulo te sirve primero."],
-        canal === "whatsapp"
-            ? ["Nos escribes por WhatsApp", "El mensaje ya lleva tus datos; contesta alguien del equipo."]
-            : ["Nos escribes por correo", "El mensaje ya lleva tus datos; contesta alguien del equipo."],
+        segundo,
         ["Demo en vivo sobre tu obra", "Veinte minutos, con tus propios datos si quieres."],
     ];
 }

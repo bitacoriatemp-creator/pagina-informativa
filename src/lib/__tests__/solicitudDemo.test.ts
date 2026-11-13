@@ -3,30 +3,37 @@ import { resolve } from "node:path";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { leerPlanDeInteres } from "../registro";
+import { armarCuerpoDemo } from "../demoContrato";
+import { DEMO_RECIBIDA_FLAG, REGISTERED_FLAG, leerPlanDeInteres, marcarSolicitudRecibida } from "../registro";
 import {
     CORREO_CONTACTO,
     abrirEnPestanaNueva,
     buildCorreoUrl,
     cabeceraFormulario,
+    datosDelMensaje,
     datosPrellenados,
     pasosDespues,
     textosFaltaUnPaso,
+    textosNoGuardada,
+    textosRecibida,
     type Ventana,
 } from "../solicitudDemo";
-import { armarMensaje, formatearNumeroVisible, numeroWhatsAppVisible } from "../whatsapp";
+import { armarMensaje, formatearNumeroVisible, numeroWhatsAppVisible, type LeadDatos } from "../whatsapp";
 
 /**
- * Las piezas sin pantalla de "Solicitar demo" (2026-11-13, Luis, tanda 0 del
- * plan registro_filtro). Nada se guarda: se abre WhatsApp en el mismo clic y la
- * pantalla dice "Falta un paso". Se prueban sin montar el formulario.
+ * Las piezas sin pantalla de "Solicitar demo" (2026-11-13, Luis). Tanda 0 del
+ * plan registro_filtro: sin servidor nada se guarda, se abre WhatsApp en el
+ * mismo clic y la pantalla dice "Falta un paso". Tanda 4: con servidor, "Solicitud
+ * recibida" solo si llegó; si no, "No pudimos guardar tu solicitud". Se prueban
+ * sin montar el formulario.
  */
 
 const PLUS = leerPlanDeInteres("?plan=plus&billing=annual");
-const DATOS = {
+const DATOS: LeadDatos = {
     nombre: "SMOKE Prueba Uno",
     email: "prueba@example.com",
-    perfil: "Constructora PyME",
+    whatsapp: "+52 55 1234 5678",
+    perfil: "Constructora o contratista",
     obras_activas: "4",
     interes_compra: "Muy probable — estoy evaluando seriamente",
     pais: "México",
@@ -133,31 +140,47 @@ describe("Falta un paso: textos por caso", () => {
 });
 
 describe("titular mientras llena la hoja", () => {
-    it("demo: el de siempre", () => {
-        expect(cabeceraFormulario(null, "whatsapp")).toEqual({
+    it("demo: siete datos (el WhatsApp es el séptimo), con servidor o sin él", () => {
+        const esperado = {
             antetitulo: "Acceso anticipado",
             titulo: "Solicita tu demo",
-            entrada: "Seis datos. Con ellos preparamos una demo sobre tu obra, no una presentación genérica.",
-        });
+            entrada: "Siete datos. Con ellos preparamos una demo sobre tu obra, no una presentación genérica.",
+        };
+        expect(cabeceraFormulario(null, "whatsapp")).toEqual(esperado);
+        expect(cabeceraFormulario(null, "whatsapp", "servidor")).toEqual(esperado);
     });
 
-    it("Plus: arma el mensaje para darte de alta por WhatsApp", () => {
+    it("Plus sin servidor: arma el mensaje para darte de alta por WhatsApp", () => {
         expect(cabeceraFormulario(PLUS, "whatsapp")).toEqual({
             antetitulo: "Plan Plus",
             titulo: "Comienza con el plan Plus",
-            entrada: "Seis datos. Con ellos armamos el mensaje para darte de alta por WhatsApp.",
+            entrada: "Siete datos. Con ellos armamos el mensaje para darte de alta por WhatsApp.",
         });
     });
 
     it("Plus sin WhatsApp no promete WhatsApp", () => {
         expect(cabeceraFormulario(PLUS, "correo").entrada).toBe(
-            "Seis datos. Con ellos armamos el mensaje para darte de alta por correo.",
+            "Siete datos. Con ellos armamos el mensaje para darte de alta por correo.",
         );
+    });
+
+    it("Plus con servidor: el equipo escribe", () => {
+        expect(cabeceraFormulario(PLUS, "whatsapp", "servidor").entrada).toBe(
+            "Siete datos. Con ellos te escribimos por WhatsApp para darte de alta.",
+        );
+    });
+
+    it("ya no dice seis datos", () => {
+        for (const plan of [null, PLUS]) {
+            for (const modo of ["directo", "servidor"] as const) {
+                expect(cabeceraFormulario(plan, "whatsapp", modo).entrada).not.toContain("Seis");
+            }
+        }
     });
 });
 
 describe("qué pasa después", () => {
-    it("el renglón 2 dice que quien escribe es la persona", () => {
+    it("sin servidor, el renglón 2 dice que quien escribe es la persona", () => {
         expect(pasosDespues("whatsapp")[1]).toEqual([
             "Nos escribes por WhatsApp",
             "El mensaje ya lleva tus datos; contesta alguien del equipo.",
@@ -165,12 +188,133 @@ describe("qué pasa después", () => {
         expect(pasosDespues("correo")[1][0]).toBe("Nos escribes por correo");
     });
 
-    it("ya no promete que nosotros escribimos primero", () => {
+    it("sin servidor ya no promete que nosotros escribimos primero", () => {
         for (const canal of ["whatsapp", "correo"] as const) {
             const todo = pasosDespues(canal).flat().join(" ");
             expect(todo).not.toContain("Te escribimos");
             expect(pasosDespues(canal)).toHaveLength(3);
         }
+    });
+
+    it("con servidor la solicitud queda guardada y el equipo escribe al número que dejó", () => {
+        expect(pasosDespues("whatsapp", "servidor")[1]).toEqual([
+            "Te escribimos por WhatsApp",
+            "Al número que nos dejes; contesta alguien del equipo.",
+        ]);
+        expect(pasosDespues("whatsapp", "servidor")).toHaveLength(3);
+    });
+});
+
+describe("Solicitud recibida (solo cuando el servidor la guardó)", () => {
+    it("demo: recibida, gracias y el número al que escribimos", () => {
+        expect(textosRecibida({ nombre: "Ana López", plan: null, whatsapp: "+52 55 1234 5678" })).toEqual({
+            antetitulo: "Solicitud de demo",
+            titulo: "Solicitud recibida",
+            entrada: "Gracias, Ana. Te escribimos por WhatsApp al +52 55 1234 5678 para agendar tu demo.",
+            extra: "No hace falta, pero si prefieres escribirnos tú:",
+            boton: "Escríbenos por WhatsApp",
+        });
+    });
+
+    it("Plus: el remate es el alta", () => {
+        const t = textosRecibida({ nombre: "Ana", plan: PLUS, whatsapp: "+52 55 1234 5678" });
+        expect(t.antetitulo).toBe("Plan Plus");
+        expect(t.entrada).toBe("Gracias, Ana. Te escribimos por WhatsApp al +52 55 1234 5678 para darte de alta en Plus.");
+    });
+
+    it("sin nombre ni número no deja huecos", () => {
+        expect(textosRecibida({ nombre: " ", plan: null, whatsapp: "" }).entrada).toBe(
+            "Te escribimos por WhatsApp para agendar tu demo.",
+        );
+    });
+});
+
+describe("No pudimos guardar tu solicitud (el servidor falló)", () => {
+    it("con WhatsApp: envíanosla por WhatsApp, sin decir que llegó", () => {
+        expect(textosNoGuardada({ plan: null, canal: "whatsapp" })).toEqual({
+            antetitulo: "Solicitud de demo",
+            titulo: "No pudimos guardar tu solicitud",
+            entrada: "Envíanosla por WhatsApp: el mensaje ya va escrito con tus datos.",
+            boton: "Enviar por WhatsApp",
+        });
+    });
+
+    it("sin número de WhatsApp, por correo", () => {
+        const t = textosNoGuardada({ plan: PLUS, canal: "correo" });
+        expect(t.antetitulo).toBe("Plan Plus");
+        expect(t.boton).toBe("Enviar por correo");
+        expect(t.entrada).toBe("Envíanosla por correo: el mensaje ya va escrito con tus datos.");
+    });
+
+    it.each(["whatsapp", "correo"] as const)("nunca dice que ya llegó (%s)", (canal) => {
+        const todo = Object.values(textosNoGuardada({ plan: null, canal })).join(" ").toLowerCase();
+        for (const falso of ["recibida", "recibimos", "en la lista", "te escribimos", "listo", "✓"]) {
+            expect(todo).not.toContain(falso);
+        }
+    });
+});
+
+describe("el mensaje sale del mismo cuerpo que va al servidor", () => {
+    it("con textos, no claves: perfil, interés y país legibles; WhatsApp agrupado", () => {
+        const armado = armarCuerpoDemo({
+            nombre: "Juan Pérez",
+            email: "obra@ejemplo.mx",
+            whatsapp: "55 1234 5678",
+            pais: "MX",
+            perfil: "supervision",
+            obras_activas: "",
+            interes_compra: "investigando",
+            plan: "plus",
+        });
+        expect(armado.ok).toBe(true);
+        if (!armado.ok) return;
+        expect(datosDelMensaje(armado.cuerpo, PLUS)).toEqual({
+            nombre: "Juan Pérez",
+            email: "obra@ejemplo.mx",
+            whatsapp: "+52 55 1234 5678",
+            perfil: "Supervisión o DRO (director responsable de obra)",
+            obras_activas: null,
+            interes_compra: "Solo investigando — no estoy en el mercado ahora",
+            pais: "México",
+            plan: PLUS,
+        });
+    });
+
+    it("número de otro país: con + y sus dígitos", () => {
+        const armado = armarCuerpoDemo({
+            nombre: "Ana Ruiz",
+            email: "ana@ejemplo.co",
+            whatsapp: "+57 300 123 4567",
+            pais: "CO",
+            perfil: "otro",
+            obras_activas: "2",
+            interes_compra: "curioso",
+        });
+        expect(armado.ok && datosDelMensaje(armado.cuerpo, null)).toMatchObject({
+            whatsapp: "+573001234567",
+            pais: "Colombia",
+            obras_activas: 2,
+            plan: null,
+        });
+    });
+});
+
+describe("la marca nueva del navegador", () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it("tiene otro nombre que la vieja y solo guarda la fecha", () => {
+        expect(DEMO_RECIBIDA_FLAG).not.toBe(REGISTERED_FLAG);
+        const guardado: Record<string, string> = {};
+        vi.stubGlobal("localStorage", { setItem: (k: string, v: string) => { guardado[k] = v; } });
+        marcarSolicitudRecibida(new Date("2026-11-13T18:00:00Z"));
+        expect(guardado).toEqual({ [DEMO_RECIBIDA_FLAG]: "2026-11-13T18:00:00.000Z" });
+    });
+
+    it("si el navegador no deja guardar, no truena", () => {
+        vi.stubGlobal("localStorage", { setItem: () => { throw new Error("modo privado"); } });
+        expect(() => marcarSolicitudRecibida()).not.toThrow();
     });
 });
 

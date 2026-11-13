@@ -3,15 +3,27 @@
 /* ══════════════════════════════════════════════════════════════════════
    Formulario — la solicitud de demo, a página entera
    ──────────────────────────────────────────────────────────────────────
-   Sustituye al antiguo RegistroModal. Pide los mismos seis datos.
+   Sustituye al antiguo RegistroModal. Pide siete datos: nombre, correo,
+   WhatsApp, a qué se dedica, obras activas, qué tan listo está y país.
 
    2026-11-13 (Luis, tanda 0 del plan registro_filtro): antes los mandaba
    a la base vieja del sitio, que ya no existe, y a todos les salía "Sin
-   conexión" en rojo. Ahora no manda nada a ninguna base: arma el mensaje
-   y abre WhatsApp en el mismo clic (o el correo, si no hay número). Como
-   nada queda guardado hasta que la persona envíe ese mensaje, la pantalla
-   siguiente dice "Falta un paso", nunca "Solicitud recibida". Guardar en
-   el servidor llega con la tanda 4.
+   conexión" en rojo. La tanda 0 dejó de mandar nada: arma el mensaje y
+   abre WhatsApp en el mismo clic, y la pantalla dice "Falta un paso".
+
+   Tanda 4 (mismo plan): con el servidor configurado
+   (NEXT_PUBLIC_API_BASE_URL y la verificación de Cloudflare,
+   NEXT_PUBLIC_TURNSTILE_SITE_KEY) la hoja se guarda en el servidor de
+   BitacorIA. Reglas y textos en src/lib/demoServidor.ts,
+   src/lib/demoContrato.ts y src/lib/solicitudDemo.ts:
+   - llegó (2xx): "Solicitud recibida" y, opcional, el botón de WhatsApp;
+   - un dato que el servidor rechaza: el aviso junto a ese campo;
+   - verificación vencida: se pide otra y se reintenta una vez;
+   - falta una variable o el recuadro no carga (se sabe antes de enviar):
+     como en la tanda 0, WhatsApp dentro del mismo clic;
+   - cualquier otra cosa, sin red o más de 15 s: no se abre nada solo;
+     "No pudimos guardar tu solicitud" con el botón de WhatsApp.
+   Nunca la letra roja.
    ══════════════════════════════════════════════════════════════════════ */
 
 import { useState, useEffect, useRef, type FormEvent } from "react";
@@ -22,43 +34,42 @@ import { ArrowLeft, Check, ChevronDown, Facebook, Instagram } from "lucide-react
 import { assetPath } from "@/lib/assetPath";
 import { getStoredAccount } from "@/lib/account";
 import { buildWhatsAppUrl, hasWhatsApp, numeroWhatsAppVisible, type LeadDatos } from "@/lib/whatsapp";
-import { HANDOFF_EMAIL, leerPlanDeInteres, type PlanDeInteres } from "@/lib/registro";
+import { HANDOFF_EMAIL, leerPlanDeInteres, marcarSolicitudRecibida, type PlanDeInteres } from "@/lib/registro";
 import {
     abrirEnPestanaNueva,
     buildCorreoUrl,
     cabeceraFormulario,
+    datosDelMensaje,
     datosPrellenados,
     pasosDespues,
     textosFaltaUnPaso,
+    textosNoGuardada,
+    textosRecibida,
     type Canal,
+    type Modo,
 } from "@/lib/solicitudDemo";
+import {
+    CAMPOS_DEMO,
+    INTERESES,
+    PAISES,
+    PERFILES,
+    armarCuerpoDemo,
+    type CampoDemo,
+    type CuerpoDemo,
+    type ErroresDemo,
+    type HojaDemo,
+} from "@/lib/demoContrato";
+import {
+    TIEMPO_MAXIMO_TOKEN_MS,
+    decidirEnvio,
+    enviarConReintento,
+    llaveVerificacion,
+    urlSolicitudDemo,
+    type EstadoVerificacion,
+} from "@/lib/demoServidor";
 import { registerUrl } from "@/lib/appUrl";
 import { botonCrema, botonVerde } from "./botones";
-
-const PAISES: [string, string][] = [
-    ["MX", "México"], ["US", "Estados Unidos"], ["GT", "Guatemala"], ["CO", "Colombia"],
-    ["EC", "Ecuador"], ["PE", "Perú"], ["BO", "Bolivia"], ["PY", "Paraguay"],
-    ["AR", "Argentina"], ["BR", "Brasil"], ["CL", "Chile"], ["CR", "Costa Rica"], ["CU", "Cuba"],
-    ["DO", "República Dominicana"], ["SV", "El Salvador"], ["HN", "Honduras"], ["NI", "Nicaragua"],
-    ["PA", "Panamá"], ["PR", "Puerto Rico"], ["UY", "Uruguay"], ["VE", "Venezuela"],
-    ["ES", "España"], ["CA", "Canadá"], ["OT", "Otro / No listado"],
-];
-
-const PERFILES = [
-    "Constructora PyME",
-    "Residente independiente",
-    "Despacho técnico",
-    "Desarrollador",
-    "Estudiante/academia",
-];
-
-const INTERESES: [string, string][] = [
-    ["Listo para comprar", "Listo para comprar — solo espero el lanzamiento"],
-    ["Muy probable", "Muy probable — estoy evaluando seriamente"],
-    ["Probable", "Probable — depende de lo que vea en la demo"],
-    ["Curioso", "Curioso — vine a explorar"],
-    ["Investigando", "Solo investigando — no estoy en el mercado ahora"],
-];
+import Verificacion, { type VerificacionHandle } from "./Verificacion";
 
 /* ── Glifos que lucide no trae ── */
 const WhatsAppIcon = () => (
@@ -121,17 +132,39 @@ function Renglon({ n, htmlFor, children, nota }: { n: string; htmlFor: string; c
     );
 }
 
+/* Id de cada campo de la hoja: el aviso de un campo va junto a él. */
+const ID_DE: Record<CampoDemo, string> = {
+    nombre: "reg-nombre",
+    email: "reg-email",
+    whatsapp: "reg-whatsapp",
+    perfil: "reg-perfil",
+    obras_activas: "reg-obras",
+    interes_compra: "reg-interes",
+    pais: "reg-pais",
+};
+
+/* Aviso de un campo: ámbar de la paleta, nunca rojo. El lector de pantalla lo
+   lee al llegar el foco al campo (aria-describedby). */
+function AvisoCampo({ campo, texto }: { campo: CampoDemo; texto?: string }) {
+    if (!texto) return null;
+    return (
+        <p id={`${ID_DE[campo]}-aviso`} className="mt-1.5 text-[13px] leading-snug text-[#e8b97a]">
+            {texto}
+        </p>
+    );
+}
+
 /* Lista "qué pasa después" — se pinta dos veces: en la columna izquierda a
    partir de lg, y bajo el formulario en móvil, donde primero va aquello a
-   lo que se vino. Los textos salen de pasosDespues() (src/lib/solicitudDemo.ts).
-   2026-11-13: el renglón 2 decía "Te escribimos por WhatsApp"; hoy quien
-   escribe es la persona, con el mensaje ya armado. */
-function QuePasaDespues({ canal, className = "" }: { canal: Canal; className?: string }) {
+   lo que se vino. Los textos salen de pasosDespues() (src/lib/solicitudDemo.ts):
+   con servidor, "Te escribimos por WhatsApp"; sin él, quien escribe es la
+   persona, con el mensaje ya armado. */
+function QuePasaDespues({ canal, modo, className = "" }: { canal: Canal; modo: Modo; className?: string }) {
     return (
         <ul className={`divide-y divide-white/[0.06] border-t border-white/[0.06] ${className}`}>
-            {pasosDespues(canal).map(([titulo, detalle]) => (
+            {pasosDespues(canal, modo).map(([titulo, detalle]) => (
                 <li key={titulo} className="flex gap-4 py-4">
-                    {/* Un guion de bronce, no un número: los folios 01-05 ya numeran
+                    {/* Un guion de bronce, no un número: los folios 01-06 ya numeran
                         los campos, y repetir ese tratamiento aquí pone dos sistemas
                         de numeración idénticos en la misma pantalla. */}
                     <span aria-hidden className="mt-[11px] h-px w-4 shrink-0 bg-[#c39767]/45" />
@@ -148,29 +181,39 @@ function QuePasaDespues({ canal, className = "" }: { canal: Canal; className?: s
 const enlaceBronce =
     "text-[#c39767] underline decoration-[#c39767]/40 underline-offset-4 transition-colors hover:text-[#e8c9a0]";
 
-/* Lee la hoja tal como está: textos legibles (nombre del país, interés
-   completo), no los códigos internos, porque esto es lo que lee el equipo en
-   el mensaje. */
-function leerDatos(form: HTMLFormElement, planInteres: PlanDeInteres | null): LeadDatos {
+/* Lee la hoja tal como está escrita. La limpieza y la revisión las hace
+   armarCuerpoDemo (src/lib/demoContrato.ts), igual con servidor o sin él. */
+function leerHoja(form: HTMLFormElement, planInteres: PlanDeInteres | null): HojaDemo {
     const fd = new FormData(form);
-    const pais = (fd.get("pais") || "").toString().trim().toUpperCase();
-    const interes = (fd.get("interes_compra") || "").toString().trim();
-    const datos: LeadDatos = {
-        nombre: (fd.get("nombre") || "").toString().trim(),
-        email: (fd.get("email") || "").toString().trim().toLowerCase(),
-        perfil: (fd.get("perfil") || "").toString().trim(),
-        obras_activas: (fd.get("obras_activas") || "").toString().trim() || null,
-        interes_compra: INTERESES.find(([v]) => v === interes)?.[1] ?? interes,
-        pais: PAISES.find(([v]) => v === pais)?.[1] ?? pais,
-        plan: planInteres,
+    const v = (campo: string) => (fd.get(campo) ?? "").toString();
+    return {
+        nombre: v("nombre"),
+        email: v("email"),
+        whatsapp: v("whatsapp"),
+        pais: v("pais"),
+        perfil: v("perfil"),
+        obras_activas: v("obras_activas"),
+        interes_compra: v("interes_compra"),
+        plan: planInteres?.clave ?? null,
     };
-    return datos;
 }
 
+/* Qué hay en la columna derecha. "falta" = tanda 0 (nada guardado: falta que
+   la persona mande el mensaje); "recibida" = el servidor la guardó;
+   "no_guardada" = el servidor no la guardó. */
+type Pantalla =
+    | { tipo: "hoja" }
+    | { tipo: "falta"; datos: LeadDatos }
+    | { tipo: "recibida"; datos: LeadDatos }
+    | { tipo: "no_guardada"; datos: LeadDatos };
+
 export default function Formulario() {
-    /* null = la hoja; con datos = "Falta un paso". No hay estado de "enviando"
-       ni de error: no se manda nada a ningún servidor. */
-    const [enviado, setEnviado] = useState<LeadDatos | null>(null);
+    const [pantalla, setPantalla] = useState<Pantalla>({ tipo: "hoja" });
+    const [enviando, setEnviando] = useState(false);
+    const [errores, setErrores] = useState<ErroresDemo>({});
+    const [pais, setPais] = useState("");
+    const [verificacion, setVerificacionVisible] = useState<EstadoVerificacion>("cargando");
+    const [avisoVerificacion, setAvisoVerificacion] = useState(false);
     const [showOtras, setShowOtras] = useState(false);
     const [prefill, setPrefill] = useState<{ nombre?: string; email?: string }>({});
     /* Plan que trae la URL desde la tarjeta de la página (?plan=plus). null =
@@ -179,10 +222,23 @@ export default function Formulario() {
 
     const paisRef = useRef<HTMLSelectElement>(null);
     const tituloRef = useRef<HTMLHeadingElement>(null);
+    const verificacionRef = useRef<VerificacionHandle>(null);
+    /* El token y el estado del recuadro se leen dentro del clic y mientras se
+       espera al servidor: van en refs para leer siempre el vigente. */
+    const tokenRef = useRef<string | null>(null);
+    const estadoVerificacionRef = useRef<EstadoVerificacion>("cargando");
+    const esperandoToken = useRef<((token: string | null) => void)[]>([]);
 
     /* Sin número configurado no hay WhatsApp: el correo pasa a ser el camino
        principal. Es una constante del build, igual en servidor y navegador. */
     const canal: Canal = hasWhatsApp() ? "whatsapp" : "correo";
+
+    /* Servidor de solicitudes: las dos variables públicas y un recuadro de
+       verificación que sí cargó. Si falta algo, la hoja trabaja como en la
+       tanda 0. */
+    const urlServidor = urlSolicitudDemo();
+    const llave = llaveVerificacion();
+    const conServidor = Boolean(urlServidor && llave) && verificacion !== "fallo";
 
     /* ── Prellenado ──
        El correo que se tecleó en el hero (sessionStorage, un solo uso) y lo
@@ -212,7 +268,10 @@ export default function Formulario() {
         if (!sel || sel.value) return;
         const apply = (code: string | null) => {
             if (!code || !sel || sel.value) return;
-            if (sel.querySelector(`option[value="${code}"]`)) sel.value = code;
+            if (sel.querySelector(`option[value="${code}"]`)) {
+                sel.value = code;
+                setPais(code);
+            }
         };
         let cached: string | null = null;
         try { cached = sessionStorage.getItem("bitacoria_geo_country"); } catch { /* */ }
@@ -232,37 +291,186 @@ export default function Formulario() {
         return () => clearTimeout(t);
     }, []);
 
-    /* Al pasar a "Falta un paso" el foco va al titular: en teléfono la
-       persona estaba al fondo de la hoja, y el lector de pantalla anuncia el
-       cambio. */
+    /* Al cambiar de pantalla el foco va al titular: en teléfono la persona
+       estaba al fondo de la hoja, y el lector de pantalla anuncia el cambio. */
     useEffect(() => {
-        if (enviado) tituloRef.current?.focus();
-    }, [enviado]);
+        if (pantalla.tipo !== "hoja") tituloRef.current?.focus();
+    }, [pantalla.tipo]);
 
-    /* ── Envío ──
-       NO es async y no lleva ningún await: WhatsApp se abre dentro del mismo
-       clic. Tras cualquier espera el navegador ya no lo cuenta como clic y
-       bloquea la ventana. La validación es la nativa del navegador (required,
-       type=email): si algo falta, este manejador ni se llama. */
-    function handleSubmit(e: FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-        const datos = leerDatos(e.currentTarget, planInteres);
-        const wa = buildWhatsAppUrl(datos);
-        if (wa) abrirEnPestanaNueva(wa, window);
-        setEnviado(datos);
+    /* ── Recuadro de verificación ── */
+    function setVerificacion(estado: EstadoVerificacion) {
+        estadoVerificacionRef.current = estado;
+        setVerificacionVisible(estado);
     }
 
-    const waUrl = enviado ? buildWhatsAppUrl(enviado) : null;
-    const correoUrl = enviado ? buildCorreoUrl(enviado) : null;
+    function soltarEsperas(token: string | null) {
+        const pendientes = esperandoToken.current;
+        esperandoToken.current = [];
+        pendientes.forEach((avisar) => avisar(token));
+    }
+
+    function alToken(token: string | null) {
+        if (estadoVerificacionRef.current === "fallo") return;
+        tokenRef.current = token;
+        if (token) {
+            setVerificacion("lista");
+            setAvisoVerificacion(false);
+            soltarEsperas(token);
+        }
+    }
+
+    function alInteractiva() {
+        if (estadoVerificacionRef.current !== "fallo") setVerificacion("interactiva");
+    }
+
+    /* El recuadro no cargó: la hoja pasa a WhatsApp directo sin decir nada. */
+    function alFallo() {
+        tokenRef.current = null;
+        setVerificacion("fallo");
+        setAvisoVerificacion(false);
+        soltarEsperas(null);
+    }
+
+    /** Un token para enviar: el que ya hay o el siguiente, hasta `ms`. Se
+        consume: cada token sirve una vez. */
+    async function tomarToken(ms: number): Promise<string | null> {
+        const token = await esperarToken(ms);
+        tokenRef.current = null;
+        return token;
+    }
+
+    function esperarToken(ms: number): Promise<string | null> {
+        if (tokenRef.current) return Promise.resolve(tokenRef.current);
+        if (estadoVerificacionRef.current === "fallo") return Promise.resolve(null);
+        return new Promise((resolve) => {
+            const avisar = (token: string | null) => {
+                window.clearTimeout(reloj);
+                resolve(token);
+            };
+            const reloj = window.setTimeout(() => {
+                esperandoToken.current = esperandoToken.current.filter((a) => a !== avisar);
+                resolve(null);
+            }, ms);
+            esperandoToken.current.push(avisar);
+        });
+    }
+
+    /* Avisos junto a cada campo; el foco va al primero, en el orden de la hoja. */
+    function mostrarErrores(nuevos: ErroresDemo) {
+        setErrores(nuevos);
+        const primero = CAMPOS_DEMO.find((c) => nuevos[c]);
+        if (primero) document.getElementById(ID_DE[primero])?.focus();
+    }
+
+    /* Al corregir un campo se quita su aviso. Cambiar de país también quita el
+       del WhatsApp (la regla cambia con el país). */
+    function alCambiar(e: FormEvent<HTMLFormElement>) {
+        const objetivo = e.target as HTMLInputElement | HTMLSelectElement;
+        const campo = objetivo.name;
+        if (campo === "pais") setPais(objetivo.value);
+        setErrores((antes) => {
+            const quitar = campo === "pais" ? [campo, "whatsapp"] : [campo];
+            if (!quitar.some((c) => c in antes)) return antes;
+            const despues = { ...antes };
+            for (const c of quitar) delete despues[c as CampoDemo];
+            return despues;
+        });
+    }
+
+    /* ── Envío al servidor ──
+       Va APARTE del clic: aquí sí se espera. Por eso, si algo falla, nunca se
+       abre WhatsApp solo (el navegador lo bloquearía): se pasa a "No pudimos
+       guardar tu solicitud" con el botón. */
+    async function enviarAlServidor(url: string, cuerpo: CuerpoDemo, datos: LeadDatos) {
+        setEnviando(true);
+        setAvisoVerificacion(false);
+        // Verificación vencida: otro token y un solo reintento (enviarConReintento).
+        const resultado = await enviarConReintento({
+            url,
+            cuerpo,
+            esperarToken: () => tomarToken(TIEMPO_MAXIMO_TOKEN_MS),
+            pedirOtroToken: () => verificacionRef.current?.reset(),
+        });
+        setEnviando(false);
+        if (resultado.tipo === "recibida") {
+            marcarSolicitudRecibida();
+            setPantalla({ tipo: "recibida", datos });
+            return;
+        }
+        if (resultado.tipo === "campo") {
+            mostrarErrores({ [resultado.campo]: resultado.mensaje });
+            return;
+        }
+        setPantalla({ tipo: "no_guardada", datos });
+    }
+
+    /* ── Envío ──
+       NO es async y no lleva ningún await: si no hay servidor (o el recuadro
+       no cargó), WhatsApp se abre dentro del mismo clic. Tras cualquier espera
+       el navegador ya no lo cuenta como clic y bloquea la ventana. La
+       validación de lo básico es la nativa del navegador (required,
+       type=email); lo demás (nombre, WhatsApp) lo revisa armarCuerpoDemo. */
+    function handleSubmit(e: FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        if (enviando) return;
+        const armado = armarCuerpoDemo(leerHoja(e.currentTarget, planInteres));
+        if (!armado.ok) {
+            mostrarErrores(armado.errores);
+            return;
+        }
+        setErrores({});
+        const datos = datosDelMensaje(armado.cuerpo, planInteres);
+        const camino = decidirEnvio({
+            url: urlServidor,
+            llave,
+            verificacion: estadoVerificacionRef.current,
+            hayToken: Boolean(tokenRef.current),
+        });
+        if (camino === "servidor" && urlServidor) {
+            void enviarAlServidor(urlServidor, armado.cuerpo, datos);
+            return;
+        }
+        if (camino === "completar_verificacion") {
+            setAvisoVerificacion(true);
+            return;
+        }
+        const wa = buildWhatsAppUrl(datos);
+        if (wa) abrirEnPestanaNueva(wa, window);
+        setPantalla({ tipo: "falta", datos });
+    }
+
+    const datosPost = pantalla.tipo === "hoja" ? null : pantalla.datos;
+    const waUrl = datosPost ? buildWhatsAppUrl(datosPost) : null;
+    const correoUrl = datosPost ? buildCorreoUrl(datosPost) : null;
     const numeroVisible = numeroWhatsAppVisible();
-    const falta = enviado ? textosFaltaUnPaso({ nombre: enviado.nombre, plan: planInteres, canal }) : null;
+
+    /* Textos de la pantalla después del botón. "aviso" = falta un paso o no se
+       guardó (en los dos, el mensaje está listo para mandarse); "recibida" =
+       el servidor la guardó. */
+    const aviso =
+        pantalla.tipo === "falta"
+            ? textosFaltaUnPaso({ nombre: pantalla.datos.nombre, plan: planInteres, canal })
+            : pantalla.tipo === "no_guardada"
+                ? textosNoGuardada({ plan: planInteres, canal })
+                : null;
+    const recibida =
+        pantalla.tipo === "recibida"
+            ? textosRecibida({ nombre: pantalla.datos.nombre, plan: planInteres, whatsapp: pantalla.datos.whatsapp })
+            : null;
+    const modo: Modo =
+        pantalla.tipo === "recibida" || (pantalla.tipo === "hoja" && conServidor) ? "servidor" : "directo";
 
     /* El titular grande vive SIEMPRE en la columna izquierda y cambia con el
        estado. La derecha se queda con la acción: la hoja, o el botón para
        mandar el mensaje. Con ?plan=plus, mientras llena la hoja el titular
        dice qué pidió. No promete fechas ni límites: Plus todavía se activa a
        mano (2026-11-13, Luis). */
-    const cabecera = falta ?? cabeceraFormulario(planInteres, canal);
+    const cabecera = recibida ?? aviso ?? cabeceraFormulario(planInteres, canal, modo);
+
+    /* aria-invalid y el aviso ligado, solo cuando ese campo trae aviso. */
+    const ayuda = (campo: CampoDemo) =>
+        errores[campo] ? { "aria-invalid": true, "aria-describedby": `${ID_DE[campo]}-aviso` } : {};
+    const paisEsMexico = pais === "" || pais === "MX";
 
     return (
         <MotionConfig reducedMotion="user">
@@ -314,13 +522,13 @@ export default function Formulario() {
                     >
                         {cabecera.titulo}
                     </h1>
-                    <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-white/45">
+                    <p className="mt-4 max-w-sm break-words text-[15px] leading-relaxed text-white/45">
                         {cabecera.entrada}
                     </p>
 
                     {/* La demo es opcional: quien no quiera esperar puede crear su
-                        cuenta gratis en la app ahora mismo. Se ofrece en los dos
-                        estados. */}
+                        cuenta gratis en la app ahora mismo. Se ofrece en todos
+                        los estados. */}
                     <p className="mt-4 max-w-sm text-[14px] leading-relaxed text-white/45">
                         ¿Prefieres empezar ahora?{" "}
                         <a href={registerUrl("draft")} rel="noopener" className={enlaceBronce}>
@@ -328,7 +536,7 @@ export default function Formulario() {
                         </a>
                     </p>
 
-                    <QuePasaDespues canal={canal} className="mt-9 hidden lg:block" />
+                    <QuePasaDespues canal={canal} modo={modo} className="mt-9 hidden lg:block" />
                 </motion.div>
 
                 {/* ══ Columna derecha: la hoja ══ */}
@@ -338,16 +546,38 @@ export default function Formulario() {
                     transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                     className="w-full lg:max-w-[440px] lg:justify-self-end"
                 >
-                    {/* ── Falta un paso ──
+                    {/* ── Solicitud recibida ──
+                        El servidor la guardó. WhatsApp queda como opción, no como
+                        paso pendiente. */}
+                    {recibida && (
+                        <div className="lg:pt-6">
+                            {canal === "whatsapp" && waUrl && (
+                                <>
+                                    <p className="mb-4 text-center text-[13px] leading-relaxed text-white/50">
+                                        {recibida.extra}
+                                    </p>
+                                    <WhatsAppCTA href={waUrl}>{recibida.boton}</WhatsAppCTA>
+                                </>
+                            )}
+                            <Link
+                                href="/"
+                                className="mt-4 flex w-full items-center justify-center border-t border-white/[0.07] pt-4 text-[14px] text-white/50 transition-colors hover:text-[#f5f0e8]"
+                            >
+                                Volver al inicio
+                            </Link>
+                        </div>
+                    )}
+
+                    {/* ── Falta un paso / No pudimos guardar ──
                         Sin palomita y sin "recibida": nada se guardó. El botón
                         principal manda el mensaje ya escrito; debajo, el mismo
                         mensaje por correo y el número, para quien está en una
                         computadora sin WhatsApp. */}
-                    {enviado && falta && (
+                    {aviso && (
                         <div className="lg:pt-6">
                             {canal === "whatsapp" && waUrl ? (
                                 <>
-                                    <WhatsAppCTA href={waUrl}>{falta.boton}</WhatsAppCTA>
+                                    <WhatsAppCTA href={waUrl}>{aviso.boton}</WhatsAppCTA>
                                     <p className="mt-4 text-center text-[13px] leading-relaxed text-white/50">
                                         ¿Sin WhatsApp en este equipo?{" "}
                                         {correoUrl && (
@@ -366,7 +596,7 @@ export default function Formulario() {
                             ) : (
                                 correoUrl && (
                                     <a href={correoUrl} className={botonCrema}>
-                                        {falta.boton}
+                                        {aviso.boton}
                                     </a>
                                 )
                             )}
@@ -410,8 +640,8 @@ export default function Formulario() {
                         </div>
                     )}
 
-                    {!enviado && (
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                    {pantalla.tipo === "hoja" && (
+                        <form onSubmit={handleSubmit} onChange={alCambiar} aria-busy={enviando} className="space-y-5">
                             {/* El plan que eligió en la página, ya marcado. Va como el
                                 renglón del país: un metadato, no una pregunta más. */}
                             {planInteres && (
@@ -440,7 +670,9 @@ export default function Formulario() {
                                     key={`n-${prefill.nombre ?? ""}`}
                                     defaultValue={prefill.nombre ?? ""}
                                     className={campoCls}
+                                    {...ayuda("nombre")}
                                 />
+                                <AvisoCampo campo="nombre" texto={errores.nombre} />
                             </div>
 
                             <div>
@@ -454,68 +686,148 @@ export default function Formulario() {
                                     key={`e-${prefill.email ?? ""}`}
                                     defaultValue={prefill.email ?? ""}
                                     className={campoCls}
+                                    {...ayuda("email")}
                                 />
+                                <AvisoCampo campo="email" texto={errores.email} />
+                            </div>
+
+                            {/* WhatsApp: obligatorio (la página promete escribir por ahí).
+                                Sin tope de largo, para que pegar "+52 55 1234 5678"
+                                funcione; la regla cambia con el país de abajo. */}
+                            <div>
+                                <Renglon
+                                    n="03"
+                                    htmlFor="reg-whatsapp"
+                                    nota={paisEsMexico ? "10 dígitos" : "con lada del país"}
+                                >
+                                    WhatsApp
+                                </Renglon>
+                                <input
+                                    id="reg-whatsapp"
+                                    name="whatsapp"
+                                    type="tel"
+                                    inputMode="tel"
+                                    required
+                                    autoComplete="tel"
+                                    className={campoCls}
+                                    {...ayuda("whatsapp")}
+                                />
+                                <AvisoCampo campo="whatsapp" texto={errores.whatsapp} />
                             </div>
 
                             <div>
-                                <Renglon n="03" htmlFor="reg-perfil">¿A qué te dedicas?</Renglon>
+                                <Renglon n="04" htmlFor="reg-perfil">¿A qué te dedicas?</Renglon>
                                 <div className="relative">
-                                    <select id="reg-perfil" name="perfil" required defaultValue="" className={selectCls}>
-                                        <option value="" disabled>Elige una opción</option>
-                                        {PERFILES.map((p) => <option key={p} value={p}>{p}</option>)}
+                                    <select
+                                        id="reg-perfil"
+                                        name="perfil"
+                                        required
+                                        defaultValue=""
+                                        className={selectCls}
+                                        {...ayuda("perfil")}
+                                    >
+                                        <option value="" disabled>Elige la que más se parezca</option>
+                                        {PERFILES.map(([clave, texto]) => <option key={clave} value={clave}>{texto}</option>)}
                                     </select>
                                     <Galon />
                                 </div>
+                                <AvisoCampo campo="perfil" texto={errores.perfil} />
                             </div>
 
                             <div>
-                                <Renglon n="04" htmlFor="reg-obras" nota="opcional">Obras activas</Renglon>
-                                <input id="reg-obras" name="obras_activas" type="number" min="0" className={campoCls} />
+                                <Renglon n="05" htmlFor="reg-obras" nota="opcional">Obras activas</Renglon>
+                                <input
+                                    id="reg-obras"
+                                    name="obras_activas"
+                                    type="number"
+                                    min="0"
+                                    max="999"
+                                    step="1"
+                                    inputMode="numeric"
+                                    className={campoCls}
+                                    {...ayuda("obras_activas")}
+                                />
+                                <AvisoCampo campo="obras_activas" texto={errores.obras_activas} />
                             </div>
 
                             <div>
-                                <Renglon n="05" htmlFor="reg-interes">¿Qué tan listo estás?</Renglon>
+                                <Renglon n="06" htmlFor="reg-interes">¿Qué tan listo estás?</Renglon>
                                 <div className="relative">
-                                    <select id="reg-interes" name="interes_compra" required defaultValue="" className={selectCls}>
+                                    <select
+                                        id="reg-interes"
+                                        name="interes_compra"
+                                        required
+                                        defaultValue=""
+                                        className={selectCls}
+                                        {...ayuda("interes_compra")}
+                                    >
                                         <option value="" disabled>Elige una opción</option>
-                                        {INTERESES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                                        {INTERESES.map(([clave, texto]) => <option key={clave} value={clave}>{texto}</option>)}
                                     </select>
                                     <Galon />
                                 </div>
+                                <AvisoCampo campo="interes_compra" texto={errores.interes_compra} />
                             </div>
 
                             {/* El país se autodetecta por IP, así que no es una pregunta:
                                 va como metadato al pie. Sigue siendo un select visible
                                 —no oculto— porque un `required` invisible bloquea el
                                 envío sin poder mostrar su aviso. */}
-                            <div className="flex items-center justify-between gap-4 border-t border-white/[0.07] pt-4">
-                                <label htmlFor="reg-pais" className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/45">
-                                    País
-                                </label>
-                                <div className="relative">
-                                    <select
-                                        id="reg-pais"
-                                        name="pais"
-                                        ref={paisRef}
-                                        required
-                                        defaultValue=""
-                                        className={`${selectCls} sin-regla py-0 text-right text-[13px] text-white/70`}
-                                    >
-                                        <option value="" disabled>Elige tu país</option>
-                                        {PAISES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                                    </select>
-                                    <Galon />
+                            <div className="border-t border-white/[0.07] pt-4">
+                                <div className="flex items-center justify-between gap-4">
+                                    <label htmlFor="reg-pais" className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/45">
+                                        País
+                                    </label>
+                                    <div className="relative">
+                                        <select
+                                            id="reg-pais"
+                                            name="pais"
+                                            ref={paisRef}
+                                            required
+                                            defaultValue=""
+                                            className={`${selectCls} sin-regla py-0 text-right text-[13px] text-white/70`}
+                                            {...ayuda("pais")}
+                                        >
+                                            <option value="" disabled>Elige tu país</option>
+                                            {PAISES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                                        </select>
+                                        <Galon />
+                                    </div>
                                 </div>
+                                <AvisoCampo campo="pais" texto={errores.pais} />
                             </div>
+
+                            {/* Verificación de "no robot": solo con servidor. Si no carga,
+                                desaparece y la hoja sigue por WhatsApp directo. */}
+                            {conServidor && (
+                                <div>
+                                    <Verificacion
+                                        ref={verificacionRef}
+                                        llave={llave}
+                                        onToken={alToken}
+                                        onInteractiva={alInteractiva}
+                                        onFallo={alFallo}
+                                    />
+                                    {avisoVerificacion && (
+                                        <p role="status" className="mt-2 text-[13px] leading-snug text-[#e8b97a]">
+                                            Completa la verificación de arriba y vuelve a pulsar el botón.
+                                        </p>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Único elemento relleno de la pantalla: el mismo botón que
                                 el "Continuar" del hero. */}
-                            <button type="submit" className={`mt-1 ${botonCrema}`}>
-                                {planInteres ? `Comenzar con ${planInteres.nombre}` : "Solicitar demo"}
+                            <button type="submit" disabled={enviando} className={`mt-1 ${botonCrema}`}>
+                                {enviando
+                                    ? "Enviando…"
+                                    : planInteres
+                                        ? `Comenzar con ${planInteres.nombre}`
+                                        : "Solicitar demo"}
                             </button>
 
                             {/* target="_blank": los campos no son controlados, así que
-                                salir a leer el aviso borraba los cinco datos escritos. */}
+                                salir a leer el aviso borraba los datos escritos. */}
                             <p className="text-center text-[12px] leading-relaxed text-white/50">
                                 Tus datos se usan solo para contactarte. Sin spam.{" "}
                                 <a
@@ -530,7 +842,7 @@ export default function Formulario() {
                         </form>
                     )}
 
-                    <QuePasaDespues canal={canal} className="mt-10 lg:hidden" />
+                    <QuePasaDespues canal={canal} modo={modo} className="mt-10 lg:hidden" />
                 </motion.div>
             </main>
         </div>

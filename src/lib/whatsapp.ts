@@ -4,12 +4,13 @@
    El lead llena la encuesta de /registro y lo mandamos a un chat de
    WhatsApp con sus datos ya escritos.
 
-   OJO (2026-11-13): hoy NADA se guarda en la base. La base vieja del
-   sitio ya no existe y el servidor todavía no recibe solicitudes (llega
-   con la tanda 4 del plan registro_filtro). El mensaje precargado es
-   EDITABLE y solo nos llega si la persona pulsa "enviar" en WhatsApp
-   (o manda el correo con el mismo texto): por eso la pantalla dice
-   "Falta un paso" y no "Solicitud recibida".
+   OJO (2026-11-13): el mensaje precargado es EDITABLE y solo nos llega
+   si la persona pulsa "enviar" en WhatsApp (o manda el correo con el
+   mismo texto). Con la tanda 4 del plan registro_filtro la hoja se guarda
+   en el servidor cuando está configurado (src/lib/demoServidor.ts); sin
+   servidor, o si no se pudo guardar, este mensaje es el único camino y
+   la pantalla lo dice ("Falta un paso" o "No pudimos guardar tu
+   solicitud"), nunca "Solicitud recibida".
 
    El número va aquí por defecto y NEXT_PUBLIC_WHATSAPP_NUMBER lo
    puede sobrescribir sin tocar código. No es un secreto: las vars
@@ -33,6 +34,9 @@ export const hasWhatsApp = () => WHATSAPP_NUMBER.length >= 8;
 export type LeadDatos = {
     nombre: string;
     email: string;
+    /** WhatsApp de la persona, listo para leerse ("+52 55 1234 5678").
+        Obligatorio en la hoja desde la tanda 4 (2026-11-13). */
+    whatsapp: string;
     perfil: string;
     obras_activas?: string | number | null;
     interes_compra: string;
@@ -56,8 +60,10 @@ export function armarMensaje(datos: LeadDatos): string {
         "",
         `Nombre: ${datos.nombre}`,
         `Correo: ${datos.email}`,
-        `Perfil: ${datos.perfil}`,
     ];
+    const suWhatsApp = (datos.whatsapp ?? "").trim();
+    if (suWhatsApp) lineas.push(`WhatsApp: ${suWhatsApp}`);
+    lineas.push(`Perfil: ${datos.perfil}`);
     if (plan) lineas.push(`Plan: ${plan.nombre} (${plan.precio})`);
 
     // Campo opcional: solo lo incluimos si de verdad lo llenaron.

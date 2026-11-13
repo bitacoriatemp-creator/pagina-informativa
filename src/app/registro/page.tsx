@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: "Solicita tu demo — BitacorIA",
         description:
-            "Acceso anticipado a BitacorIA. Seis datos y agendamos una demo en vivo sobre tu obra.",
+            "Acceso anticipado a BitacorIA. Siete datos y agendamos una demo en vivo sobre tu obra.",
         url: "https://bitacoria.com/registro",
         type: "website",
     },
