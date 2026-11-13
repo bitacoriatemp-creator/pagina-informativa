@@ -1,14 +1,17 @@
 "use client";
 
 /* ══════════════════════════════════════════════════════════════════════
-   Formulario — el alta completa, a página entera
+   Formulario — la solicitud de demo, a página entera
    ──────────────────────────────────────────────────────────────────────
-   Sustituye al antiguo RegistroModal. Mismos seis datos, mismo Edge
-   Function (register-participant → INSERT en `participantes` + correos
-   vía Resend) y el mismo proceso de emergencia por WhatsApp si la base
-   falla. Lo que cambia es el continente: ya no hay cristal ni panel
-   flotante, porque a pantalla completa una tarjeta se lee como una caja
-   sin motivo — justo lo que se le quitó al hero.
+   Sustituye al antiguo RegistroModal. Pide los mismos seis datos.
+
+   2026-11-13 (Luis, tanda 0 del plan registro_filtro): antes los mandaba
+   a la base vieja del sitio, que ya no existe, y a todos les salía "Sin
+   conexión" en rojo. Ahora no manda nada a ninguna base: arma el mensaje
+   y abre WhatsApp en el mismo clic (o el correo, si no hay número). Como
+   nada queda guardado hasta que la persona envíe ese mensaje, la pantalla
+   siguiente dice "Falta un paso", nunca "Solicitud recibida". Guardar en
+   el servidor llega con la tanda 4.
    ══════════════════════════════════════════════════════════════════════ */
 
 import { useState, useEffect, useRef, type FormEvent } from "react";
@@ -17,13 +20,20 @@ import Link from "next/link";
 import { motion, MotionConfig } from "framer-motion";
 import { ArrowLeft, Check, ChevronDown, Facebook, Instagram } from "lucide-react";
 import { assetPath } from "@/lib/assetPath";
-import { getStoredAccount, setStoredAccount, type Account } from "@/lib/account";
-import { buildWhatsAppUrl } from "@/lib/whatsapp";
-import { HANDOFF_EMAIL, REGISTERED_FLAG, leerPlanDeInteres, type PlanDeInteres } from "@/lib/registro";
+import { getStoredAccount } from "@/lib/account";
+import { buildWhatsAppUrl, hasWhatsApp, numeroWhatsAppVisible, type LeadDatos } from "@/lib/whatsapp";
+import { HANDOFF_EMAIL, leerPlanDeInteres, type PlanDeInteres } from "@/lib/registro";
+import {
+    abrirEnPestanaNueva,
+    buildCorreoUrl,
+    cabeceraFormulario,
+    datosPrellenados,
+    pasosDespues,
+    textosFaltaUnPaso,
+    type Canal,
+} from "@/lib/solicitudDemo";
 import { registerUrl } from "@/lib/appUrl";
-
-const REGISTER_ENDPOINT =
-    "https://epjfqcndxoyrtrmasuvt.supabase.co/functions/v1/register-participant";
+import { botonCrema, botonVerde } from "./botones";
 
 const PAISES: [string, string][] = [
     ["MX", "México"], ["US", "Estados Unidos"], ["GT", "Guatemala"], ["CO", "Colombia"],
@@ -50,15 +60,6 @@ const INTERESES: [string, string][] = [
     ["Investigando", "Solo investigando — no estoy en el mercado ahora"],
 ];
 
-/* Lo que pasa DESPUÉS de enviar. Va en la columna izquierda y se queda en
-   los tres estados: al enviar deja de ser una promesa y pasa a ser,
-   literalmente, lo que sigue. */
-const DESPUES: [string, string][] = [
-    ["Revisamos tu caso", "Cuántas obras llevas y qué módulo te sirve primero."],
-    ["Te escribimos por WhatsApp", "Sin centro de llamadas: contesta alguien del equipo."],
-    ["Demo en vivo sobre tu obra", "Veinte minutos, con tus propios datos si quieres."],
-];
-
 /* ── Glifos que lucide no trae ── */
 const WhatsAppIcon = () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -78,50 +79,13 @@ const SOCIALES: { label: string; href: string; Icon: React.ComponentType<{ size?
     { label: "Discord", href: "https://discord.gg/2VNC8vhsSP", Icon: DiscordIcon },
 ];
 
-/** CTA de WhatsApp — mismo acabado en la pantalla de éxito y en la de error. */
-function WhatsAppCTA({
-    href,
-    compact = false,
-    children,
-    onClick,
-}: {
-    href: string;
-    compact?: boolean;
-    children: React.ReactNode;
-    onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
-}) {
+/** Botón de WhatsApp: hermano de "Solicitar demo" (misma forma, en verde).
+    Icono de 16 px y el texto; nada más. */
+function WhatsAppCTA({ href, children }: { href: string; children: React.ReactNode }) {
     return (
-        <a
-            href={href}
-            onClick={onClick}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={
-                "btn-premium-shine group flex w-full items-center justify-center gap-3 rounded-full font-ui font-semibold tracking-tight transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 active:translate-y-0 " +
-                (compact ? "py-3 text-[14px]" : "py-3.5 text-[15px]")
-            }
-            style={{
-                /* Esmeralda profundo, no el verde neón de WhatsApp: convive con
-                   el chocolate en vez de gritar sobre él. */
-                background: "linear-gradient(180deg,#1f7a4d 0%,#146039 55%,#0d4529 100%)",
-                color: "#f5f0e8",
-                border: "1px solid rgba(245,240,232,0.16)",
-                boxShadow: [
-                    "inset 0 1px 0 rgba(255,255,255,0.20)",
-                    "inset 0 -12px 22px rgba(0,0,0,0.22)",
-                    "0 14px 30px -12px rgba(0,0,0,0.65)",
-                    "0 4px 12px -6px rgba(20,96,57,0.45)",
-                ].join(", "),
-            }}
-        >
-            <span
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors duration-300 group-hover:bg-[rgba(245,240,232,0.22)]"
-                style={{ background: "rgba(245,240,232,0.14)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22)" }}
-            >
-                <WhatsAppIcon />
-            </span>
+        <a href={href} target="_blank" rel="noopener noreferrer" className={botonVerde}>
+            <WhatsAppIcon />
             <span>{children}</span>
-            <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">→</span>
         </a>
     );
 }
@@ -159,11 +123,13 @@ function Renglon({ n, htmlFor, children, nota }: { n: string; htmlFor: string; c
 
 /* Lista "qué pasa después" — se pinta dos veces: en la columna izquierda a
    partir de lg, y bajo el formulario en móvil, donde primero va aquello a
-   lo que se vino. */
-function QuePasaDespues({ className = "" }: { className?: string }) {
+   lo que se vino. Los textos salen de pasosDespues() (src/lib/solicitudDemo.ts).
+   2026-11-13: el renglón 2 decía "Te escribimos por WhatsApp"; hoy quien
+   escribe es la persona, con el mensaje ya armado. */
+function QuePasaDespues({ canal, className = "" }: { canal: Canal; className?: string }) {
     return (
         <ul className={`divide-y divide-white/[0.06] border-t border-white/[0.06] ${className}`}>
-            {DESPUES.map(([titulo, detalle]) => (
+            {pasosDespues(canal).map(([titulo, detalle]) => (
                 <li key={titulo} className="flex gap-4 py-4">
                     {/* Un guion de bronce, no un número: los folios 01-05 ya numeran
                         los campos, y repetir ese tratamiento aquí pone dos sistemas
@@ -179,44 +145,59 @@ function QuePasaDespues({ className = "" }: { className?: string }) {
     );
 }
 
-const botonCrema =
-    "flex h-12 w-full items-center justify-center rounded-xl bg-[#f5f0e8] text-[15px] font-semibold text-[#1a120c] transition-colors duration-200 hover:bg-white disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c39767]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c0604]";
+const enlaceBronce =
+    "text-[#c39767] underline decoration-[#c39767]/40 underline-offset-4 transition-colors hover:text-[#e8c9a0]";
+
+/* Lee la hoja tal como está: textos legibles (nombre del país, interés
+   completo), no los códigos internos, porque esto es lo que lee el equipo en
+   el mensaje. */
+function leerDatos(form: HTMLFormElement, planInteres: PlanDeInteres | null): LeadDatos {
+    const fd = new FormData(form);
+    const pais = (fd.get("pais") || "").toString().trim().toUpperCase();
+    const interes = (fd.get("interes_compra") || "").toString().trim();
+    const datos: LeadDatos = {
+        nombre: (fd.get("nombre") || "").toString().trim(),
+        email: (fd.get("email") || "").toString().trim().toLowerCase(),
+        perfil: (fd.get("perfil") || "").toString().trim(),
+        obras_activas: (fd.get("obras_activas") || "").toString().trim() || null,
+        interes_compra: INTERESES.find(([v]) => v === interes)?.[1] ?? interes,
+        pais: PAISES.find(([v]) => v === pais)?.[1] ?? pais,
+        plan: planInteres,
+    };
+    return datos;
+}
 
 export default function Formulario() {
-    const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-    const [errMsg, setErrMsg] = useState("");
-    const [doneName, setDoneName] = useState("");
-    const [waUrl, setWaUrl] = useState<string | null>(null);
+    /* null = la hoja; con datos = "Falta un paso". No hay estado de "enviando"
+       ni de error: no se manda nada a ningún servidor. */
+    const [enviado, setEnviado] = useState<LeadDatos | null>(null);
     const [showOtras, setShowOtras] = useState(false);
-    /* undefined = todavía sin comprobar (el servidor no puede leer
-       localStorage). Mientras tanto se pinta el formulario, que es el caso
-       mayoritario y evita que la página aparezca vacía. */
-    const [yaDentro, setYaDentro] = useState<Account | null | undefined>(undefined);
-    const [otraPersona, setOtraPersona] = useState(false);
     const [prefill, setPrefill] = useState<{ nombre?: string; email?: string }>({});
     /* Plan que trae la URL desde la tarjeta de la página (?plan=plus). null =
        el formulario de siempre (demo). */
     const [planInteres, setPlanInteres] = useState<PlanDeInteres | null>(null);
 
     const paisRef = useRef<HTMLSelectElement>(null);
-    const formRef = useRef<HTMLFormElement>(null);
+    const tituloRef = useRef<HTMLHeadingElement>(null);
 
-    /* ── Prellenado y estado de la persona ──
-       El correo que se tecleó en el hero (sessionStorage, un solo uso). Y de
-       paso, si ya se dio de alta desde este navegador, se le saluda en vez de
-       volver a pedirle los seis datos. www no autentica: no hay sesión de
-       Google que leer (eso vive en la app). */
+    /* Sin número configurado no hay WhatsApp: el correo pasa a ser el camino
+       principal. Es una constante del build, igual en servidor y navegador. */
+    const canal: Canal = hasWhatsApp() ? "whatsapp" : "correo";
+
+    /* ── Prellenado ──
+       El correo que se tecleó en el hero (sessionStorage, un solo uso) y lo
+       que guardó este navegador en una solicitud anterior. Ese registro viejo
+       ya NO tapa la hoja con "Ya estás en la lista": esas solicitudes se
+       perdieron con la base vieja, así que se vuelve a mostrar la hoja con el
+       nombre y el correo ya escritos. www no autentica: no hay sesión que leer. */
     useEffect(() => {
-        let email: string | undefined;
+        let correoDelHero: string | null = null;
         try {
-            email = sessionStorage.getItem(HANDOFF_EMAIL) || undefined;
-            if (email) sessionStorage.removeItem(HANDOFF_EMAIL);
+            correoDelHero = sessionStorage.getItem(HANDOFF_EMAIL);
+            if (correoDelHero) sessionStorage.removeItem(HANDOFF_EMAIL);
         } catch { /* */ }
-        if (email) setPrefill((p) => ({ ...p, email }));
-
-        let registrado = false;
-        try { registrado = localStorage.getItem(REGISTERED_FLAG) === "true"; } catch { /* */ }
-        setYaDentro(registrado ? getStoredAccount() ?? { email: "" } : null);
+        const datos = datosPrellenados(correoDelHero, getStoredAccount());
+        if (datos.nombre || datos.email) setPrefill(datos);
     }, []);
 
     /* El plan se lee de la URL al montar y no con useSearchParams: así la
@@ -225,9 +206,7 @@ export default function Formulario() {
         setPlanInteres(leerPlanDeInteres(window.location.search));
     }, []);
 
-    /* Auto-detección de país por IP (silenciosa, solo pre-selecciona).
-       Depende de yaDentro/otraPersona porque el select no existe en el DOM
-       mientras se muestra la pantalla de "ya estás en la lista". */
+    /* Auto-detección de país por IP (silenciosa, solo pre-selecciona). */
     useEffect(() => {
         const sel = paisRef.current;
         if (!sel || sel.value) return;
@@ -251,156 +230,39 @@ export default function Formulario() {
                 .catch(() => { /* sin red, sin problema */ });
         }, 600);
         return () => clearTimeout(t);
-    }, [yaDentro, otraPersona]);
+    }, []);
 
-    /* Arma el enlace de WhatsApp leyendo el formulario TAL COMO ESTÁ AHORA.
-       En el bloque de error el usuario sigue editando los mismos campos; si el
-       enlace se quedara con el snapshot del envío fallido, corregir el correo y
-       pulsar WhatsApp mandaría el dato viejo — y ahí ese mensaje es la única
-       captura del lead, porque la base ya falló. */
-    const urlWhatsAppActual = () => {
-        const form = formRef.current;
-        if (!form) return null;
-        const fd = new FormData(form);
-        const pais = (fd.get("pais") || "").toString().trim().toUpperCase();
-        const interes = (fd.get("interes_compra") || "").toString().trim();
-        return buildWhatsAppUrl({
-            nombre: (fd.get("nombre") || "").toString().trim(),
-            email: (fd.get("email") || "").toString().trim().toLowerCase(),
-            perfil: (fd.get("perfil") || "").toString().trim(),
-            obras_activas: (fd.get("obras_activas") as string) || null,
-            interes_compra: INTERESES.find(([v]) => v === interes)?.[1] ?? interes,
-            pais: PAISES.find(([v]) => v === pais)?.[1] ?? pais,
-            plan: planInteres,
-        });
-    };
+    /* Al pasar a "Falta un paso" el foco va al titular: en teléfono la
+       persona estaba al fondo de la hoja, y el lector de pantalla anuncia el
+       cambio. */
+    useEffect(() => {
+        if (enviado) tituloRef.current?.focus();
+    }, [enviado]);
 
-    async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    /* ── Envío ──
+       NO es async y no lleva ningún await: WhatsApp se abre dentro del mismo
+       clic. Tras cualquier espera el navegador ya no lo cuenta como clic y
+       bloquea la ventana. La validación es la nativa del navegador (required,
+       type=email): si algo falta, este manejador ni se llama. */
+    function handleSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        setErrMsg("");
-        const fd = new FormData(e.currentTarget);
-        const payload = {
-            nombre: (fd.get("nombre") || "").toString().trim(),
-            email: (fd.get("email") || "").toString().trim().toLowerCase(),
-            pais: (fd.get("pais") || "").toString().trim().toUpperCase(),
-            perfil: (fd.get("perfil") || "").toString().trim(),
-            obras_activas: fd.get("obras_activas") || null,
-            interes_compra: (fd.get("interes_compra") || "").toString().trim(),
-        };
-        setStatus("submitting");
-
-        /* Etiqueta larga del interés y nombre del país: en el mensaje de
-           WhatsApp queremos texto legible, no el código interno. */
-        const paisLegible = PAISES.find(([v]) => v === payload.pais)?.[1] ?? payload.pais;
-        const interesLegible =
-            INTERESES.find(([v]) => v === payload.interes_compra)?.[1] ?? payload.interes_compra;
-        const enlace = () =>
-            buildWhatsAppUrl({
-                ...payload,
-                pais: paisLegible,
-                interes_compra: interesLegible,
-                obras_activas: payload.obras_activas as string | number | null,
-                // El plan va solo en el mensaje: el aviso a la base (payload)
-                // lleva los mismos seis datos de siempre.
-                plan: planInteres,
-            });
-
-        // Timeout duro: sin esto, una Edge Function fría o una señal de obra débil
-        // dejaba el botón en "Procesando…" para siempre y el lead sin salida. A los
-        // 15 s abortamos y caemos al bloque de emergencia con WhatsApp.
-        const ctrl = new AbortController();
-        const timeoutId = setTimeout(() => ctrl.abort(), 15000);
-        try {
-            const res = await fetch(REGISTER_ENDPOINT, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-                signal: ctrl.signal,
-            });
-            // 200 = nuevo, 409 = ya registrado → ambos cuentan como éxito
-            if (res.ok || res.status === 409) {
-                try { localStorage.setItem(REGISTERED_FLAG, "true"); } catch { /* */ }
-                setStoredAccount({ email: payload.email, nombre: payload.nombre });
-                setDoneName(payload.nombre.split(" ")[0]);
-                setWaUrl(enlace());
-                setStatus("success");
-                return;
-            }
-            const detail = await res.json().catch(() => ({}));
-            throw new Error((detail as { error?: string }).error || `status_${res.status}`);
-        } catch (err) {
-            setStatus("error");
-            // Si nuestra base falla no bloqueamos al lead: le ofrecemos WhatsApp
-            // igual, que es justo el canal donde queremos que acabe.
-            setWaUrl(enlace());
-            // AbortError = timeout de 15 s; TypeError = fallo de red (señal débil en obra).
-            setErrMsg(
-                err instanceof DOMException && err.name === "AbortError"
-                    ? "El servidor tardó en responder. Escríbenos por WhatsApp y te atendemos al instante."
-                    : err instanceof TypeError
-                        ? "Sin conexión. Verifica tu señal e intenta de nuevo."
-                        : "No pudimos completar tu registro. Revisa los datos e intenta de nuevo."
-            );
-        } finally {
-            clearTimeout(timeoutId);
-        }
+        const datos = leerDatos(e.currentTarget, planInteres);
+        const wa = buildWhatsAppUrl(datos);
+        if (wa) abrirEnPestanaNueva(wa, window);
+        setEnviado(datos);
     }
 
-    /* Enlace de WhatsApp para quien ya está registrado: no hay formulario que
-       leer, así que se arma con lo poco que guardamos de él. */
-    const waYaDentro = yaDentro
-        ? buildWhatsAppUrl({
-            nombre: yaDentro.nombre || "",
-            email: yaDentro.email || "",
-            perfil: "",
-            interes_compra: planInteres ? "Ya registrado" : "Ya registrado — quiero agendar la demo",
-            pais: "",
-            plan: planInteres,
-        })
-        : null;
-
-    const mostrarFormulario = status !== "success" && (yaDentro === undefined || yaDentro === null || otraPersona);
-    const mostrarYaDentro = status !== "success" && !!yaDentro && !otraPersona;
+    const waUrl = enviado ? buildWhatsAppUrl(enviado) : null;
+    const correoUrl = enviado ? buildCorreoUrl(enviado) : null;
+    const numeroVisible = numeroWhatsAppVisible();
+    const falta = enviado ? textosFaltaUnPaso({ nombre: enviado.nombre, plan: planInteres, canal }) : null;
 
     /* El titular grande vive SIEMPRE en la columna izquierda y cambia con el
-       estado: dos titulares a la vez —"Solicita tu demo" a la izquierda y
-       "Listo, Ana" a la derecha— se contradicen y compiten. La derecha se
-       queda con la acción: la hoja, o el botón de WhatsApp.
-       La lista de "qué pasa después" no se toca en ningún estado; tras enviar
-       es, literalmente, lo que pasa después. */
-    const primerNombre = (yaDentro?.nombre || "").split(" ")[0];
-    const encabezado =
-        status === "success"
-            ? {
-                antetitulo: "Solicitud recibida",
-                titulo: doneName ? `Listo, ${doneName}` : "Estás dentro",
-                entrada: <>Quedaste en la lista de acceso anticipado. Esto es lo que sigue.</>,
-            }
-            : mostrarYaDentro
-                ? {
-                    antetitulo: "Registro encontrado",
-                    titulo: primerNombre ? `Ya estás en la lista, ${primerNombre}` : "Ya estás en la lista",
-                    entrada: yaDentro?.email
-                        ? <>Tenemos tu solicitud a nombre de <span className="text-white/70">{yaDentro.email}</span>.</>
-                        : <>Tenemos tu solicitud y seguimos el proceso de siempre.</>,
-                }
-                : {
-                    antetitulo: "Acceso anticipado",
-                    titulo: "Solicita tu demo",
-                    entrada: <>Seis datos. Con ellos preparamos una demo sobre tu obra, no una presentación genérica.</>,
-                };
-
-    /* Si llegó desde la tarjeta de Plus, mientras llena la hoja el titular dice
-       qué pidió. Tras enviar, o si ya estaba registrado, se queda el de siempre
-       (el plan ya va en el mensaje de WhatsApp). No promete fechas ni límites:
-       Plus todavía se activa a mano (2026-11-13, Luis). */
-    const cabecera = planInteres && mostrarFormulario
-        ? {
-            antetitulo: `Plan ${planInteres.nombre}`,
-            titulo: `Comienza con el plan ${planInteres.nombre}`,
-            entrada: <>Seis datos. Con ellos te escribimos para darte de alta y arrancar con tu obra.</>,
-        }
-        : encabezado;
+       estado. La derecha se queda con la acción: la hoja, o el botón para
+       mandar el mensaje. Con ?plan=plus, mientras llena la hoja el titular
+       dice qué pidió. No promete fechas ni límites: Plus todavía se activa a
+       mano (2026-11-13, Luis). */
+    const cabecera = falta ?? cabeceraFormulario(planInteres, canal);
 
     return (
         <MotionConfig reducedMotion="user">
@@ -443,7 +305,13 @@ export default function Formulario() {
                     <p className="mb-3 font-ui text-[11px] uppercase tracking-[0.35em] text-[#c39767]">
                         {cabecera.antetitulo}
                     </p>
-                    <h1 className="font-display text-4xl font-extrabold uppercase leading-[1.03] tracking-tight text-white/92 sm:text-5xl lg:text-[clamp(2.75rem,3.8vw,3.5rem)]">
+                    {/* break-words: un nombre muy largo en "Falta un paso, …" se
+                        parte en vez de salirse de la pantalla del teléfono. */}
+                    <h1
+                        ref={tituloRef}
+                        tabIndex={-1}
+                        className="break-words font-display text-4xl font-extrabold uppercase leading-[1.03] tracking-tight text-white/92 focus:outline-none sm:text-5xl lg:text-[clamp(2.75rem,3.8vw,3.5rem)]"
+                    >
                         {cabecera.titulo}
                     </h1>
                     <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-white/45">
@@ -451,20 +319,16 @@ export default function Formulario() {
                     </p>
 
                     {/* La demo es opcional: quien no quiera esperar puede crear su
-                        cuenta gratis en la app ahora mismo. Se ofrece en los tres
-                        estados; tras enviar sigue siendo el siguiente paso natural. */}
+                        cuenta gratis en la app ahora mismo. Se ofrece en los dos
+                        estados. */}
                     <p className="mt-4 max-w-sm text-[14px] leading-relaxed text-white/45">
                         ¿Prefieres empezar ahora?{" "}
-                        <a
-                            href={registerUrl("draft")}
-                            rel="noopener"
-                            className="text-[#c39767] underline decoration-[#c39767]/40 underline-offset-4 transition-colors hover:text-[#e8c9a0]"
-                        >
+                        <a href={registerUrl("draft")} rel="noopener" className={enlaceBronce}>
                             Crea tu cuenta gratis
                         </a>
                     </p>
 
-                    <QuePasaDespues className="mt-9 hidden lg:block" />
+                    <QuePasaDespues canal={canal} className="mt-9 hidden lg:block" />
                 </motion.div>
 
                 {/* ══ Columna derecha: la hoja ══ */}
@@ -474,73 +338,80 @@ export default function Formulario() {
                     transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                     className="w-full lg:max-w-[440px] lg:justify-self-end"
                 >
-                    {status === "success" && (
+                    {/* ── Falta un paso ──
+                        Sin palomita y sin "recibida": nada se guardó. El botón
+                        principal manda el mensaje ya escrito; debajo, el mismo
+                        mensaje por correo y el número, para quien está en una
+                        computadora sin WhatsApp. */}
+                    {enviado && falta && (
                         <div className="lg:pt-6">
-                            {/* Sin aro exterior y sin rebote: el aro es un halo, y el
-                                muelle es la celebración de cualquier SaaS. Entra por
-                                opacidad y ya. */}
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.16 }}
-                                className="mb-5 flex h-16 w-16 items-center justify-center rounded-full"
-                                style={{
-                                    background: "rgba(195,151,103,0.16)",
-                                    border: "1px solid rgba(195,151,103,0.5)",
-                                }}
+                            {canal === "whatsapp" && waUrl ? (
+                                <>
+                                    <WhatsAppCTA href={waUrl}>{falta.boton}</WhatsAppCTA>
+                                    <p className="mt-4 text-center text-[13px] leading-relaxed text-white/50">
+                                        ¿Sin WhatsApp en este equipo?{" "}
+                                        {correoUrl && (
+                                            <a href={correoUrl} className={enlaceBronce}>
+                                                Envíanos el mismo mensaje por correo
+                                            </a>
+                                        )}
+                                    </p>
+                                    {numeroVisible && (
+                                        <p className="mt-2 text-center text-[13px] text-white/45">
+                                            Nuestro WhatsApp:{" "}
+                                            <span className="whitespace-nowrap text-white/75">{numeroVisible}</span>
+                                        </p>
+                                    )}
+                                </>
+                            ) : (
+                                correoUrl && (
+                                    <a href={correoUrl} className={botonCrema}>
+                                        {falta.boton}
+                                    </a>
+                                )
+                            )}
+
+                            <button
+                                type="button"
+                                onClick={() => setShowOtras((v) => !v)}
+                                aria-expanded={showOtras}
+                                className="mt-5 flex w-full items-center justify-center gap-1.5 text-[12px] font-medium text-[#e8ddc9]/60 transition-colors hover:text-[#f5f0e8]"
                             >
-                                <Check size={32} strokeWidth={2.6} style={{ color: "#e8c9a0" }} />
-                            </motion.div>
-                            <p className="mb-6 text-[15px] leading-relaxed text-white/55">
-                                {waUrl
-                                    ? "Sigue la conversación por WhatsApp y agendamos tu demo hoy mismo. El mensaje ya lleva tus datos."
-                                    : "Te escribimos muy pronto para coordinar tu demo en vivo — revisa tu correo, y la carpeta de spam."}
-                            </p>
-                            {waUrl && (
-                                <div className="mb-3">
-                                    <WhatsAppCTA href={waUrl}>Continuar en WhatsApp</WhatsAppCTA>
+                                Otras opciones
+                                <ChevronDown
+                                    size={14}
+                                    className="transition-transform duration-300"
+                                    style={{ transform: showOtras ? "rotate(180deg)" : "none" }}
+                                />
+                            </button>
+                            {showOtras && (
+                                <div className="mt-3 grid grid-cols-3 gap-2">
+                                    {SOCIALES.map(({ label, href, Icon }) => (
+                                        <a
+                                            key={label}
+                                            href={href}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex flex-col items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] py-2.5 text-[11px] font-medium text-white/50 transition-all duration-300 hover:border-[#C39767]/40 hover:bg-[#C39767]/10 hover:text-[#e8b97a]"
+                                        >
+                                            <Icon size={15} />
+                                            {label}
+                                        </a>
+                                    ))}
                                 </div>
                             )}
+
                             <Link
                                 href="/"
-                                className="flex w-full items-center justify-center py-2.5 text-[14px] text-white/50 transition-colors hover:text-[#f5f0e8]"
+                                className="mt-4 flex w-full items-center justify-center border-t border-white/[0.07] pt-4 text-[14px] text-white/50 transition-colors hover:text-[#f5f0e8]"
                             >
                                 Volver al inicio
                             </Link>
                         </div>
                     )}
 
-                    {/* ── Ya se dio de alta desde este navegador ──
-                        Volver a pedirle los seis datos a quien ya está en la lista
-                        es la forma más rápida de perderlo. */}
-                    {mostrarYaDentro && (
-                        <div className="lg:pt-6">
-                            <p className="mb-6 text-[15px] leading-relaxed text-white/55">
-                                No hace falta que la llenes otra vez. Si quieres adelantar la
-                                demo, escríbenos y la agendamos hoy mismo.
-                            </p>
-                            {waYaDentro && (
-                                <div className="mb-3">
-                                    <WhatsAppCTA href={waYaDentro}>Escríbenos por WhatsApp</WhatsAppCTA>
-                                </div>
-                            )}
-                            <div className="flex items-center justify-between gap-4 border-t border-white/[0.07] pt-4 text-[13px]">
-                                <Link href="/" className="text-white/50 transition-colors hover:text-[#f5f0e8]">
-                                    Volver al inicio
-                                </Link>
-                                <button
-                                    type="button"
-                                    onClick={() => setOtraPersona(true)}
-                                    className="text-white/35 transition-colors hover:text-white/70"
-                                >
-                                    Registrar a otra persona
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {mostrarFormulario && (
-                        <form onSubmit={handleSubmit} ref={formRef} className="space-y-5">
+                    {!enviado && (
+                        <form onSubmit={handleSubmit} className="space-y-5">
                             {/* El plan que eligió en la página, ya marcado. Va como el
                                 renglón del país: un metadato, no una pregunta más. */}
                             {planInteres && (
@@ -565,7 +436,7 @@ export default function Formulario() {
                                     required
                                     autoComplete="name"
                                     /* key: defaultValue solo se aplica al montar, y el
-                                       prellenado llega después (sessionStorage/OAuth). */
+                                       prellenado llega después (sessionStorage/localStorage). */
                                     key={`n-${prefill.nombre ?? ""}`}
                                     defaultValue={prefill.nombre ?? ""}
                                     className={campoCls}
@@ -639,75 +510,9 @@ export default function Formulario() {
 
                             {/* Único elemento relleno de la pantalla: el mismo botón que
                                 el "Continuar" del hero. */}
-                            <button type="submit" disabled={status === "submitting"} className={`mt-1 ${botonCrema}`}>
-                                {status === "submitting"
-                                    ? "Procesando…"
-                                    : planInteres ? `Comenzar con ${planInteres.nombre}` : "Solicitar demo"}
+                            <button type="submit" className={`mt-1 ${botonCrema}`}>
+                                {planInteres ? `Comenzar con ${planInteres.nombre}` : "Solicitar demo"}
                             </button>
-
-                            {errMsg && (
-                                <div className="space-y-3">
-                                    <p className="text-sm text-red-400">{errMsg}</p>
-
-                                    {/* ── PROCESO DE EMERGENCIA ──
-                                        Si el registro falla, el lead no se pierde: le damos
-                                        canales directos con sus datos ya escritos. WhatsApp
-                                        es el principal; el resto queda plegado. */}
-                                    {waUrl && (
-                                        <div
-                                            className="rounded-2xl p-4"
-                                            style={{ background: "rgba(245,240,232,0.04)", border: "1px solid rgba(245,240,232,0.10)" }}
-                                        >
-                                            <p className="mb-3 text-[13px] leading-relaxed text-white/55">
-                                                No te quedes fuera: escríbenos y te damos acceso a mano. Tus
-                                                datos ya van en el mensaje.
-                                            </p>
-                                            {/* Relee el formulario justo al pulsar: si el usuario
-                                                corrigió un campo tras el fallo, el mensaje sale con
-                                                el dato bueno. */}
-                                            <WhatsAppCTA
-                                                href={waUrl}
-                                                compact
-                                                onClick={(e) => {
-                                                    const fresca = urlWhatsAppActual();
-                                                    if (fresca) e.currentTarget.href = fresca;
-                                                }}
-                                            >
-                                                Escríbenos por WhatsApp
-                                            </WhatsAppCTA>
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowOtras((v) => !v)}
-                                                aria-expanded={showOtras}
-                                                className="mt-3 flex w-full items-center justify-center gap-1.5 text-[12px] font-medium text-[#e8ddc9]/60 transition-colors hover:text-[#f5f0e8]"
-                                            >
-                                                Otras opciones
-                                                <ChevronDown
-                                                    size={14}
-                                                    className="transition-transform duration-300"
-                                                    style={{ transform: showOtras ? "rotate(180deg)" : "none" }}
-                                                />
-                                            </button>
-                                            {showOtras && (
-                                                <div className="mt-3 grid grid-cols-3 gap-2">
-                                                    {SOCIALES.map(({ label, href, Icon }) => (
-                                                        <a
-                                                            key={label}
-                                                            href={href}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="flex flex-col items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] py-2.5 text-[11px] font-medium text-white/50 transition-all duration-300 hover:border-[#C39767]/40 hover:bg-[#C39767]/10 hover:text-[#e8b97a]"
-                                                        >
-                                                            <Icon size={15} />
-                                                            {label}
-                                                        </a>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
 
                             {/* target="_blank": los campos no son controlados, así que
                                 salir a leer el aviso borraba los cinco datos escritos. */}
@@ -725,7 +530,7 @@ export default function Formulario() {
                         </form>
                     )}
 
-                    <QuePasaDespues className="mt-10 lg:hidden" />
+                    <QuePasaDespues canal={canal} className="mt-10 lg:hidden" />
                 </motion.div>
             </main>
         </div>

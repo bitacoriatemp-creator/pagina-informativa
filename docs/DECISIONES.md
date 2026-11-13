@@ -3,6 +3,60 @@
 Registro corto de decisiones de producto sobre la landing. Cada entrada dice qué se decidió,
 qué pasó antes y qué regla queda. Se lee antes de tocar cualquier elemento visible del sitio.
 
+## 2026-11-13 — "Solicitar demo" abre WhatsApp directo y el botón de WhatsApp pasa a verde (Luis)
+
+**Decisión (Luis).** Mientras el servidor no reciba las solicitudes de demo, `/registro` no manda los
+datos a ninguna base: arma el mensaje y abre WhatsApp en el mismo clic. Es la tanda 0 del plan
+`registro_filtro_2026-11-13`; guardar en el servidor llega en la tanda 4. El botón de WhatsApp toma la
+forma de "Solicitar demo" en el verde de WhatsApp (opción B, elegida por Luis sobre la muestra).
+
+**Qué pasaba.** El formulario mandaba los datos a la base vieja del sitio, que ya no existe. A todos
+les salía "Sin conexión. Verifica tu señal…" en rojo y ninguna solicitud quedó guardada; solo llegaron
+las de quien escribió por WhatsApp desde el bloque de emergencia.
+
+**Qué cambia a la vista (`src/app/registro/Formulario.tsx`):**
+
+- Al pulsar "Solicitar demo" (o "Comenzar con Plus") se abre WhatsApp con los datos ya escritos. Si el
+  navegador no deja abrir otra pestaña, se va a WhatsApp en la misma.
+- Después, la pantalla dice **"Falta un paso, {nombre}"**, sin palomita: "Tu solicitud todavía no nos
+  llega: envía el mensaje que ya está escrito y agendamos tu demo." (con Plus: "…y te damos de alta en
+  Plus."). Botón verde "Continuar en WhatsApp"; debajo, "¿Sin WhatsApp en este equipo? Envíanos el
+  mismo mensaje por correo" (el correo de contacto del pie, con el mismo texto), el número de WhatsApp
+  a la vista y "Otras opciones" (redes). Si no hay número configurado, el correo es el botón principal.
+- Ya no aparecen "Solicitud recibida", "Quedaste en la lista…", "Te escribimos muy pronto…", "Ya estás
+  en la lista", el error rojo ni el bloque "No te quedes fuera…".
+- Quien tenía la marca vieja de "ya registrado" en su navegador ya no ve "Ya estás en la lista": esas
+  solicitudes se perdieron. Ve la hoja de siempre con su nombre y correo ya escritos.
+- Columna izquierda: el renglón 2 pasa a "Nos escribes por WhatsApp. El mensaje ya lleva tus datos;
+  contesta alguien del equipo." La entrada de Plus: "Seis datos. Con ellos armamos el mensaje para
+  darte de alta por WhatsApp."
+- **Botón de WhatsApp:** misma forma que "Solicitar demo" (48 px, esquinas `rounded-xl`, letra de 15 px,
+  mismo anillo de foco), fondo `#25D366`, letra `#1a120c` (9.3 a 1) y, al pasar el cursor, `#3be07a`.
+  Icono de 16 px y el texto. Se fueron la pastilla, la letra Teko, el degradado, las sombras, el brillo,
+  la burbuja y la flecha. Las clases viven en `src/app/registro/botones.ts`.
+
+**Regla que queda.**
+
+1. **La pantalla no dice que algo llegó si no llegó.** Mientras nada se guarde, nada de "recibida",
+   "estás en la lista" ni "te escribimos"; tampoco se escriben la marca `bitacoria_registered` ni la
+   cuenta local. Cuando la tanda 4 guarde de verdad, el éxito usa una marca con otro nombre.
+2. **El salto a WhatsApp va dentro del mismo clic**, sin nada asíncrono antes (ni `await` ni `fetch`):
+   tras una espera el navegador bloquea la ventana. `window.open(url, "_blank")` sin `noopener` (con él
+   siempre devuelve vacío) y, si no abrió, `window.location.assign(url)`.
+3. **`globals.css` no se toca:** el brillo viejo (`.btn-premium-shine`) lo sigue usando `/esia`.
+4. Pruebas: `src/lib/__tests__/registro.test.ts` vigila que `Formulario.tsx` no apunte a ningún
+   `supabase.co`, que el envío no tenga `await` ni `fetch`, las claves del mensaje, los textos que ya no
+   van y las clases del botón; `solicitudDemo.test.ts` prueba los textos por caso, el correo y la regla
+   de abrir en pestaña nueva o en la misma.
+
+**Rama legal (`wip/www-salida-2026-10-28`).** Cambia textos que este parche borra (el mensaje de los
+15 segundos, los del éxito y los de "ya estás en la lista"). Al juntarla, en esas líneas gana `main`.
+
+**Antes del "sube"** (regla 1 del 12-09): captura del botón verde ya puesto en la página para Luis, en
+375 y 1440 de ancho, y el clic probado en teléfono (iPhone con Safari y Android con Chrome). Lo que solo
+se puede probar ya publicado (abrir www desde un enlace dentro de Instagram y de Facebook; computadora
+sin WhatsApp) se prueba justo después; si falla, "Promote to Production" del deploy anterior (`6b68851`).
+
 ## 2026-10-27 — Hero sin campo de correo, planes con el estilo del hero y videos nuevos (JC, sin revisión de Luis)
 
 **Decisión (JC).** JC publicó a `main` (producción) sin el ok de Luis sobre el Preview, por decisión
@@ -18,8 +72,11 @@ y pedir cambios o revertirlo.
   - "Continuar con correo", el único botón relleno.
   - El aviso de privacidad.
   - Debajo, "¿Llevas varias obras o un equipo? **Solicita una demo**" → `/registro`. Es la segunda
-    puerta, la de ventas. Mientras el backend de leads no esté en producción, `/registro` no guarda y
-    ofrece WhatsApp.
+    puerta, la de ventas. Mientras el backend de leads no esté en producción, `/registro` no guarda.
+    *(Corregido el 2026-11-13: aquí decía además "y ofrece WhatsApp", y no era así. El formulario
+    seguía mandando los datos a la base vieja del sitio, que ya no existe, y a todos les salía "Sin
+    conexión" en letra roja; WhatsApp solo aparecía debajo, como salida de emergencia. Ver la entrada
+    del 2026-11-13.)*
 
   Los dos botones abren el alta en la app (Draft), sin pasar el correo.
 - **Sin el indicador "↓ scroll".** Planes usa el mismo negro del hero (`#060302`), sin la línea de

@@ -1,12 +1,15 @@
 /* ══════════════════════════════════════════════════════════════
    whatsapp — enlace de contacto con mensaje precargado
    ──────────────────────────────────────────────────────────────
-   El lead llena la encuesta, lo guardamos en Supabase y de ahí lo
-   mandamos a un chat de WhatsApp con sus datos ya escritos.
+   El lead llena la encuesta de /registro y lo mandamos a un chat de
+   WhatsApp con sus datos ya escritos.
 
-   OJO: el mensaje precargado es EDITABLE y solo se envía si la
-   persona pulsa "enviar" en WhatsApp. Por eso el registro en la
-   base se hace ANTES: es la única captura garantizada.
+   OJO (2026-11-13): hoy NADA se guarda en la base. La base vieja del
+   sitio ya no existe y el servidor todavía no recibe solicitudes (llega
+   con la tanda 4 del plan registro_filtro). El mensaje precargado es
+   EDITABLE y solo nos llega si la persona pulsa "enviar" en WhatsApp
+   (o manda el correo con el mismo texto): por eso la pantalla dice
+   "Falta un paso" y no "Solicitud recibida".
 
    El número va aquí por defecto y NEXT_PUBLIC_WHATSAPP_NUMBER lo
    puede sobrescribir sin tocar código. No es un secreto: las vars
@@ -40,15 +43,13 @@ export type LeadDatos = {
 };
 
 /**
- * Arma la URL de WhatsApp con el mensaje del lead ya redactado.
- * Devuelve null si no hay número configurado, para que el caller
- * pueda ocultar el botón en vez de mandar a un enlace roto.
+ * El texto del mensaje, renglón por renglón. Es el mismo para WhatsApp y para
+ * el correo de respaldo: así el equipo recibe lo mismo por cualquiera de los
+ * dos caminos.
  */
-export function buildWhatsAppUrl(datos: LeadDatos): string | null {
-    if (!hasWhatsApp()) return null;
-
+export function armarMensaje(datos: LeadDatos): string {
     // Plus todavía no existe en la app: el plan que pidió solo llega al equipo
-    // por este mensaje (la base guarda los mismos seis datos de siempre).
+    // por este mensaje.
     const plan = datos.plan;
     const lineas = [
         plan ? `Hola, me interesa el plan ${plan.nombre} de BitacorIA.` : "Hola, quiero una demo de BitacorIA.",
@@ -68,5 +69,38 @@ export function buildWhatsAppUrl(datos: LeadDatos): string | null {
     lineas.push(`Interés: ${datos.interes_compra}`);
     lineas.push(`País: ${datos.pais}`);
 
-    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lineas.join("\n"))}`;
+    return lineas.join("\n");
+}
+
+/**
+ * Arma la URL de WhatsApp con el mensaje del lead ya redactado.
+ * Devuelve null si no hay número configurado, para que el caller
+ * pueda ocultar el botón en vez de mandar a un enlace roto.
+ */
+export function buildWhatsAppUrl(datos: LeadDatos): string | null {
+    if (!hasWhatsApp()) return null;
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(armarMensaje(datos))}`;
+}
+
+/**
+ * Número para leerlo en pantalla ("+52 271 239 6353"): quien está en una
+ * computadora sin WhatsApp lo puede escribir en su teléfono. Los números de
+ * México (52, con o sin el 1 de celular) salen a 10 dígitos agrupados; los de
+ * otro país, con "+" y sus dígitos tal cual.
+ */
+export function formatearNumeroVisible(digitos: string): string {
+    const d = digitos.replace(/\D/g, "");
+    let local: string | null = null;
+    if (d.length === 13 && d.startsWith("521")) local = d.slice(3);
+    else if (d.length === 12 && d.startsWith("52")) local = d.slice(2);
+    if (!local) return `+${d}`;
+    // Ciudad de México, Guadalajara y Monterrey usan lada de 2 dígitos.
+    return /^(55|56|33|81)/.test(local)
+        ? `+52 ${local.slice(0, 2)} ${local.slice(2, 6)} ${local.slice(6)}`
+        : `+52 ${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`;
+}
+
+/** El número configurado, listo para leerse, o null si no hay número. */
+export function numeroWhatsAppVisible(): string | null {
+    return hasWhatsApp() ? formatearNumeroVisible(WHATSAPP_NUMBER) : null;
 }
