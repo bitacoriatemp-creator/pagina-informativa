@@ -121,7 +121,7 @@
   },
 
   "empresa": {
-    "_regla": "Opcional. Se quitan espacios a los lados y se juntan los de en medio. Cuenta como vacía (null) si queda vacía, si tiene 2 caracteres o menos, si solo tiene guiones, puntos o diagonales, o si en minúsculas es una de: n/a, na, ninguna, ninguno, no, independiente, particular. Si no está vacía: sin caracteres de control, sin '<', '>', '@', 'http', 'www.' ni '://' (sin importar mayúsculas), no empieza con '=', '+', '-' ni '@', y mide hasta 80 caracteres. Se guarda limpia.",
+    "_regla": "Opcional. Se quitan espacios a los lados y se juntan los de en medio. Cuenta como vacía (null) si queda vacía, si tiene 2 caracteres o menos, si solo tiene guiones, puntos o diagonales, o si en minúsculas es una de: n/a, na, ninguna, ninguno, no, independiente, particular. Si no está vacía: sin caracteres de control ni invisibles (categorías Unicode Cc, Cf, Zl y Zp, como el guion suave o el espacio de ancho cero), sin '<', '>', '@', 'http', 'www.' ni '://' (sin importar mayúsculas), no empieza con '=', '+', '-' ni '@', y mide hasta 80 caracteres. Se guarda limpia.",
     "casos": [
       {"entrada": "", "salida": null, "valida": true},
       {"entrada": "Constructora Ruiz", "salida": "Constructora Ruiz", "valida": true},
@@ -144,6 +144,8 @@
       {"entrada": "<script>alert(1)</script>", "salida": null, "valida": false},
       {"entrada": "contacto@empresa.mx", "salida": null, "valida": false},
       {"entrada": "Constructora\tRuiz", "salida": null, "valida": false},
+      {"entrada": "Constructora\u00adRuiz", "salida": null, "valida": false},
+      {"entrada": "Grupo\u200bABC", "salida": null, "valida": false},
       {"entrada": "Constructora y Proyectos del Valle de México Sociedad Anónima de Capital Variable", "salida": null, "valida": false}
     ]
   },
