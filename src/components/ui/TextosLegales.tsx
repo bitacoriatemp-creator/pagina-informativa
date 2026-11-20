@@ -550,12 +550,16 @@ export function AvisoCuerpo() {
                 <p><B>4.2 Adicionales, que puedes rechazar sin perder el servicio:</B></p>
                 <Lista>
                     <li>Mandarte el boletín y novedades de BitacorIA.</li>
+                    <li>
+                        Contactarte por correo, teléfono o WhatsApp para darte seguimiento personalizado (ayudarte a
+                        arrancar tu obra en la plataforma y resolver tus dudas) y ofrecerte los planes que te puedan servir.
+                    </li>
                     <li>Publicar tu reseña en www.bitacoria.com (solo si la envías).</li>
                     <li>Invitarte a encuestas de satisfacción.</li>
                 </Lista>
                 <p>
                     Para negarte, escribe a <D k="correoPrivacidad" /> con el asunto “No acepto finalidades adicionales”
-                    y di cuáles.
+                    y di cuáles, o pídelo en la misma llamada o mensaje.
                 </p>
             </Seccion>
 
