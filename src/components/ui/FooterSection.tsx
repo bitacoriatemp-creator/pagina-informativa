@@ -88,7 +88,7 @@ const LEGAL_CONTENT = {
         body: (
             <div className="divide-y divide-white/[0.07] text-[15px] leading-relaxed text-white/60 [&>*]:py-6 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
                 <div>
-                    <p><strong className="text-white">Última actualización:</strong> Junio 2026</p>
+                    <p><strong className="text-white">Última actualización:</strong> Noviembre 2026</p>
                     <p className="mt-2">En cumplimiento a lo dispuesto por la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (en adelante, &quot;La Ley&quot;) y su Reglamento, <strong className="text-white">BitacorIA</strong> (&quot;Nosotros&quot; o &quot;La Plataforma&quot;) hace de su conocimiento la presente normativa sobre cómo es tratada, protegida y almacenada su información como contratista, residente, supervisor o director de obra al operar en nuestra infraestructura.</p>
                 </div>
                 <div>
@@ -98,6 +98,7 @@ const LEGAL_CONTENT = {
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">II. Finalidades del Tratamiento</h5>
                     <p>Los datos arriba mencionados son de tratamiento primario y necesarios para la prestación del servicio de BitacorIA. Se utilizan específicamente para: habilitar el acceso al ecosistema &quot;Smart BIM Sync&quot;, facturación y cobro de planes (Draft, Plus, Pro, Max, Ultra), envío de alertas automáticas sobre desviaciones o retrasos en el cronograma, y la generación de reportes en PDF listos para procesos de auditoría y firma.</p>
+                    <p className="mt-3"><strong className="text-white">Finalidades adicionales.</strong> Con sus datos de contacto (correo, teléfono y WhatsApp) también podremos comunicarnos con usted para darle seguimiento personalizado (ayudarle a arrancar su obra en la plataforma y resolver sus dudas), contarle novedades de BitacorIA y ofrecerle los planes que le puedan servir. Estas finalidades no son necesarias para prestarle el servicio: puede negarse en cualquier momento escribiendo a <strong className="text-white">bitacoria.temp@gmail.com</strong> con el asunto &quot;No acepto finalidades adicionales&quot; o pidiéndolo en la misma llamada o mensaje, y su negativa no afectará su cuenta.</p>
                 </div>
                 <div>
                     <h5 className="mb-2 text-[15px] font-semibold text-[#f5f0e8]">III. Tratamiento por Inteligencia Artificial</h5>
