@@ -371,7 +371,14 @@ const PlanCard = React.memo(function PlanCard({ plan, index, isAnnual }: { plan:
                                 </span>
                                 <span className="text-[12px] text-white/45">{plan.priceSuffix}</span>
                             </p>
-                            <p className="mt-1.5 h-4 text-[11.5px] text-white/40">
+                            {/* "Precio sin IVA" (2026-11-22): los enlaces de pago de Mercado Pago ya
+                                cobran el 16 %; la marca evita la sorpresa al pagar. En Draft el renglón
+                                queda vacío pero reserva su alto, para que las cinco tarjetas sigan
+                                alineadas. */}
+                            <p className="mt-1.5 h-4 text-[11px] leading-4 text-white/40">
+                                {plan.id !== "draft" ? "Precio sin IVA" : null}
+                            </p>
+                            <p className="mt-0.5 h-4 text-[11.5px] text-white/40">
                                 {conDescuento ? (
                                     <>Facturado <span className="text-white/70">${plan.annualTotal}</span> al año</>
                                 ) : null}
