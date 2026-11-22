@@ -68,7 +68,9 @@ import {
     type EstadoVerificacion,
 } from "@/lib/demoServidor";
 import { registerUrl } from "@/lib/appUrl";
+import { pagoPlus } from "@/lib/pagoMercadoPago";
 import { botonCrema, botonVerde } from "./botones";
+import PagoPlus from "./PagoPlus";
 import Verificacion, { type VerificacionHandle } from "./Verificacion";
 
 /* ── Glifos que lucide no trae ── */
@@ -459,6 +461,9 @@ export default function Formulario() {
             : null;
     const modo: Modo =
         pantalla.tipo === "recibida" || (pantalla.tipo === "hoja" && conServidor) ? "servidor" : "directo";
+    /* 2026-11-22: con la hoja de Plus ya guardada, el último paso es pagar (si ese ciclo
+       ya tiene enlace de Mercado Pago). */
+    const pago = recibida && planInteres?.clave === "plus" ? pagoPlus(planInteres.ciclo) : null;
 
     /* El titular grande vive SIEMPRE en la columna izquierda y cambia con el
        estado. La derecha se queda con la acción: la hoja, o el botón para
@@ -551,6 +556,7 @@ export default function Formulario() {
                         paso pendiente. */}
                     {recibida && (
                         <div className="lg:pt-6">
+                            {pago && <PagoPlus pago={pago} />}
                             {canal === "whatsapp" && waUrl && (
                                 <>
                                     <p className="mb-4 text-center text-[13px] leading-relaxed text-white/50">
