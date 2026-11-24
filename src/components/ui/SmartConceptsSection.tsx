@@ -3,6 +3,7 @@
 import { motion, type Variants } from "framer-motion";
 import { Check, MapPin, Pencil } from "lucide-react";
 import { assetPath } from "@/lib/assetPath";
+import BasePreciosRobustez from "./BasePreciosRobustez";
 import DemoPlayer from "./DemoPlayer";
 
 const ACCENT = "#00D26A";
@@ -98,6 +99,9 @@ export default function SmartConceptsSection() {
                         </div>
                     ))}
                 </div>
+
+                {/* Base de precios y comparativa (Luis 2026-11-24) */}
+                <BasePreciosRobustez />
 
                 {/* CTA */}
                 <div className="mt-12 flex justify-center">
