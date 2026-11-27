@@ -21,7 +21,7 @@
    ni guiones). Ej. México: 55 1234 5678 → 525512345678
    ══════════════════════════════════════════════════════════════ */
 
-const NUMERO_POR_DEFECTO = "5212712396353";
+const NUMERO_POR_DEFECTO = "5212714095316";
 
 /** Deja solo dígitos: tolera que el número venga con +, espacios o guiones. */
 const WHATSAPP_NUMBER = (
@@ -89,7 +89,7 @@ export function buildWhatsAppUrl(datos: LeadDatos): string | null {
 }
 
 /**
- * Número para leerlo en pantalla ("+52 271 239 6353"): quien está en una
+ * Número para leerlo en pantalla ("+52 271 409 5316"): quien está en una
  * computadora sin WhatsApp lo puede escribir en su teléfono. Los números de
  * México (52, con o sin el 1 de celular) salen a 10 dígitos agrupados; los de
  * otro país, con "+" y sus dígitos tal cual.

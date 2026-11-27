@@ -375,10 +375,10 @@ export default function FooterSection() {
                             </li>
                             <li>
                                 <a
-                                    href="tel:+522712396353"
+                                    href="tel:+522714095316"
                                     className="transition-colors hover:text-[#e8b97a]"
                                 >
-                                    +52 271 239 6353
+                                    +52 271 409 5316
                                 </a>
                             </li>
                             <li className="text-white/40">Sede: México</li>
